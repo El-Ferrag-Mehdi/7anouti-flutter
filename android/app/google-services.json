@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "412480008483",
+    "project_id": "x7anouti",
+    "storage_bucket": "x7anouti.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:412480008483:android:857bd768e90b01aa141c96",
+        "android_client_info": {
+          "package_name": "ma.sevenhanouti.ma7anouti"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANxhOSkNnudcT0AEPDIn7GijUjETcX_bA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:412480008483:android:f1d225bab3a4fa80141c96",
+        "android_client_info": {
+          "package_name": "ma.sevenhanouti.ma7anouti.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANxhOSkNnudcT0AEPDIn7GijUjETcX_bA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:412480008483:android:b400dd9527a39340141c96",
+        "android_client_info": {
+          "package_name": "ma.sevenhanouti.ma7anouti.stg"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANxhOSkNnudcT0AEPDIn7GijUjETcX_bA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

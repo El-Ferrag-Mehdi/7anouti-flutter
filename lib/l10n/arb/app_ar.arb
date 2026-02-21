@@ -1,0 +1,704 @@
+{
+  "@@locale": "ar",
+  "counterAppBarTitle": "عداد",
+  "authWelcomeTitle": "مرحباً",
+  "authWelcomeSubtitle": "تسجيل الدخول للمتابعة",
+  "authLoginTitle": "تسجيل الدخول",
+  "authEmailLabel": "بريد إلكتروني",
+  "authEmailRequired": "البريد الإلكتروني مطلوب",
+  "authPasswordLabel": "كلمة المرور",
+  "authPasswordInvalid": "كلمة المرور غير صالحة",
+  "authLoginButton": "تسجيل الدخول",
+  "authCreateAccount": "إنشاء حساب",
+  "authRegisterTitle": "إنشاء حساب",
+  "authRegisterCardTitle": "يسجل",
+  "authRegisterButton": "إنشاء حساب",
+  "authAlreadyHaveAccount": "هل لديك حساب بالفعل؟ تسجيل الدخول",
+  "authRegistrationSuccess": "تم التسجيل بنجاح",
+  "authRegistrationError": "خطأ في التسجيل",
+  "authLanguageLabel": "لغة",
+  "authFrench": "فرنسي",
+  "authArabic": "عربي",
+  "settingsTitle": "إعدادات",
+  "settingsLanguageSectionTitle": "لغة",
+  "settingsDeleteAccountSectionTitle": "حذف الحساب",
+  "settingsDeleteAccountDescription": "هذا الإجراء يعطل حسابك ولا يمكن التراجع عنه.",
+  "settingsDeleteAccountButton": "حذف حسابي",
+  "settingsDeleteAccountInProgress": "جارٍ الحذف...",
+  "settingsDeleteAccountDialogTitle": "حذف الحساب؟",
+  "settingsDeleteAccountDialogMessage": "سيتم تعطيل حسابك فورًا.",
+  "settingsDeleteAccountDialogConfirm": "متابعة",
+  "settingsDeleteAccountFinalTitle": "تأكيد نهائي",
+  "settingsDeleteAccountFinalMessage": "هل تؤكد حذف حسابك بشكل نهائي؟",
+  "settingsDeleteAccountFinalConfirm": "نعم، احذف",
+  "settingsDeleteAccountError": "خطأ أثناء حذف الحساب: {message}",
+  "@settingsDeleteAccountError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "clientSettingsTitle": "إعدادات الحساب",
+  "clientSettingsLoading": "جارٍ تحميل الملف الشخصي...",
+  "clientSettingsSaveButton": "يحفظ",
+  "clientSettingsAccountSectionTitle": "معلومات الحساب",
+  "clientSettingsNameLabel": "الاسم الكامل",
+  "clientSettingsPhoneLabel": "هاتف",
+  "clientSettingsEmailLabel": "بريد إلكتروني",
+  "clientSettingsAddressLabel": "عنوان",
+  "clientSettingsRequiredFields": "الاسم والهاتف مطلوبان.",
+  "clientSettingsSaved": "تم تحديث الملف الشخصي",
+  "clientSettingsSaveError": "خطأ في الحفظ: {message}",
+  "@clientSettingsSaveError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "clientMenuSettings": "إعدادات الحساب",
+  "clientMenuLogout": "تسجيل الخروج",
+  "clientShellCompareHomeTooltip": "قارن المنزل",
+  "clientShellHomeModeAggressive": "الوضع المنزلي: عدواني",
+  "clientShellHomeModeStandard": "الوضع المنزلي: قياسي",
+  "clientHomeTab": "بيت",
+  "clientOrdersTab": "طلبات",
+  "clientCarnetTab": "دفتر الملاحظات",
+  "clientCommonLoading": "تحميل...",
+  "clientCommonError": "خطأ",
+  "clientCommonClose": "يغلق",
+  "clientCommonCancel": "يلغي",
+  "clientCommonConfirm": "يتأكد",
+  "clientCommonConfirmOrder": "تأكيد الطلب",
+  "clientCommonEdit": "يحرر",
+  "clientCommonSend": "يرسل",
+  "clientCommonNo": "لا",
+  "clientCommonRefresh": "ينعش",
+  "clientCommonSeeMore": "شاهد المزيد",
+  "clientCommonLocating": "تحديد موقع...",
+  "clientCommonUseMyLocation": "استخدم موقعي",
+  "clientCommonDeliveryAddress": "عنوان التسليم",
+  "clientCommonDeliveryAddressHint": "الحي، الشارع، المبنى",
+  "clientCommonDriverNotesOptional": "ملاحظات السائق (اختياري)",
+  "clientCommonDriverNotesHint": "على سبيل المثال: دق جرس الباب، الطابق الثالث",
+  "clientCommonServiceFee": "رسوم الخدمة",
+  "clientCommonTotal": "المجموع",
+  "clientCommonSending": "إرسال...",
+  "clientCommonUnknownState": "دولة غير معروفة",
+  "clientCommonRecently": "حديثاً",
+  "clientCommonDays": "{count} يوم (أيام)",
+  "@clientCommonDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clientCommonWeeks": "{count} أسبوع (أسابيع)",
+  "@clientCommonWeeks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clientCommonMonths": "{count} شهر (أشهر)",
+  "@clientCommonMonths": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clientCommonContactHanout": "اتصل بـ هانوت",
+  "clientCommonContactDriver": "اتصل بالسائق",
+  "clientCommonErrorWithMessage": "خطأ: {message}",
+  "@clientCommonErrorWithMessage": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "clientDeliveryPickup": "يلتقط",
+  "clientDeliveryDelivery": "توصيل",
+  "clientPaymentCash": "نقدي",
+  "clientPaymentCarnet": "دفتر الملاحظات",
+  "clientOrderStatusPending": "قيد الانتظار",
+  "clientOrderStatusAccepted": "مقبول",
+  "clientOrderStatusPreparing": "تحضير",
+  "clientOrderStatusReady": "مستعد",
+  "clientOrderStatusPickedUp": "التقطت",
+  "clientOrderStatusDelivering": "تسليم",
+  "clientOrderStatusDelivered": "تم التوصيل",
+  "clientOrderStatusCancelled": "تم الإلغاء",
+  "clientGasStatusPending": "قيد الانتظار",
+  "clientGasStatusEnRoute": "على الطريق",
+  "clientGasStatusArrive": "وصل",
+  "clientGasStatusPickedEmpty": "زجاجة فارغة التقطت",
+  "clientGasStatusToHanout": "الذهاب إلى حانوت",
+  "clientGasStatusReturnHome": "العودة إلى المنزل",
+  "clientGasStatusDelivered": "تم التوصيل",
+  "clientGasStatusCancelled": "تم الإلغاء",
+  "clientGasStatusRejected": "مرفوض",
+  "clientGasMessagePending": "في انتظار السائق.",
+  "clientGasMessageEnRoute": "السائق في الطريق إليك.",
+  "clientGasMessageArrive": "وصل السائق لالتقاط الزجاجة الفارغة.",
+  "clientGasMessagePickedEmpty": "زجاجة فارغة التقطت.",
+  "clientGasMessageToHanout": "السائق سوف يذهب إلى hanout.",
+  "clientGasMessageReturnHome": "يعود السائق إلى عنوانك.",
+  "clientGasMessageDelivered": "تم تسليم زجاجة جديدة.",
+  "clientGasMessageCancelled": "تم إلغاء الطلب.",
+  "clientGasMessageRejected": "تم رفض الطلب.",
+  "clientHomeLoadingNearby": "جارٍ البحث في الحانات القريبة...",
+  "clientHomeNoHanoutNearby": "لم يتم العثور على حانوت قريب.",
+  "clientHomeLocationPermissionDenied": "تم رفض إذن تحديد الموقع.",
+  "clientHomeNearbyHanoutsTitle": "الهانوتس القريبة",
+  "clientHomeHanoutsFound": "تم العثور على {count} الحانات",
+  "@clientHomeHanoutsFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clientHomeOrdersServicesTitle": "الطلبات والخدمات",
+  "clientHomeOrdersServicesSubtitle": "hanouts القريبة والخدمة المباشرة",
+  "clientHomeHanoutOrdersTitle": "أوامر الحانوت",
+  "clientHomeHanoutOrdersSubtitle": "اختر حانة قريبة",
+  "clientHomeScrollForHanouts": "قم بالتمرير لعرض الهانوتس.",
+  "clientHomeGasDirectSubtitle": "سائق مباشر",
+  "clientHomeGasBadge": "13 DH + 2 DH",
+  "clientHomeCarnetInfoBanner": "تدعم Hangouts التي تحمل رمز دفتر الملاحظات عمليات الدفع الائتمانية.",
+  "clientHomeHeroWelcome": "مرحباً",
+  "clientHomeHeroTitle": "hanouts القريبة الخاصة بك",
+  "clientHomeHeroSubtitle": "أوامر سريعة، دفع مرن.",
+  "clientHomeHeroSubtitleCustom": "واصل تسوقك المعتاد دون أن تتحرك.",
+  "clientHomeQuickActionsTitle": "اختر واطلب",
+  "clientHomeQuickActionsCoursesTitle": "اطلب البقالة الخاصة بك",
+  "clientHomeQuickActionsCoursesSubtitle": "ابحث عن منتجات hanout المعتادة",
+  "clientHomeQuickActionsGasTitle": "اطلب قنينة غاز",
+  "clientHomeQuickActionsGasSubtitle": "الخدمة من حانوتك المعتاد - 15 درهم",
+  "clientHomeQuickActionsGasBadge": "15 DH",
+  "clientHomeAggressiveTitle": "7anouti Express",
+  "clientHomeAggressiveSubtitle": "البقالة والغاز، يتم تسليمها بسرعة.",
+  "clientGasBottleTitle": "قنينة غاز",
+  "clientGasServiceTitle": "خدمة قنينة الغاز",
+  "clientGasServiceDescription": "يأتي إليك سائق، ويأخذ الزجاجة الفارغة، ويحصل على واحدة جديدة ويسلمها.",
+  "clientGasPromoPriceAllInclusive": "سعر ترويجي شامل",
+  "clientGasPromoPriceValue": "15 DH",
+  "clientGasPromoNormalPrice": "+ ثمن الغاز العادي اللي كتخلص ديما",
+  "clientGasRequestDriver": "اطلب سائق",
+  "clientGasEnterAddress": "الرجاء إدخال عنوانك.",
+  "clientGasRequestSent": "تم إرسال الطلب إلى السائق.",
+  "clientGasNoDeliveredToRate": "لا يوجد طلب تسليم الغاز لتقييمه.",
+  "clientGasDetailsTitle": "تفاصيل الخدمة",
+  "clientGasServiceLabel": "خدمة",
+  "clientGasRefreshError": "غير قادر على تحديث الطلب",
+  "clientOrdersLoading": "جارٍ تحميل طلباتك...",
+  "clientOrdersEmptyMessage": "ليس لديك أمر حتى الآن.",
+  "clientOrdersSeeHanouts": "عرض الحانات",
+  "clientOrdersGasSectionTitle": "خدمة قنينة الغاز",
+  "clientOrdersFilterAll": "الجميع",
+  "clientOrdersFilterInProgress": "في تَقَدم",
+  "clientOrdersFilterAllFeminine": "الجميع",
+  "clientOrdersFilterDelivered": "تم التوصيل",
+  "clientOrdersFilterCancelled": "تم الإلغاء",
+  "clientOrdersOrderNumber": "الطلب #{id}",
+  "@clientOrdersOrderNumber": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "clientOrdersHeaderTitle": "أوامري",
+  "clientOrdersHeaderCount": "{count} إجمالي الطلب (الطلبات).",
+  "@clientOrdersHeaderCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clientOrdersClientAddressFallback": "عنوان العميل",
+  "clientOrdersTrack": "مسار",
+  "clientOrdersRateDriver": "سائق معدل",
+  "clientOrdersReorder": "إعادة الترتيب",
+  "clientOrdersRate": "معدل",
+  "clientOrdersTrackOrder": "تتبع الطلب",
+  "clientOrdersReorderSoon": "إعادة ترتيب \"{order}\" (قريبًا)",
+  "@clientOrdersReorderSoon": {
+    "placeholders": {
+      "order": {
+        "type": "String"
+      }
+    }
+  },
+  "clientOrdersRateOrderTitle": "ترتيب المعدل",
+  "clientOrdersRateDriverTitle": "سائق معدل",
+  "clientOrdersHanoutRating": "تصنيف حانوت",
+  "clientOrdersHanoutCommentHint": "تعليق الحانوت (اختياري)",
+  "clientOrdersDriverRating": "تصنيف السائق",
+  "clientOrdersDriverCommentHint": "تعليق السائق (اختياري)",
+  "clientOrdersThanksReview": "شكرا لمراجعتك",
+  "clientCarnetLoading": "جارٍ تحميل دفاتر الملاحظات...",
+  "clientCarnetEmptyMessage": "ليس لديك دفتر ملاحظات نشط.",
+  "clientCarnetSeeHanouts": "عرض الحانات",
+  "clientCarnetTitle": "دفاتري",
+  "clientCarnetTotalBalance": "الرصيد الإجمالي",
+  "clientCarnetToRepay": "لسداد",
+  "clientCarnetNoDebt": "لا ديون",
+  "clientCarnetActiveCount": "{count} دفتر (دفاتر) الملاحظات النشطة",
+  "@clientCarnetActiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clientCarnetInfoBanner": "يتيح لك Notebook الشراء عن طريق الائتمان.",
+  "clientCarnetActiveSince": "نشط منذ {value}",
+  "@clientCarnetActiveSince": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "clientCarnetCurrentBalance": "الرصيد الحالي",
+  "clientCarnetLastActivity": "آخر نشاط: {value}",
+  "@clientCarnetLastActivity": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "clientCarnetDetailsTitle": "تفاصيل دفتر الملاحظات",
+  "clientCarnetTransactionsLoading": "جارٍ تحميل المعاملات...",
+  "clientCarnetNoTransactions": "لا توجد معاملة حتى الآن",
+  "clientCarnetTransactionHistory": "تاريخ المعاملات",
+  "clientCarnetCreditPurchases": "مشتريات الائتمان",
+  "clientCarnetPayments": "المدفوعات",
+  "clientCarnetBalanceAfter": "الرصيد: {value} درهم",
+  "@clientCarnetBalanceAfter": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "clientCarnetMakePayment": "قم بالدفع",
+  "clientCarnetCallingHanout": "جارٍ الاتصال بالحنوت...",
+  "clientCarnetPaymentTitle": "قم بالدفع",
+  "clientCarnetPaymentMessage": "لسداد ديونك، انتقل مباشرة إلى الحانوت.",
+  "clientCarnetOnlineSoon": "سيكون الدفع عبر الإنترنت متاحًا قريبًا",
+  "clientCarnetCallHanout": "اتصل بحانوت",
+  "clientConfirmOrderTitle": "قم بتأكيد طلبك",
+  "clientConfirmYourOrder": "طلبك",
+  "clientConfirmAddressHint": "أدخل عنوانك الكامل",
+  "clientConfirmAddressDetailsHint": "التفاصيل (المبنى، الطابق، الباب)",
+  "clientConfirmPickupPoint": "نقطة الالتقاء",
+  "clientConfirmTypeLabel": "يكتب",
+  "clientConfirmPaymentLabel": "قسط",
+  "clientConfirmDeliveryFee": "رسوم التوصيل",
+  "clientConfirmFree": "حر",
+  "clientConfirmTotalToPay": "مجموع للدفع",
+  "clientConfirmToBeConfirmed": "ليتم تأكيدها",
+  "clientConfirmFinalAmountMessage": "سيتم تأكيد المبلغ النهائي عن طريق hanout.",
+  "clientConfirmEnterAddress": "الرجاء إدخال عنوانك",
+  "clientConfirmLocationError": "غير قادر على الحصول على موقعك",
+  "clientConfirmMyCurrentGps": "موقعي الحالي عبر نظام تحديد المواقع العالمي (GPS).",
+  "clientConfirmLocationUsed": "الموقع الحالي مستخدم",
+  "clientHanoutOrderSentSuccess": "تم إرسال الطلب بنجاح!",
+  "clientHanoutSendingOrder": "جارٍ إرسال طلبك...",
+  "clientHanoutRedirectTracking": "إعادة التوجيه إلى التتبع...",
+  "clientHanoutGenericError": "حدث خطأ",
+  "clientHanoutOpen": "يفتح",
+  "clientHanoutClosed": "مغلق",
+  "clientHanoutCarnetActive": "دفتر نشط",
+  "clientHanoutCurrentBalance": "الرصيد الحالي: {balance}",
+  "@clientHanoutCurrentBalance": {
+    "placeholders": {
+      "balance": {
+        "type": "String"
+      }
+    }
+  },
+  "clientHanoutCarnetAvailable": "دفتر الملاحظات متاح",
+  "clientHanoutCarnetExplain": "تدعم هذه الاستراحة رصيد الكمبيوتر المحمول. طلب التنشيط لاستخدامه.",
+  "clientHanoutCarnetCredit": "رصيد دفتر الملاحظات",
+  "clientHanoutAddedToCarnet": "سيتم إضافة المبلغ إلى دفتر الملاحظات الخاص بك",
+  "clientHanoutCarnetUnavailable": "دفتر الملاحظات غير متوفر لهذا الحساب",
+  "clientHanoutRequestActivation": "طلب التنشيط",
+  "clientHanoutYourOrder": "طلبك",
+  "clientHanoutOrderHint": "اكتب طلبك في نص حر",
+  "clientHanoutOrderExampleHint": "مثال:\n- 2 خبز\n- 1 حليب\n- 1 علبة بيض\n- ...",
+  "clientHanoutCharactersCount": "{current}/{max} حرفًا",
+  "@clientHanoutCharactersCount": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "clientHanoutSuggestedProducts": "المنتجات المقترحة",
+  "clientHanoutSeeAllProductsSoon": "عرض كافة المنتجات قريبا",
+  "clientHanoutProductAdded": "تمت إضافة {name} إلى الطلب",
+  "@clientHanoutProductAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "clientHanoutCategories": "فئات",
+  "clientHanoutPickupType": "نوع الالتقاط",
+  "clientHanoutDeliveryFee": "رسوم التوصيل: {fee}",
+  "@clientHanoutDeliveryFee": {
+    "placeholders": {
+      "fee": {
+        "type": "String"
+      }
+    }
+  },
+  "clientHanoutPickupFree": "مجاني - الاستلام من الموقع",
+  "clientHanoutPayOnDelivery": "الدفع عند التسليم",
+  "clientHanoutDistance": "المسافة: {distance}",
+  "@clientHanoutDistance": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "clientHanoutEstimatedMinutes": "{minutes} ?",
+  "@clientHanoutEstimatedMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "clientHanoutRating": "التقييم: {rating}",
+  "@clientHanoutRating": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "clientOrderTrackingTitle": "تتبع الطلب",
+  "clientOrderTrackingCancelOrder": "إلغاء الطلب",
+  "clientOrderTrackingEta": "الوقت المقدر: 15-20 دقيقة",
+  "clientOrderTrackingDetailedTracking": "تتبع مفصل",
+  "clientOrderTrackingStepPlaced": "تم تقديم الطلب",
+  "clientOrderTrackingStepAccepted": "مقبولة من قبل هانوت",
+  "clientOrderTrackingStepPreparing": "تحضير",
+  "clientOrderTrackingStepReady": "مستعد",
+  "clientOrderTrackingStepPickedUp": "التقطت من قبل السائق",
+  "clientOrderTrackingStepDelivering": "تسليم",
+  "clientOrderTrackingStepDelivered": "تم التوصيل",
+  "clientOrderTrackingStepCollected": "تم جمعها",
+  "clientOrderTrackingOrderDetails": "تفاصيل الطلب",
+  "clientOrderTrackingNumber": "رقم",
+  "clientOrderTrackingContent": "محتوى",
+  "clientOrderTrackingType": "يكتب",
+  "clientOrderTrackingAddress": "عنوان",
+  "clientOrderTrackingHanout": "حانوت",
+  "clientOrderTrackingHanoutNameFallback": "اسم حانوت",
+  "clientOrderTrackingHanoutAddressFallback": "عنوان الحانوت",
+  "clientOrderTrackingDriver": "سائق",
+  "clientOrderTrackingDriverNameFallback": "اسم السائق",
+  "clientOrderTrackingDriverStats": "4.8 (125 عملية تسليم)",
+  "clientOrderTrackingRateOrder": "ترتيب المعدل",
+  "clientOrderTrackingEditReview": "تحرير تقييمي",
+  "clientOrderTrackingReviewSaved": "تم حفظ المراجعة",
+  "clientOrderTrackingMessagePending": "لقد تم إرسال طلبك إلى hanout.",
+  "clientOrderTrackingMessageAccepted": "لقد قبلت الحانوت طلبك.",
+  "clientOrderTrackingMessagePreparing": "طلبك قيد الإعداد.",
+  "clientOrderTrackingMessageReadyDelivery": "طلبك جاهز وينتظر السائق.",
+  "clientOrderTrackingMessageReadyPickup": "طلبك جاهز للاستلام.",
+  "clientOrderTrackingMessagePickedUp": "التقط السائق طلبك.",
+  "clientOrderTrackingMessageDelivering": "طلبك في الطريق.",
+  "clientOrderTrackingMessageDelivered": "تم تسليم طلبك بنجاح!",
+  "clientOrderTrackingMessageCancelled": "تم إلغاء هذا الطلب.",
+  "clientOrderTrackingCancelConfirm": "هل أنت متأكد أنك تريد إلغاء هذا الطلب؟",
+  "clientOrderTrackingCancelYes": "نعم، قم بالإلغاء",
+  "clientOrderTrackingCancelled": "تم إلغاء الطلب",
+  "clientOrderTrackingHanoutPhoneUnavailable": "هاتف هانوت غير متوفر",
+  "clientOrderTrackingDriverPhoneUnavailable": "هاتف السائق غير متوفر",
+  "hanoutNavOrders": "طلبات",
+  "hanoutNavHistory": "تاريخ",
+  "hanoutNavClients": "العملاء",
+  "hanoutNavCarnet": "دفتر الملاحظات",
+  "hanoutMenuSettings": "إعدادات الحانوت",
+  "hanoutMenuLogout": "تسجيل الخروج",
+  "hanoutCommonClient": "عميل",
+  "hanoutCommonName": "اسم",
+  "hanoutCommonPhone": "هاتف",
+  "hanoutCommonAddress": "عنوان",
+  "hanoutCommonDescription": "وصف",
+  "hanoutCommonSave": "يحفظ",
+  "hanoutCommonValidate": "التحقق من صحة",
+  "hanoutOrderNumber": "الطلب #{id}",
+  "@hanoutOrderNumber": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "hanoutOrdersLoading": "جارٍ تحميل الطلبات...",
+  "hanoutOrdersEmpty": "لا توجد أوامر في الوقت الراهن.",
+  "hanoutOrdersNoActive": "لا يوجد أمر نشط.",
+  "hanoutOrdersTitle": "أوامر الحانوت",
+  "hanoutOrdersTotalCount": "{count} إجمالي الطلب (الطلبات).",
+  "@hanoutOrdersTotalCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hanoutOrdersFilterAll": "الجميع",
+  "hanoutOrdersFilterPending": "قيد الانتظار",
+  "hanoutOrdersFilterAccepted": "مقبول",
+  "hanoutOrdersFilterReady": "مستعد",
+  "hanoutOrdersActionAccept": "يقبل",
+  "hanoutOrdersActionReady": "مستعد",
+  "hanoutOrdersDriverAssigned": "تم تعيين السائق",
+  "hanoutOrdersDeliveryRequestSent": "تم إرسال الطلب",
+  "hanoutOrdersActionAskDriver": "طلب سائق",
+  "hanoutOrdersActionStartInternal": "ابدأ داخليًا",
+  "hanoutOrdersActionMarkDelivered": "سلمت مارك",
+  "hanoutOrdersActionDeliveredInternal": "تسليم (داخلي)",
+  "hanoutOrdersAcceptDialogTitle": "قبول الطلب",
+  "hanoutOrdersTotalOptional": "المبلغ الإجمالي (DH) - اختياري",
+  "hanoutOrdersEditTotalDialogTitle": "تحرير المبلغ الإجمالي",
+  "hanoutOrdersTotalRequired": "المبلغ الإجمالي (درهم) *",
+  "hanoutOrdersReadyRequiresTotal": "مطلوب للانتقال إلى جاهز",
+  "hanoutOrdersRequestDriverDialogTitle": "اطلب سائق",
+  "hanoutOrdersRequestDriverDialogBody": "سيتم إرسال طلب إلى السائقين المتاحة.",
+  "hanoutOrderDetailsClientSection": "عميل",
+  "hanoutOrderDetailsOpenMaps": "افتح في الخرائط",
+  "hanoutOrderDetailsOrderSection": "طلب",
+  "hanoutOrderDetailsContent": "محتوى",
+  "hanoutOrderDetailsDeliveryNotes": "ملاحظات التسليم",
+  "hanoutOrderDetailsCreatedAt": "مخلوق",
+  "hanoutOrderDetailsDeliveryType": "توصيل",
+  "hanoutOrderDetailsPaymentMethod": "قسط",
+  "hanoutOrderDetailsAmountSection": "كمية",
+  "hanoutHistoryLoading": "جارٍ تحميل السجل...",
+  "hanoutHistoryEmpty": "لا توجد أوامر مكتملة.",
+  "hanoutHistoryNoData": "لا يوجد تاريخ في الوقت الراهن.",
+  "hanoutHistoryTitle": "تاريخ الطلبات",
+  "hanoutHistoryCount": "{count} الطلب (الطلبات)",
+  "@hanoutHistoryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hanoutHistoryStatTotal": "المجموع",
+  "hanoutHistoryStatDelivered": "تم التوصيل",
+  "hanoutHistoryStatCancelled": "تم الإلغاء",
+  "hanoutHistoryStatRevenue": "ربح",
+  "hanoutClientsLoading": "جارٍ تحميل العملاء...",
+  "hanoutClientsEmpty": "لا يوجد عميل لديه دفتر ملاحظات نشط.",
+  "hanoutClientsDebt": "الدين: {value}",
+  "@hanoutClientsDebt": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "hanoutCarnetTabCarnets": "دفاتر الملاحظات",
+  "hanoutCarnetTabRequests": "الطلبات",
+  "hanoutCarnetLoading": "جارٍ تحميل دفاتر الملاحظات...",
+  "hanoutCarnetEmptyAll": "لا توجد بيانات في الوقت الراهن.",
+  "hanoutCarnetEmptyActive": "لا يوجد دفتر ملاحظات نشط.",
+  "hanoutCarnetNoRequests": "لا يوجد طلب معلق.",
+  "hanoutCarnetDebt": "دَين",
+  "hanoutCarnetLimit": "حد",
+  "hanoutCarnetUndefined": "لم يتم ضبطه",
+  "hanoutCarnetPayment": "قسط",
+  "hanoutCarnetReject": "يرفض",
+  "hanoutCarnetApprove": "يعتمد",
+  "hanoutCarnetRejectReason": "مرفوض",
+  "hanoutCarnetLimitReached": "تم الوصول إلى الحد",
+  "hanoutCarnetLimitNear": "الحد 80%",
+  "hanoutCarnetSetLimitTitle": "تعيين الحد",
+  "hanoutCarnetLimitDh": "الحد (د)",
+  "hanoutCarnetRecordPaymentTitle": "سجل الدفع",
+  "hanoutCarnetAmountDh": "المبلغ (درهم)",
+  "hanoutCarnetInvalidAmount": "مبلغ غير صالح",
+  "hanoutCarnetClientBookTitle": "دفتر العميل",
+  "hanoutCarnetTransactionsLoading": "جارٍ تحميل المعاملات...",
+  "hanoutCarnetTransactionsEmpty": "لا توجد معاملة في الوقت الراهن",
+  "hanoutCarnetCurrentDebt": "الديون الحالية",
+  "hanoutCarnetTransactionsHistory": "تاريخ المعاملات",
+  "hanoutCarnetCreditPurchases": "مشتريات الائتمان",
+  "hanoutCarnetPayments": "المدفوعات",
+  "hanoutCarnetBalanceAfter": "الرصيد: {value} درهم",
+  "@hanoutCarnetBalanceAfter": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "hanoutCarnetPhysicalOrderShort": "النظام المادي",
+  "hanoutCarnetAddPhysicalOrderTitle": "إضافة أمر مادي",
+  "hanoutCarnetOrderDescription": "وصف الطلب",
+  "hanoutCarnetDescriptionRequired": "الوصف مطلوب",
+  "hanoutCarnetAdd": "يضيف",
+  "hanoutOrderNotFound": "لم يتم العثور على الطلب في طلباتك.",
+  "hanoutOrderLoadError": "غير قادر على تحميل تفاصيل الطلب.",
+  "hanoutCarnetPhysicalOrderTitle": "النظام المادي",
+  "hanoutCarnetNoDescription": "لا يوجد وصف متاح.",
+  "hanoutSettingsTitle": "إعدادات الحانوت",
+  "hanoutSettingsLoading": "جارٍ تحميل النشرة...",
+  "hanoutSettingsGeneralInfo": "معلومات عامة",
+  "hanoutSettingsNameLabel": "اسم حانوت",
+  "hanoutSettingsUploadImage": "تحميل الصورة",
+  "hanoutSettingsLocationTitle": "موقع",
+  "hanoutSettingsLatitude": "خط العرض",
+  "hanoutSettingsLongitude": "خط الطول",
+  "hanoutSettingsUseCurrentPosition": "استخدم موقفي الحالي",
+  "hanoutSettingsServicesTitle": "خدمات",
+  "hanoutSettingsEnableCarnet": "تمكين دفتر الملاحظات",
+  "hanoutSettingsEnableCarnetHelp": "قم بتمكين هذا إذا كنت تقبل عملاء الكمبيوتر الدفتري.",
+  "hanoutSettingsDeliveryFeeDh": "رسوم التوصيل (درهم)",
+  "hanoutSettingsEstimatedTimeMinutes": "وقت التسليم المقدر (دقيقة)",
+  "hanoutSettingsImageSelectError": "خطأ في اختيار الصورة: {message}",
+  "@hanoutSettingsImageSelectError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "hanoutSettingsPositionUnavailable": "المنصب غير متاح أو تم رفض الإذن",
+  "hanoutSettingsPositionUpdated": "تم تحديث الموقف",
+  "hanoutSettingsPositionError": "خطأ في الموضع: {message}",
+  "@hanoutSettingsPositionError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "hanoutSettingsRequiredFields": "الاسم والعنوان والهاتف وخط العرض وخط الطول مطلوبة",
+  "hanoutSettingsInvalidDeliveryFee": "رسوم التوصيل غير صالحة",
+  "hanoutSettingsInvalidEstimatedTime": "وقت التسليم غير صالح",
+  "hanoutSettingsSaved": "تم حفظ الإعدادات",
+  "hanoutSettingsSaveError": "خطأ في الحفظ: {message}",
+  "@hanoutSettingsSaveError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "livreurNavAvailable": "متاح",
+  "livreurNavInProgress": "في تَقَدم",
+  "livreurNavEarnings": "الأرباح",
+  "livreurMenuSettings": "إعدادات الحساب",
+  "livreurMenuLogout": "تسجيل الخروج",
+  "livreurSettingsTitle": "إعدادات حساب السائق",
+  "livreurSettingsLoading": "جارٍ تحميل الملف الشخصي...",
+  "livreurSettingsSaveButton": "يحفظ",
+  "livreurSettingsAccountSectionTitle": "معلومات الحساب",
+  "livreurSettingsNameLabel": "الاسم الكامل",
+  "livreurSettingsPhoneLabel": "هاتف",
+  "livreurSettingsEmailLabel": "بريد إلكتروني",
+  "livreurSettingsAddressLabel": "عنوان",
+  "livreurSettingsRequiredFields": "الاسم والهاتف مطلوبان.",
+  "livreurSettingsSaved": "تم تحديث الملف الشخصي",
+  "livreurSettingsSaveError": "خطأ في الحفظ: {message}",
+  "@livreurSettingsSaveError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "livreurOpenMaps": "افتح في الخرائط",
+  "livreurAccept": "يقبل",
+  "livreurReject": "يرفض",
+  "livreurOrderFallback": "طلب",
+  "livreurClientFallback": "عميل",
+  "livreurClientAddressFallback": "عنوان العميل",
+  "livreurRequestStatusPending": "قيد الانتظار",
+  "livreurRequestStatusAccepted": "مقبول",
+  "livreurRequestStatusRejected": "مرفوض",
+  "livreurAvailableLoading": "جارٍ تحميل الطلبات...",
+  "livreurAvailableEmpty": "لا يوجد طلب في الوقت الراهن.",
+  "livreurAvailableTitle": "الطلبات المتاحة",
+  "livreurAvailableCount": "{count} الطلب (الطلبات) المطلوب معالجتها",
+  "@livreurAvailableCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "livreurInProgressLoading": "جارٍ تحميل عمليات التسليم...",
+  "livreurInProgressEmpty": "لا يوجد تسليم في التقدم.",
+  "livreurInProgressTitle": "التسليم قيد التقدم",
+  "livreurInProgressCount": "{count} التسليم (التسليم) النشط",
+  "@livreurInProgressCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "livreurHanoutOrdersTitle": "أوامر الحانوت",
+  "livreurActionPickedUp": "التقطت",
+  "livreurActionDelivering": "تسليم",
+  "livreurActionDelivered": "تم التوصيل",
+  "livreurCallClient": "اتصل بالعميل",
+  "livreurGasServiceTitle": "خدمة قنينة الغاز",
+  "livreurGasServiceDirect": "الخدمة المباشرة (بدون حانوت)",
+  "livreurGasServicePriceBadge": "13 DH + 2 DH",
+  "livreurGasActionArrived": "وصل",
+  "livreurGasActionPickedBottle": "زجاجة مختارة",
+  "livreurGasActionToHanout": "إلى الحانوت",
+  "livreurGasActionReturnHome": "العودة إلى المنزل",
+  "livreurGasActionDelivered": "تم التوصيل",
+  "livreurGasActionUpdate": "تحديث",
+  "livreurEarningsLoading": "جارٍ تحميل الأرباح...",
+  "livreurEarningsTitle": "أرباح السائق",
+  "livreurEarningsSubtitle": "تتبع إيراداتك في الوقت الحقيقي",
+  "livreurEarningsDeliveries": "التسليم",
+  "livreurEarningsServiceFees": "رسوم الخدمة",
+  "livreurEarningsGasServices": "خدمات الغاز",
+  "livreurEarningsGasGain": "كسب الغاز",
+  "livreurEarningsHistory": "تاريخ",
+  "livreurEarningsNoIncome": "لا يوجد دخل مسجل.",
+  "livreurEarningsDeliveryFees": "رسوم التوصيل: {value} درهم",
+  "@livreurEarningsDeliveryFees": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "livreurEarningsServiceFeesValue": "رسوم الخدمة: {value} درهم",
+  "@livreurEarningsServiceFeesValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  }
+}
