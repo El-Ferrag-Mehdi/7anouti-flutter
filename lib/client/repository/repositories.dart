@@ -41,9 +41,13 @@ class HanoutRepository {
         longitude: (json['longitude'] as num).toDouble(),
         phone: json['phone'] as String,
         image: json['image'] as String?,
+        openingTime: json['openingTime'] as String?,
+        closingTime: json['closingTime'] as String?,
         isOpen: json['isOpen'] as bool,
         showRating: json['showRating'] as bool? ?? true,
         hasCarnet: json['hasCarnet'] as bool,
+        sendOrdersDirectToLivreur:
+            json['sendOrdersDirectToLivreur'] as bool? ?? false,
         deliveryFee: json['deliveryFee'] != null
             ? (json['deliveryFee'] as num).toDouble()
             : null,
@@ -79,9 +83,13 @@ class HanoutRepository {
       longitude: (json['longitude'] as num).toDouble(),
       phone: json['phone'] as String,
       image: json['image'] as String?,
+      openingTime: json['openingTime'] as String?,
+      closingTime: json['closingTime'] as String?,
       isOpen: json['isOpen'] as bool,
       showRating: json['showRating'] as bool? ?? true,
       hasCarnet: json['hasCarnet'] as bool,
+      sendOrdersDirectToLivreur:
+          json['sendOrdersDirectToLivreur'] as bool? ?? false,
       deliveryFee: json['deliveryFee'] != null
           ? (json['deliveryFee'] as num).toDouble()
           : null,
@@ -325,6 +333,8 @@ class OrderRepository {
           ? DateTime.parse(json['cancelledAt'] as String)
           : null,
       cancellationReason: json['cancellationReason'] as String?,
+      willBeProcessedWhenOpen:
+          json['willBeProcessedWhenOpen'] as bool? ?? false,
       // Items are optional
       items: json['items'] != null
           ? (json['items'] as List<dynamic>).map((dynamic itemJson) {

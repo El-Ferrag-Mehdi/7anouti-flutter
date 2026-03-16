@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sevenouti/auth/cubbit/auth_cubit.dart';
-import 'package:sevenouti/client/data/api_service.dart';
+import 'package:sevenouti/client/models/order_model.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
 import 'package:sevenouti/core/notifications/local_notification_service.dart';
-import 'package:sevenouti/core/notifications/polling_notification_watchers.dart';
+import 'package:sevenouti/core/realtime/realtime_event_service.dart';
 import 'package:sevenouti/core/widgets/app_logo_header.dart';
-import 'package:sevenouti/hanout/repository/hanout_repositories.dart';
+import 'package:sevenouti/hanout/l10n/hanout_l10n.dart';
 import 'package:sevenouti/hanout/view/pages/hanout_carnet_page.dart';
 import 'package:sevenouti/hanout/view/pages/hanout_clients_page.dart';
 import 'package:sevenouti/hanout/view/pages/hanout_history_page.dart';
@@ -26,67 +26,29 @@ class HanoutShell extends StatefulWidget {
 
 class _HanoutShellState extends State<HanoutShell> {
   int _currentIndex = 0;
-  late final HanoutNotificationsWatcher _notificationsWatcher;
+  int _ordersRefreshSeed = 0;
+  late final RealtimeEventService _realtimeService;
+  StreamSubscription<RealtimeEvent>? _realtimeSubscription;
 
-  final List<Widget> _pages = const [
-    HanoutOrdersPage(),
-    HanoutHistoryPage(),
-    HanoutClientsPage(),
-    HanoutCarnetPage(),
+  List<Widget> get _pages => [
+    HanoutOrdersPage(key: ValueKey(_ordersRefreshSeed)),
+    const HanoutHistoryPage(),
+    const HanoutClientsPage(),
+    const HanoutCarnetPage(),
   ];
 
   @override
   void initState() {
     super.initState();
-    _notificationsWatcher = HanoutNotificationsWatcher(
-      repository: HanoutOrdersRepository(ApiService()),
-    );
-    unawaited(
-      _notificationsWatcher.start(
-        onNewOrder: (event) {
-          if (!mounted) return;
-          final shortId = _shortOrderId(event.orderId);
-          final message =
-              '${context.l10n.hanoutOrdersTitle}: '
-              '${context.l10n.hanoutOrderNumber(shortId)}';
-          unawaited(
-            LocalNotificationService.instance.show(
-              title: '7anouti Hanout',
-              body: message,
-            ),
-          );
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(message),
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        },
-        onDeliveryRequestUpdated: (event) {
-          if (!mounted) return;
-          final shortId = _shortOrderId(event.orderId);
-          final statusLabel = context.livreurRequestStatusLabel(event.status);
-          final message = 'Demande livreur #$shortId: $statusLabel';
-          unawaited(
-            LocalNotificationService.instance.show(
-              title: '7anouti Hanout',
-              body: message,
-            ),
-          );
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(message),
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        },
-      ),
-    );
+    _realtimeService = RealtimeEventService();
+    _realtimeSubscription = _realtimeService.events.listen(_onRealtimeEvent);
+    unawaited(_realtimeService.start());
   }
 
   @override
   void dispose() {
-    _notificationsWatcher.stop();
+    unawaited(_realtimeSubscription?.cancel());
+    unawaited(_realtimeService.dispose());
     super.dispose();
   }
 
@@ -139,7 +101,10 @@ class _HanoutShellState extends State<HanoutShell> {
           ),
         ],
       ),
-      body: _pages[_currentIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) => setState(() => _currentIndex = index),
@@ -172,5 +137,77 @@ class _HanoutShellState extends State<HanoutShell> {
   String _shortOrderId(String id) {
     if (id.length <= 8) return id;
     return id.substring(0, 8);
+  }
+
+  void _onRealtimeEvent(RealtimeEvent event) {
+    if (!mounted) return;
+    if (!_isHanoutRelevantEvent(event.type)) return;
+
+    setState(() {
+      _ordersRefreshSeed++;
+    });
+
+    final shortId = _shortOrderId(event.payload['orderId']?.toString() ?? '');
+    final message = _buildRealtimeMessage(event, shortId);
+    if (message == null) return;
+
+    unawaited(
+      LocalNotificationService.instance.show(
+        title: '7anouti Hanout',
+        body: message,
+      ),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  bool _isHanoutRelevantEvent(String type) {
+    return type == 'NEW_ORDER' ||
+        type == 'ORDER_STATUS_CHANGED' ||
+        type == 'ORDER_DRIVER_ASSIGNED' ||
+        type == 'DELIVERY_REQUEST_CREATED' ||
+        type == 'DELIVERY_REQUEST_UPDATED';
+  }
+
+  String? _buildRealtimeMessage(RealtimeEvent event, String shortId) {
+    switch (event.type) {
+      case 'NEW_ORDER':
+        final title = context.l10n.hanoutOrdersTitle;
+        final orderLabel = context.l10n.hanoutOrderNumber(shortId);
+        return '$title: $orderLabel';
+      case 'DELIVERY_REQUEST_UPDATED':
+        final status = event.payload['status']?.toString() ?? '';
+        final statusLabel = context.livreurRequestStatusLabel(status);
+        return shortId.isEmpty
+            ? '${context.l10n.livreurAvailableTitle}: $statusLabel'
+            : '${context.l10n.livreurAvailableTitle} #$shortId: $statusLabel';
+      case 'ORDER_STATUS_CHANGED':
+        final status = event.payload['status']?.toString();
+        if (status == null || status.isEmpty) return null;
+        final orderLabel = _orderStatusLabel(status);
+        if (shortId.isEmpty) {
+          return '${context.l10n.hanoutNavOrders}: $orderLabel';
+        }
+        return '${context.l10n.hanoutOrderNumber(shortId)}: $orderLabel';
+      case 'ORDER_DRIVER_ASSIGNED':
+        final label = context.l10n.hanoutOrdersDriverAssigned;
+        if (shortId.isEmpty) return label;
+        return '${context.l10n.hanoutOrderNumber(shortId)}: $label';
+      case 'DELIVERY_REQUEST_CREATED':
+        return shortId.isEmpty
+            ? context.l10n.livreurAvailableTitle
+            : '${context.l10n.livreurAvailableTitle} #$shortId';
+      default:
+        return null;
+    }
+  }
+
+  String _orderStatusLabel(String rawStatus) {
+    final status = OrderStatus.fromString(rawStatus);
+    return context.hanoutOrderStatusLabel(status);
   }
 }

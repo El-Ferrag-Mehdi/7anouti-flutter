@@ -32,13 +32,17 @@ class _HanoutSettingsPageState extends State<HanoutSettingsPage> {
   final _latitudeController = TextEditingController();
   final _longitudeController = TextEditingController();
   final _deliveryFeeController = TextEditingController();
+  final _openingTimeController = TextEditingController();
+  final _closingTimeController = TextEditingController();
 
   XFile? _pickedImage;
   bool _loading = true;
   bool _saving = false;
   bool _deleting = false;
+  bool _changingPassword = false;
   bool _locating = false;
   bool _hasCarnet = false;
+  bool _sendOrdersDirectToLivreur = false;
   String? _error;
 
   @override
@@ -59,6 +63,8 @@ class _HanoutSettingsPageState extends State<HanoutSettingsPage> {
     _latitudeController.dispose();
     _longitudeController.dispose();
     _deliveryFeeController.dispose();
+    _openingTimeController.dispose();
+    _closingTimeController.dispose();
     super.dispose();
   }
 
@@ -105,7 +111,10 @@ class _HanoutSettingsPageState extends State<HanoutSettingsPage> {
       _deliveryFeeController.text =
           (hanout.deliveryFee ?? AppConstants.defaultDeliveryFee)
               .toStringAsFixed(2);
+      _openingTimeController.text = hanout.openingTime ?? '';
+      _closingTimeController.text = hanout.closingTime ?? '';
       _hasCarnet = hanout.hasCarnet;
+      _sendOrdersDirectToLivreur = hanout.sendOrdersDirectToLivreur;
       setState(() {
         _loading = false;
       });
@@ -214,6 +223,13 @@ class _HanoutSettingsPageState extends State<HanoutSettingsPage> {
                 ? null
                 : _imageController.text.trim()),
         hasCarnet: _hasCarnet,
+        sendOrdersDirectToLivreur: _sendOrdersDirectToLivreur,
+        openingTime: _openingTimeController.text.trim().isEmpty
+            ? ''
+            : _openingTimeController.text.trim(),
+        closingTime: _closingTimeController.text.trim().isEmpty
+            ? ''
+            : _closingTimeController.text.trim(),
       );
       _pickedImage = null;
       AppSnackBar.show(
@@ -234,6 +250,33 @@ class _HanoutSettingsPageState extends State<HanoutSettingsPage> {
         });
       }
     }
+  }
+
+  Future<void> _pickTime({
+    required TextEditingController controller,
+    required String title,
+  }) async {
+    final initial =
+        _parseTime(controller.text.trim()) ??
+        const TimeOfDay(hour: 8, minute: 0);
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initial,
+      helpText: title,
+    );
+    if (picked == null) return;
+    controller.text =
+        '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+  }
+
+  TimeOfDay? _parseTime(String value) {
+    final parts = value.split(':');
+    if (parts.length != 2) return null;
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null || minute == null) return null;
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+    return TimeOfDay(hour: hour, minute: minute);
   }
 
   Future<void> _deleteAccount() async {
@@ -299,6 +342,130 @@ class _HanoutSettingsPageState extends State<HanoutSettingsPage> {
       if (mounted) {
         setState(() {
           _deleting = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _showChangePasswordDialog() async {
+    if (_saving || _deleting || _changingPassword) return;
+
+    final currentController = TextEditingController();
+    final nextController = TextEditingController();
+    final confirmController = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Changer mot de passe'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: currentController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Mot de passe actuel',
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextField(
+              controller: nextController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Nouveau mot de passe',
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextField(
+              controller: confirmController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Confirmer nouveau mot de passe',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(context.l10n.clientCommonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(context.l10n.clientCommonConfirm),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) {
+      currentController.dispose();
+      nextController.dispose();
+      confirmController.dispose();
+      return;
+    }
+
+    final currentPassword = currentController.text.trim();
+    final newPassword = nextController.text.trim();
+    final confirmPassword = confirmController.text.trim();
+
+    currentController.dispose();
+    nextController.dispose();
+    confirmController.dispose();
+
+    if (currentPassword.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
+      AppSnackBar.show(
+        context,
+        message: 'Tous les champs sont obligatoires',
+        type: SnackBarType.error,
+      );
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      AppSnackBar.show(
+        context,
+        message: 'Le nouveau mot de passe doit contenir au moins 6 caracteres',
+        type: SnackBarType.error,
+      );
+      return;
+    }
+
+    if (newPassword != confirmPassword) {
+      AppSnackBar.show(
+        context,
+        message: 'La confirmation ne correspond pas',
+        type: SnackBarType.error,
+      );
+      return;
+    }
+
+    setState(() {
+      _changingPassword = true;
+    });
+    try {
+      await _repository.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      if (!mounted) return;
+      AppSnackBar.show(
+        context,
+        message: 'Mot de passe modifie avec succes',
+        type: SnackBarType.success,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.show(
+        context,
+        message: e.toString(),
+        type: SnackBarType.error,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _changingPassword = false;
         });
       }
     }
@@ -463,6 +630,15 @@ class _HanoutSettingsPageState extends State<HanoutSettingsPage> {
           const SizedBox(height: AppSpacing.sm),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
+            value: _sendOrdersDirectToLivreur,
+            title: Text(l10n.hanoutSettingsDirectToLivreurTitle),
+            subtitle: Text(l10n.hanoutSettingsDirectToLivreurHelp),
+            onChanged: (value) =>
+                setState(() => _sendOrdersDirectToLivreur = value),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
             value: _hasCarnet,
             title: Text(l10n.hanoutSettingsEnableCarnet),
             subtitle: Text(l10n.hanoutSettingsEnableCarnetHelp),
@@ -476,6 +652,76 @@ class _HanoutSettingsPageState extends State<HanoutSettingsPage> {
             readOnly: true,
             decoration: InputDecoration(
               labelText: l10n.hanoutSettingsDeliveryFeeDh,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _openingTimeController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: l10n.hanoutSettingsOpeningTime,
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.schedule),
+                      onPressed: _saving
+                          ? null
+                          : () => _pickTime(
+                              controller: _openingTimeController,
+                              title: l10n.hanoutSettingsOpeningTime,
+                            ),
+                    ),
+                  ),
+                  onTap: _saving
+                      ? null
+                      : () => _pickTime(
+                          controller: _openingTimeController,
+                          title: l10n.hanoutSettingsOpeningTime,
+                        ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: TextField(
+                  controller: _closingTimeController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: l10n.hanoutSettingsClosingTime,
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.schedule),
+                      onPressed: _saving
+                          ? null
+                          : () => _pickTime(
+                              controller: _closingTimeController,
+                              title: l10n.hanoutSettingsClosingTime,
+                            ),
+                    ),
+                  ),
+                  onTap: _saving
+                      ? null
+                      : () => _pickTime(
+                          controller: _closingTimeController,
+                          title: l10n.hanoutSettingsClosingTime,
+                        ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          OutlinedButton.icon(
+            onPressed: _changingPassword ? null : _showChangePasswordDialog,
+            icon: _changingPassword
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.lock_outline),
+            label: Text(
+              _changingPassword
+                  ? 'Modification...'
+                  : 'Changer mot de passe',
             ),
           ),
           const SizedBox(height: AppSpacing.xl),

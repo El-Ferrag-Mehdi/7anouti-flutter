@@ -10,6 +10,7 @@ import 'package:sevenouti/core/widgets/app_widgets.dart';
 import 'package:sevenouti/core/widgets/modern_sheet.dart';
 import 'package:sevenouti/core/widgets/buttons.dart' hide TextButton;
 import 'package:sevenouti/l10n/l10n.dart';
+import 'package:sevenouti/utils/localized_formatters.dart';
 import 'package:sevenouti/utils/date_utils.dart' as app_date;
 
 /// Page de dÃ©tails d'un carnet avec historique des transactions
@@ -184,7 +185,7 @@ class CarnetDetailsView extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 12),
                 child: Text(
-                  'DH',
+                  currencyLabel(context),
                   style: AppTextStyles.h3.copyWith(
                     color: hasDebt ? AppColors.error : AppColors.success,
                   ),
@@ -264,7 +265,8 @@ class CarnetDetailsView extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: _buildStatCard(
+          child: _buildStatCard(
+              context: context,
               icon: Icons.shopping_cart,
               label: context.l10n.clientCarnetCreditPurchases,
               value: state.totalCredit,
@@ -273,7 +275,8 @@ class CarnetDetailsView extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
-            child: _buildStatCard(
+          child: _buildStatCard(
+              context: context,
               icon: Icons.payments,
               label: context.l10n.clientCarnetPayments,
               value: state.totalPayments,
@@ -286,6 +289,7 @@ class CarnetDetailsView extends StatelessWidget {
   }
 
   Widget _buildStatCard({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required double value,
@@ -309,7 +313,7 @@ class CarnetDetailsView extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            '${value.toStringAsFixed(2)} DH',
+            formatDh(context, value),
             style: AppTextStyles.bodyLarge.copyWith(
               fontWeight: FontWeight.bold,
               color: color,

@@ -7,42 +7,24 @@ import 'package:sevenouti/hanout/repository/hanout_repositories.dart';
 class HanoutOrdersCubit extends Cubit<HanoutOrdersState> {
   HanoutOrdersCubit({
     required HanoutOrdersRepository ordersRepository,
-  })  : _ordersRepository = ordersRepository,
-        super(const HanoutOrdersInitial());
+  }) : _ordersRepository = ordersRepository,
+       super(const HanoutOrdersInitial());
 
   final HanoutOrdersRepository _ordersRepository;
 
   Future<void> loadOrders({OrderStatus? status}) async {
-    emit(const HanoutOrdersLoading());
-    try {
-      final orders = await _ordersRepository.getHanoutOrders(
-        status: status?.value,
-        limit: 100,
-      );
-      if (orders.isEmpty) {
-        emit(const HanoutOrdersEmpty());
-      } else {
-        emit(HanoutOrdersLoaded(
-          orders: orders,
-          selectedStatus: status,
-        ));
-      }
-    } on ApiException catch (e) {
-      emit(HanoutOrdersError(message: e.message));
-    } catch (e) {
-      emit(HanoutOrdersError(
-        message: e.toString(),
-      ));
-    }
+    await _fetchOrders(status: status, showLoading: true);
   }
 
   void filterByStatus(OrderStatus? status) {
     final currentState = state;
     if (currentState is HanoutOrdersLoaded) {
-      emit(currentState.copyWith(
-        selectedStatus: status,
-        clearStatus: status == null,
-      ));
+      emit(
+        currentState.copyWith(
+          selectedStatus: status,
+          clearStatus: status == null,
+        ),
+      );
     }
   }
 
@@ -67,9 +49,11 @@ class HanoutOrdersCubit extends Cubit<HanoutOrdersState> {
     } on ApiException catch (e) {
       emit(HanoutOrdersError(message: e.message));
     } catch (e) {
-      emit(HanoutOrdersError(
-        message: e.toString(),
-      ));
+      emit(
+        HanoutOrdersError(
+          message: e.toString(),
+        ),
+      );
     }
   }
 
@@ -88,9 +72,11 @@ class HanoutOrdersCubit extends Cubit<HanoutOrdersState> {
     } on ApiException catch (e) {
       emit(HanoutOrdersError(message: e.message));
     } catch (e) {
-      emit(HanoutOrdersError(
-        message: e.toString(),
-      ));
+      emit(
+        HanoutOrdersError(
+          message: e.toString(),
+        ),
+      );
     }
   }
 
@@ -101,9 +87,11 @@ class HanoutOrdersCubit extends Cubit<HanoutOrdersState> {
     } on ApiException catch (e) {
       emit(HanoutOrdersError(message: e.message));
     } catch (e) {
-      emit(HanoutOrdersError(
-        message: e.toString(),
-      ));
+      emit(
+        HanoutOrdersError(
+          message: e.toString(),
+        ),
+      );
     }
   }
 
@@ -114,10 +102,48 @@ class HanoutOrdersCubit extends Cubit<HanoutOrdersState> {
     } on ApiException catch (e) {
       emit(HanoutOrdersError(message: e.message));
     } catch (e) {
-      emit(HanoutOrdersError(
-        message: e.toString(),
-      ));
+      emit(
+        HanoutOrdersError(
+          message: e.toString(),
+        ),
+      );
+    }
+  }
+
+  Future<void> _fetchOrders({
+    required OrderStatus? status,
+    required bool showLoading,
+  }) async {
+    if (showLoading) {
+      emit(const HanoutOrdersLoading());
+    }
+    try {
+      final orders = await _ordersRepository.getHanoutOrders(
+        status: status?.value,
+        limit: 100,
+      );
+      if (orders.isEmpty) {
+        emit(const HanoutOrdersEmpty());
+      } else {
+        emit(
+          HanoutOrdersLoaded(
+            orders: orders,
+            selectedStatus: status,
+          ),
+        );
+      }
+    } on ApiException catch (e) {
+      if (showLoading) {
+        emit(HanoutOrdersError(message: e.message));
+      }
+    } catch (e) {
+      if (showLoading) {
+        emit(
+          HanoutOrdersError(
+            message: e.toString(),
+          ),
+        );
+      }
     }
   }
 }
-

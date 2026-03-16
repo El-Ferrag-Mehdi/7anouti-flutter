@@ -23,12 +23,23 @@ void appError(String message, [Object? error, StackTrace? stack]) {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  Env.baseUrl = const String.fromEnvironment(
+  const configuredBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:4000/api',
+    defaultValue: 'http://192.168.1.108:4000/api',
   );
+  final normalizedBaseUrl = configuredBaseUrl.trim();
+  final isRemoteProdUrl =
+      normalizedBaseUrl.contains('sevenanouti-backend.onrender.com');
+  Env.baseUrl = isRemoteProdUrl
+      ? 'http://192.168.1.108:4000/api'
+      : normalizedBaseUrl;
 
   try {
+    appLog('Flavor=development');
+    appLog('API baseUrl=${Env.baseUrl}');
+    if (isRemoteProdUrl) {
+      appLog('API_BASE_URL onrender detecte en development -> fallback local');
+    }
     appLog('Starting app...');
 
     await bootstrap(

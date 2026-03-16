@@ -15,7 +15,12 @@ import 'package:sevenouti/utils/localized_formatters.dart';
 import 'package:sevenouti/utils/map_launcher.dart';
 
 class LivreurAvailablePage extends StatelessWidget {
-  const LivreurAvailablePage({super.key});
+  const LivreurAvailablePage({
+    super.key,
+    this.onAccepted,
+  });
+
+  final VoidCallback? onAccepted;
 
   @override
   Widget build(BuildContext context) {
@@ -23,13 +28,18 @@ class LivreurAvailablePage extends StatelessWidget {
       create: (_) => LivreurAvailableCubit(
         repository: LivreurRequestsRepository(ApiService()),
       )..loadRequests(),
-      child: const LivreurAvailableView(),
+      child: LivreurAvailableView(onAccepted: onAccepted),
     );
   }
 }
 
 class LivreurAvailableView extends StatelessWidget {
-  const LivreurAvailableView({super.key});
+  const LivreurAvailableView({
+    super.key,
+    this.onAccepted,
+  });
+
+  final VoidCallback? onAccepted;
 
   @override
   Widget build(BuildContext context) {
@@ -284,13 +294,19 @@ class LivreurAvailableView extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {
+                  onPressed: () async {
                     final cubit = context.read<LivreurAvailableCubit>();
                     if (isGasService) {
-                      cubit.acceptGasRequest(request.id);
+                      final accepted = await cubit.acceptGasRequest(request.id);
+                      if (accepted) {
+                        onAccepted?.call();
+                      }
                       return;
                     }
-                    cubit.acceptRequest(request.id);
+                    final accepted = await cubit.acceptRequest(request.id);
+                    if (accepted) {
+                      onAccepted?.call();
+                    }
                   },
                   icon: const Icon(Icons.check),
                   label: Text(l10n.livreurAccept),

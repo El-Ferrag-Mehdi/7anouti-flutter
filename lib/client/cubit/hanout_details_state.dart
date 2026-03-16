@@ -43,15 +43,15 @@ class HanoutDetailsLoaded extends HanoutDetailsState {
 
   @override
   List<Object?> get props => [
-        hanout,
-        freeTextOrder,
-        deliveryType,
-        paymentMethod,
-        products,
-        categories,
-        carnet,
-        canUseCarnet,
-      ];
+    hanout,
+    freeTextOrder,
+    deliveryType,
+    paymentMethod,
+    products,
+    categories,
+    carnet,
+    canUseCarnet,
+  ];
 
   /// Copie avec modifications
   HanoutDetailsLoaded copyWith({
@@ -83,9 +83,9 @@ class HanoutDetailsLoaded extends HanoutDetailsState {
 
   /// Vérifie si le carnet peut être utilisé
   bool get isCarnetPaymentAllowed {
-    return canUseCarnet && 
-           paymentMethod == PaymentMethod.carnet &&
-           hanout.hasCarnet;
+    return canUseCarnet &&
+        paymentMethod == PaymentMethod.carnet &&
+        hanout.hasCarnet;
   }
 }
 
@@ -99,13 +99,15 @@ class HanoutDetailsOrderSuccess extends HanoutDetailsState {
   const HanoutDetailsOrderSuccess({
     required this.order,
     required this.hanoutPhone,
+    this.willBeProcessedWhenOpen = false,
   });
 
   final OrderModel order;
   final String hanoutPhone;
+  final bool willBeProcessedWhenOpen;
 
   @override
-  List<Object?> get props => [order, hanoutPhone];
+  List<Object?> get props => [order, hanoutPhone, willBeProcessedWhenOpen];
 }
 
 /// État d'erreur

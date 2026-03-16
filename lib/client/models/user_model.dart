@@ -8,6 +8,7 @@ class UserModel {
   final String? email;
   final UserRole role;
   final bool isActive;
+  final bool isLivreurZoneActive;
   final String? address;
   final double? latitude;
   final double? longitude;
@@ -23,6 +24,7 @@ class UserModel {
     this.email,
     required this.role,
     this.isActive = true,
+    this.isLivreurZoneActive = false,
     this.address,
     this.latitude,
     this.longitude,
@@ -41,6 +43,9 @@ class UserModel {
       email: json['email'] as String?,
       role: UserRole.fromString(json['role'] as String),
       isActive: json['isActive'] == null ? true : json['isActive'] as bool,
+      isLivreurZoneActive: json['isLivreurZoneActive'] == null
+          ? false
+          : json['isLivreurZoneActive'] as bool,
       address: json['address'] as String?,
       latitude: json['latitude'] as double?,
       longitude: json['longitude'] as double?,
@@ -60,6 +65,7 @@ class UserModel {
       'email': email,
       'role': role.value,
       'isActive': isActive,
+      'isLivreurZoneActive': isLivreurZoneActive,
       'address': address,
       'latitude': latitude,
       'longitude': longitude,
@@ -78,6 +84,7 @@ class UserModel {
     String? email,
     UserRole? role,
     bool? isActive,
+    bool? isLivreurZoneActive,
     String? address,
     double? latitude,
     double? longitude,
@@ -93,6 +100,7 @@ class UserModel {
       email: email ?? this.email,
       role: role ?? this.role,
       isActive: isActive ?? this.isActive,
+      isLivreurZoneActive: isLivreurZoneActive ?? this.isLivreurZoneActive,
       address: address ?? this.address,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,

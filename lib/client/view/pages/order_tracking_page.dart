@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:sevenouti/client/data/api_service.dart';
 import 'package:sevenouti/client/l10n/client_l10n.dart';
 import 'package:sevenouti/client/models/models.dart';
@@ -11,9 +12,10 @@ import 'package:sevenouti/core/widgets/buttons.dart'
 import 'package:sevenouti/core/widgets/modern_sheet.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/utils/date_utils.dart' as app_date;
+import 'package:sevenouti/utils/localized_formatters.dart';
 import 'package:sevenouti/utils/phone_launcher.dart';
 
-/// Page de suivi de commande en temps rÃƒÆ’Ã‚Â©el
+/// Page de suivi de commande en temps rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©el
 class OrderTrackingPage extends StatefulWidget {
   const OrderTrackingPage({
     required this.order,
@@ -36,6 +38,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
   ReviewModel? _review;
   bool _isSubmittingReview = false;
   bool _isCancelling = false;
+  Timer? _pollingTimer;
 
   @override
   void initState() {
@@ -43,9 +46,13 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
     _order = widget.order;
     _orderRepository = OrderRepository(ApiService());
     _loadExistingReview();
+    _startAutoPolling();
+  }
 
-    // TODO: En production, tu utiliseras WebSocket ou polling pour les mises ÃƒÆ’Ã‚Â  jour
-    // _startListeningToOrderUpdates();
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -91,16 +98,16 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
               // Header avec statut principal
               _buildStatusHeader(),
 
-              // Timeline des ÃƒÆ’Ã‚Â©tapes
+              // Timeline des ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tapes
               _buildTimeline(),
 
-              // DÃƒÆ’Ã‚Â©tails de la commande
+              // DÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tails de la commande
               _buildOrderDetails(),
 
               // Infos hanout
               _buildHanoutInfo(),
 
-              // Infos livreur (si assignÃƒÆ’Ã‚Â©)
+              // Infos livreur (si assignÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©)
               if (_order.livreurId != null) _buildLivreurInfo(),
 
               const SizedBox(height: AppSpacing.xl),
@@ -141,7 +148,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
         bottom: false,
         child: Column(
           children: [
-            // IcÃƒÆ’Ã‚Â´ne animÃƒÆ’Ã‚Â©e
+            // IcÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â´ne animÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e
             Container(
               width: 80,
               height: 80,
@@ -173,7 +180,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
               textAlign: TextAlign.center,
             ),
 
-            // Temps estimÃƒÆ’Ã‚Â© (si en cours)
+            // Temps estimÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â© (si en cours)
             if (_order.status == OrderStatus.accepted ||
                 _order.status == OrderStatus.preparing) ...[
               const SizedBox(height: AppSpacing.md),
@@ -209,7 +216,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
     );
   }
 
-  /// Timeline des ÃƒÆ’Ã‚Â©tapes de la commande
+  /// Timeline des ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tapes de la commande
   Widget _buildTimeline() {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -224,10 +231,13 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(context.l10n.clientOrderTrackingDetailedTracking, style: AppTextStyles.h3),
+            Text(
+              context.l10n.clientOrderTrackingDetailedTracking,
+              style: AppTextStyles.h3,
+            ),
             const SizedBox(height: AppSpacing.md),
 
-            // Liste des ÃƒÆ’Ã‚Â©tapes
+            // Liste des ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tapes
             _buildTimelineStep(
               title: context.l10n.clientOrderTrackingStepPlaced,
               time: _order.createdAt,
@@ -367,14 +377,17 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
     );
   }
 
-  /// DÃƒÆ’Ã‚Â©tails de la commande
+  /// DÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tails de la commande
   Widget _buildOrderDetails() {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(context.l10n.clientOrderTrackingOrderDetails, style: AppTextStyles.h3),
+          Text(
+            context.l10n.clientOrderTrackingOrderDetails,
+            style: AppTextStyles.h3,
+          ),
           const SizedBox(height: AppSpacing.md),
 
           Container(
@@ -389,8 +402,11 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // NumÃƒÆ’Ã‚Â©ro de commande
-                _detailRow(context.l10n.clientOrderTrackingNumber, '#${_order.id.substring(0, 8)}'),
+                // NumÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©ro de commande
+                _detailRow(
+                  context.l10n.clientOrderTrackingNumber,
+                  '#${_order.id.substring(0, 8)}',
+                ),
                 const Divider(height: AppSpacing.lg),
 
                 // Contenu de la commande
@@ -408,17 +424,26 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
                 const Divider(height: AppSpacing.lg),
 
                 // Type de livraison
-                _detailRow(context.l10n.clientOrderTrackingType, context.deliveryTypeLabel(_order.deliveryType)),
+                _detailRow(
+                  context.l10n.clientOrderTrackingType,
+                  context.deliveryTypeLabel(_order.deliveryType),
+                ),
                 const Divider(height: AppSpacing.lg),
 
                 // Paiement
-                _detailRow(context.l10n.clientConfirmPaymentLabel, context.paymentMethodLabel(_order.paymentMethod)),
+                _detailRow(
+                  context.l10n.clientConfirmPaymentLabel,
+                  context.paymentMethodLabel(_order.paymentMethod),
+                ),
 
                 // Adresse (si livraison)
                 if (_order.deliveryType == DeliveryType.delivery &&
                     _order.clientAddress != null) ...[
                   const Divider(height: AppSpacing.lg),
-                  _detailRow(context.l10n.clientOrderTrackingAddress, _order.clientAddress!),
+                  _detailRow(
+                    context.l10n.clientOrderTrackingAddress,
+                    _order.clientAddress!,
+                  ),
                 ],
 
                 // Frais
@@ -426,7 +451,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
                   const Divider(height: AppSpacing.lg),
                   _detailRow(
                     context.l10n.clientConfirmDeliveryFee,
-                    '${_order.deliveryFee!.toStringAsFixed(2)} DH',
+                    formatDh(context, _order.deliveryFee!),
                   ),
                 ],
               ],
@@ -480,7 +505,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
             ),
             child: Row(
               children: [
-                // IcÃƒÆ’Ã‚Â´ne
+                // IcÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â´ne
                 Container(
                   width: 48,
                   height: 48,
@@ -501,7 +526,9 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        context.l10n.clientOrderTrackingHanoutNameFallback, // TODO: RÃƒÆ’Ã‚Â©cupÃƒÆ’Ã‚Â©rer depuis hanout
+                        context
+                            .l10n
+                            .clientOrderTrackingHanoutNameFallback, // TODO: RÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©cupÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©rer depuis hanout
                         style: AppTextStyles.bodyLarge.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -571,7 +598,9 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        context.l10n.clientOrderTrackingDriverNameFallback, // TODO: RÃƒÆ’Ã‚Â©cupÃƒÆ’Ã‚Â©rer depuis livreur
+                        context
+                            .l10n
+                            .clientOrderTrackingDriverNameFallback, // TODO: RÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©cupÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©rer depuis livreur
                         style: AppTextStyles.bodyLarge.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -614,12 +643,12 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
 
   /// Bouton d'action en bas selon le statut
   Widget? _buildBottomAction() {
-    // Si annulÃƒÆ’Ã‚Â©e, pas de bouton
+    // Si annulÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e, pas de bouton
     if (_order.status == OrderStatus.cancelled) {
       return null;
     }
 
-    // Si livrÃƒÆ’Ã‚Â©e, bouton pour ÃƒÆ’Ã‚Â©valuer
+    // Si livrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e, bouton pour ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©valuer
     if (_order.status == OrderStatus.delivered) {
       return Container(
         padding: const EdgeInsets.all(AppSpacing.md),
@@ -668,7 +697,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
     return null;
   }
 
-  // === MÃƒÆ’Ã‚Â©thodes Helper ===
+  // === MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©thodes Helper ===
 
   Color _getStatusColor(OrderStatus status) {
     switch (status) {
@@ -738,7 +767,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
   }
 
   bool _canCancelOrder() {
-    // Peut annuler si: pending ou accepted (pas encore en prÃƒÆ’Ã‚Â©paration)
+    // Peut annuler si: pending ou accepted (pas encore en prÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©paration)
     return _order.status == OrderStatus.pending ||
         _order.status == OrderStatus.accepted;
   }
@@ -892,7 +921,9 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(context.l10n.clientCommonErrorWithMessage(e.toString())),
+          content: Text(
+            context.l10n.clientCommonErrorWithMessage(e.toString()),
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -949,9 +980,9 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
                   onPressed: _isCancelling
                       ? null
                       : () async {
-                    Navigator.of(context).pop();
-                    await _cancelOrder();
-                  },
+                          Navigator.of(context).pop();
+                          await _cancelOrder();
+                        },
                   child: Text(context.l10n.clientOrderTrackingCancelYes),
                 ),
               ),
@@ -987,7 +1018,9 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(context.l10n.clientCommonErrorWithMessage(e.toString())),
+          content: Text(
+            context.l10n.clientCommonErrorWithMessage(e.toString()),
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -998,6 +1031,45 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
         });
       }
     }
+  }
+
+  void _startAutoPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 6), (_) {
+      unawaited(_refreshOrderSilently());
+    });
+  }
+
+  Future<void> _refreshOrderSilently() async {
+    if (!mounted) return;
+    if (_isTerminalStatus(_order.status)) {
+      _pollingTimer?.cancel();
+      return;
+    }
+    try {
+      final latest = await _orderRepository.getOrderById(_order.id);
+      if (!mounted) return;
+      if (latest.status != _order.status ||
+          latest.livreurId != _order.livreurId ||
+          latest.acceptedAt != _order.acceptedAt ||
+          latest.readyAt != _order.readyAt ||
+          latest.pickedUpAt != _order.pickedUpAt ||
+          latest.deliveredAt != _order.deliveredAt ||
+          latest.cancelledAt != _order.cancelledAt) {
+        setState(() {
+          _order = latest;
+        });
+      }
+      if (_isTerminalStatus(latest.status)) {
+        _pollingTimer?.cancel();
+      }
+    } catch (_) {
+      // Silent polling: ignore transient errors and retry on next tick.
+    }
+  }
+
+  bool _isTerminalStatus(OrderStatus status) {
+    return status == OrderStatus.delivered || status == OrderStatus.cancelled;
   }
 
   void _callHanout() {
@@ -1030,7 +1102,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
   }
 }
 
-// Extension pour copyWith sur OrderModel (ÃƒÆ’Ã‚Â  ajouter dans order_model.dart)
+// Extension pour copyWith sur OrderModel (ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â  ajouter dans order_model.dart)
 extension OrderModelExtension on OrderModel {
   OrderModel copyWith({
     OrderStatus? status,
@@ -1062,7 +1134,3 @@ extension OrderModelExtension on OrderModel {
     );
   }
 }
-
-
-
-

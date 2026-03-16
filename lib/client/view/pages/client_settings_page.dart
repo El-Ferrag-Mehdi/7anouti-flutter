@@ -28,6 +28,7 @@ class _ClientSettingsPageState extends State<ClientSettingsPage> {
   bool _loading = true;
   bool _saving = false;
   bool _deleting = false;
+  bool _changingPassword = false;
   String? _error;
 
   @override
@@ -186,6 +187,130 @@ class _ClientSettingsPageState extends State<ClientSettingsPage> {
     }
   }
 
+  Future<void> _showChangePasswordDialog() async {
+    if (_saving || _deleting || _changingPassword) return;
+
+    final currentController = TextEditingController();
+    final nextController = TextEditingController();
+    final confirmController = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Changer mot de passe'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: currentController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Mot de passe actuel',
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextField(
+              controller: nextController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Nouveau mot de passe',
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextField(
+              controller: confirmController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Confirmer nouveau mot de passe',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(context.l10n.clientCommonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(context.l10n.clientCommonConfirm),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) {
+      currentController.dispose();
+      nextController.dispose();
+      confirmController.dispose();
+      return;
+    }
+
+    final currentPassword = currentController.text.trim();
+    final newPassword = nextController.text.trim();
+    final confirmPassword = confirmController.text.trim();
+
+    currentController.dispose();
+    nextController.dispose();
+    confirmController.dispose();
+
+    if (currentPassword.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
+      AppSnackBar.show(
+        context,
+        message: 'Tous les champs sont obligatoires',
+        type: SnackBarType.error,
+      );
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      AppSnackBar.show(
+        context,
+        message: 'Le nouveau mot de passe doit contenir au moins 6 caracteres',
+        type: SnackBarType.error,
+      );
+      return;
+    }
+
+    if (newPassword != confirmPassword) {
+      AppSnackBar.show(
+        context,
+        message: 'La confirmation ne correspond pas',
+        type: SnackBarType.error,
+      );
+      return;
+    }
+
+    setState(() {
+      _changingPassword = true;
+    });
+    try {
+      await _repository.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      if (!mounted) return;
+      AppSnackBar.show(
+        context,
+        message: 'Mot de passe modifie avec succes',
+        type: SnackBarType.success,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.show(
+        context,
+        message: e.toString(),
+        type: SnackBarType.error,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _changingPassword = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -267,6 +392,22 @@ class _ClientSettingsPageState extends State<ClientSettingsPage> {
             decoration: InputDecoration(
               labelText: l10n.clientSettingsAddressLabel,
               hintText: l10n.clientCommonDeliveryAddressHint,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          OutlinedButton.icon(
+            onPressed: _changingPassword ? null : _showChangePasswordDialog,
+            icon: _changingPassword
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.lock_outline),
+            label: Text(
+              _changingPassword
+                  ? 'Modification...'
+                  : 'Changer mot de passe',
             ),
           ),
           const SizedBox(height: AppSpacing.xl),

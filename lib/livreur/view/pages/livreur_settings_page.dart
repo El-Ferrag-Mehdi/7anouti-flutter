@@ -9,6 +9,7 @@ import 'package:sevenouti/core/widgets/app_widgets.dart';
 import 'package:sevenouti/core/widgets/language_selector_tile.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/livreur/repository/livreur_profile_repository.dart';
+import 'package:sevenouti/utils/location_service.dart';
 
 class LivreurSettingsPage extends StatefulWidget {
   const LivreurSettingsPage({super.key});
@@ -19,6 +20,7 @@ class LivreurSettingsPage extends StatefulWidget {
 
 class _LivreurSettingsPageState extends State<LivreurSettingsPage> {
   final _repository = LivreurProfileRepository(ApiService());
+  final _locationService = LocationService();
 
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -28,6 +30,11 @@ class _LivreurSettingsPageState extends State<LivreurSettingsPage> {
   bool _loading = true;
   bool _saving = false;
   bool _deleting = false;
+  bool _changingPassword = false;
+  bool _updatingZone = false;
+  bool _zoneActive = false;
+  double? _zoneLatitude;
+  double? _zoneLongitude;
   String? _error;
 
   @override
@@ -56,6 +63,9 @@ class _LivreurSettingsPageState extends State<LivreurSettingsPage> {
       _phoneController.text = user.phone;
       _emailController.text = user.email ?? '';
       _addressController.text = user.address ?? '';
+      _zoneActive = user.isLivreurZoneActive;
+      _zoneLatitude = user.latitude;
+      _zoneLongitude = user.longitude;
       setState(() {
         _loading = false;
       });
@@ -185,6 +195,229 @@ class _LivreurSettingsPageState extends State<LivreurSettingsPage> {
     }
   }
 
+  Future<void> _showChangePasswordDialog() async {
+    if (_saving || _deleting || _updatingZone || _changingPassword) return;
+
+    final currentController = TextEditingController();
+    final nextController = TextEditingController();
+    final confirmController = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Changer mot de passe'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: currentController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Mot de passe actuel',
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextField(
+              controller: nextController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Nouveau mot de passe',
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextField(
+              controller: confirmController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Confirmer nouveau mot de passe',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(context.l10n.clientCommonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(context.l10n.clientCommonConfirm),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) {
+      currentController.dispose();
+      nextController.dispose();
+      confirmController.dispose();
+      return;
+    }
+
+    final currentPassword = currentController.text.trim();
+    final newPassword = nextController.text.trim();
+    final confirmPassword = confirmController.text.trim();
+
+    currentController.dispose();
+    nextController.dispose();
+    confirmController.dispose();
+
+    if (currentPassword.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
+      AppSnackBar.show(
+        context,
+        message: 'Tous les champs sont obligatoires',
+        type: SnackBarType.error,
+      );
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      AppSnackBar.show(
+        context,
+        message: 'Le nouveau mot de passe doit contenir au moins 6 caracteres',
+        type: SnackBarType.error,
+      );
+      return;
+    }
+
+    if (newPassword != confirmPassword) {
+      AppSnackBar.show(
+        context,
+        message: 'La confirmation ne correspond pas',
+        type: SnackBarType.error,
+      );
+      return;
+    }
+
+    setState(() {
+      _changingPassword = true;
+    });
+    try {
+      await _repository.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      if (!mounted) return;
+      AppSnackBar.show(
+        context,
+        message: 'Mot de passe modifie avec succes',
+        type: SnackBarType.success,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.show(
+        context,
+        message: e.toString(),
+        type: SnackBarType.error,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _changingPassword = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _activateZone() async {
+    if (_saving || _deleting || _updatingZone) return;
+    setState(() {
+      _updatingZone = true;
+    });
+
+    try {
+      final position = await _locationService.getCurrentPosition();
+      if (position == null) {
+        if (!mounted) return;
+        AppSnackBar.show(
+          context,
+          message:
+              'Position indisponible. Active la localisation puis reessaie.',
+          type: SnackBarType.warning,
+        );
+        return;
+      }
+
+      final updated = await _repository.updateMyProfile(
+        name: _nameController.text.trim(),
+        phone: _phoneController.text.trim(),
+        address: _addressController.text.trim().isEmpty
+            ? null
+            : _addressController.text.trim(),
+        latitude: position.latitude,
+        longitude: position.longitude,
+        isLivreurZoneActive: true,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _zoneActive = updated.isLivreurZoneActive;
+        _zoneLatitude = updated.latitude;
+        _zoneLongitude = updated.longitude;
+      });
+      AppSnackBar.show(
+        context,
+        message:
+            'Zone activee. Vous recevrez les demandes dans un rayon de 5 km.',
+        type: SnackBarType.success,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.show(
+        context,
+        message: 'Erreur activation zone: $e',
+        type: SnackBarType.error,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _updatingZone = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _deactivateZone() async {
+    if (_saving || _deleting || _updatingZone) return;
+    setState(() {
+      _updatingZone = true;
+    });
+    try {
+      final updated = await _repository.updateMyProfile(
+        name: _nameController.text.trim(),
+        phone: _phoneController.text.trim(),
+        address: _addressController.text.trim().isEmpty
+            ? null
+            : _addressController.text.trim(),
+        isLivreurZoneActive: false,
+      );
+      if (!mounted) return;
+      setState(() {
+        _zoneActive = updated.isLivreurZoneActive;
+        _zoneLatitude = updated.latitude;
+        _zoneLongitude = updated.longitude;
+      });
+      AppSnackBar.show(
+        context,
+        message: 'Zone desactivee.',
+        type: SnackBarType.success,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.show(
+        context,
+        message: 'Erreur desactivation zone: $e',
+        type: SnackBarType.error,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _updatingZone = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -266,6 +499,66 @@ class _LivreurSettingsPageState extends State<LivreurSettingsPage> {
             decoration: InputDecoration(
               labelText: l10n.livreurSettingsAddressLabel,
               hintText: l10n.clientCommonDeliveryAddressHint,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            'Zone de travail',
+            style: AppTextStyles.h3,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            value: _zoneActive,
+            onChanged: _updatingZone
+                ? null
+                : (value) {
+                    if (value) {
+                      unawaited(_activateZone());
+                      return;
+                    }
+                    unawaited(_deactivateZone());
+                  },
+            title: const Text('Je suis actif sur cette zone'),
+            subtitle: Text(
+              _zoneActive
+                  ? 'Actif dans un rayon de 5 km'
+                  : 'Inactif: aucune nouvelle demande',
+            ),
+          ),
+          if (_zoneLatitude != null && _zoneLongitude != null)
+            Text(
+              'Position: ${_zoneLatitude!.toStringAsFixed(6)}, ${_zoneLongitude!.toStringAsFixed(6)}',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          const SizedBox(height: AppSpacing.sm),
+          ElevatedButton.icon(
+            onPressed: _updatingZone ? null : _activateZone,
+            icon: _updatingZone
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.my_location),
+            label: const Text('Actualiser ma position et activer'),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          OutlinedButton.icon(
+            onPressed: _changingPassword ? null : _showChangePasswordDialog,
+            icon: _changingPassword
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.lock_outline),
+            label: Text(
+              _changingPassword
+                  ? 'Modification...'
+                  : 'Changer mot de passe',
             ),
           ),
           const SizedBox(height: AppSpacing.xl),

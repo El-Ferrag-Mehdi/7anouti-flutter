@@ -1,214 +1,155 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/material.dart';
+
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:sevenouti/config/env.dart';
+import 'package:sevenouti/core/auth/token_refresh_service.dart';
 import 'package:sevenouti/core/storage/token_storage.dart';
 
-/// Configuration de l'API
 class ApiConfig {
-  // Change ces URLs selon ton environnement
-  static const String developmentUrl = 'http://localhost:3000/api';
-  static const String productionUrl = 'https://your-production-url.com/api';
-
-  /// Retourne l'URL de base selon l'environnement
-  static String get baseUrl {
-    // Tu peux utiliser const String.fromEnvironment('ENV') pour dÃ©tecter l'env
-    return developmentUrl; // Pour l'instant en dev
-  }
-
-  /// Timeout pour les requÃªtes
   static const Duration timeout = Duration(seconds: 30);
 }
 
-/// Exception personnalisÃ©e pour les erreurs API
-// class ApiException implements Exception {
-//   final String message;
-//   final int? statusCode;
-//   final dynamic data;
-
-//   ApiException({
-//     required this.message,
-//     this.statusCode,
-//     this.data,
-//   });
-
-//   @override
-//   String toString() => 'ApiException: $message (Status: $statusCode)';
-// }
-
-/// Service de base pour les appels API
 class ApiService {
-  // REMPLACE localhost par ton IP local
-  // static const String baseUrl = 'http:// 192.168.43.149:4000/api'; // â† TON IP ICI
-  final String baseUrl = '${Env.baseUrl}';
-
   ApiService() {
-    debugPrint('ðŸŸ¦ [ApiService] baseUrl=$baseUrl');
+    _log('[ApiService] baseUrl=$baseUrl');
   }
 
-  // Stockage du token
+  final String baseUrl = Env.baseUrl;
+  static final http.Client _client = http.Client();
+
   String? _token;
 
-  // Getter pour le token
   String? get token => _token;
 
-  // Setter pour le token (appelÃ© aprÃ¨s login)
+  set token(String token) => _token = token;
+
   void setToken(String token) {
-    _token = token;
+    this.token = token;
   }
 
-  // Headers avec authentification
-  Future<Map<String, String>> _headers() async {
-    final headers = {
-      'Content-Type': 'application/json',
-    };
-
-    // PrioritÃ© au token en mÃ©moire, sinon lecture depuis le storage
-    final token = _token ?? await TokenStorage.getToken();
-    if (token != null && token.isNotEmpty) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-
-    return headers;
-  }
-
-  Future<Map<String, String>> _authHeaders() async {
-    final headers = <String, String>{};
-    final token = _token ?? await TokenStorage.getToken();
-    if (token != null && token.isNotEmpty) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-    return headers;
-  }
-
-  // GET request
   Future<dynamic> get(String endpoint) async {
     try {
       final url = '$baseUrl$endpoint';
-      debugPrint('ðŸŸ¦ [ApiService][GET] $url');
-      final response = await http
-          .get(
-            Uri.parse(url),
-            headers: await _headers(),
-          )
-          .timeout(const Duration(seconds: 30));
-      debugPrint('ðŸŸ¦ [ApiService][GET] status=${response.statusCode}');
-
+      _log('[ApiService][GET] $url');
+      final response = await _sendWithAutoRefresh(
+        () => _client
+            .get(Uri.parse(url), headers: _headers())
+            .timeout(ApiConfig.timeout),
+      );
+      _log('[ApiService][GET] status=${response.statusCode}');
       return _handleResponse(response);
     } on ApiException {
       rethrow;
     } on SocketException {
       throw ApiException('Pas de connexion internet');
     } on TimeoutException {
-      throw ApiException('DÃ©lai d\'attente dÃ©passÃ©');
+      throw ApiException("Delai d'attente depasse");
     } catch (e) {
-      throw ApiException('Erreur: ${e.toString()}');
+      throw ApiException('Erreur: $e');
     }
   }
 
-  // POST request
   Future<dynamic> post(String endpoint, {Map<String, dynamic>? body}) async {
     try {
       final url = '$baseUrl$endpoint';
-      debugPrint('ðŸŸ¦ [ApiService][POST] $url');
-      final response = await http
-          .post(
-            Uri.parse(url),
-            headers: await _headers(),
-            body: body != null ? json.encode(body) : null,
-          )
-          .timeout(const Duration(seconds: 30));
-      debugPrint('ðŸŸ¦ [ApiService][POST] status=${response.statusCode}');
-
+      _log('[ApiService][POST] $url');
+      final response = await _sendWithAutoRefresh(
+        () => _client
+            .post(
+              Uri.parse(url),
+              headers: _headers(),
+              body: body != null ? json.encode(body) : null,
+            )
+            .timeout(ApiConfig.timeout),
+      );
+      _log('[ApiService][POST] status=${response.statusCode}');
       return _handleResponse(response);
     } on ApiException {
       rethrow;
     } on SocketException {
       throw ApiException('Pas de connexion internet');
     } on TimeoutException {
-      throw ApiException('DÃ©lai d\'attente dÃ©passÃ©');
+      throw ApiException("Delai d'attente depasse");
     } catch (e) {
-      throw ApiException('Erreur: ${e.toString()}');
+      throw ApiException('Erreur: $e');
     }
   }
 
-  // PUT request
   Future<dynamic> put(String endpoint, {Map<String, dynamic>? body}) async {
     try {
       final url = '$baseUrl$endpoint';
-      debugPrint('ðŸŸ¦ [ApiService][PUT] $url');
-      final response = await http
-          .put(
-            Uri.parse(url),
-            headers: await _headers(),
-            body: body != null ? json.encode(body) : null,
-          )
-          .timeout(const Duration(seconds: 30));
-      debugPrint('ðŸŸ¦ [ApiService][PUT] status=${response.statusCode}');
-
+      _log('[ApiService][PUT] $url');
+      final response = await _sendWithAutoRefresh(
+        () => _client
+            .put(
+              Uri.parse(url),
+              headers: _headers(),
+              body: body != null ? json.encode(body) : null,
+            )
+            .timeout(ApiConfig.timeout),
+      );
+      _log('[ApiService][PUT] status=${response.statusCode}');
       return _handleResponse(response);
     } on ApiException {
       rethrow;
     } on SocketException {
       throw ApiException('Pas de connexion internet');
     } on TimeoutException {
-      throw ApiException('DÃ©lai d\'attente dÃ©passÃ©');
+      throw ApiException("Delai d'attente depasse");
     } catch (e) {
-      throw ApiException('Erreur: ${e.toString()}');
+      throw ApiException('Erreur: $e');
     }
   }
 
-  // PATCH request
   Future<dynamic> patch(String endpoint, {Map<String, dynamic>? body}) async {
     try {
       final url = '$baseUrl$endpoint';
-      debugPrint('ðŸŸ¦ [ApiService][PATCH] $url');
-      final response = await http
-          .patch(
-            Uri.parse(url),
-            headers: await _headers(),
-            body: body != null ? json.encode(body) : null,
-          )
-          .timeout(const Duration(seconds: 30));
-      debugPrint('ðŸŸ¦ [ApiService][PATCH] status=${response.statusCode}');
-
+      _log('[ApiService][PATCH] $url');
+      final response = await _sendWithAutoRefresh(
+        () => _client
+            .patch(
+              Uri.parse(url),
+              headers: _headers(),
+              body: body != null ? json.encode(body) : null,
+            )
+            .timeout(ApiConfig.timeout),
+      );
+      _log('[ApiService][PATCH] status=${response.statusCode}');
       return _handleResponse(response);
     } on ApiException {
       rethrow;
     } on SocketException {
       throw ApiException('Pas de connexion internet');
     } on TimeoutException {
-      throw ApiException('DÃ©lai d\'attente dÃ©passÃ©');
+      throw ApiException("Delai d'attente depasse");
     } catch (e) {
-      throw ApiException('Erreur: ${e.toString()}');
+      throw ApiException('Erreur: $e');
     }
   }
 
-  // DELETE request
   Future<dynamic> delete(String endpoint) async {
     try {
       final url = '$baseUrl$endpoint';
-      debugPrint('ðŸŸ¦ [ApiService][DELETE] $url');
-      final response = await http
-          .delete(
-            Uri.parse(url),
-            headers: await _headers(),
-          )
-          .timeout(const Duration(seconds: 30));
-      debugPrint('ðŸŸ¦ [ApiService][DELETE] status=${response.statusCode}');
-
+      _log('[ApiService][DELETE] $url');
+      final response = await _sendWithAutoRefresh(
+        () => _client
+            .delete(Uri.parse(url), headers: _headers())
+            .timeout(ApiConfig.timeout),
+      );
+      _log('[ApiService][DELETE] status=${response.statusCode}');
       return _handleResponse(response);
     } on ApiException {
       rethrow;
     } on SocketException {
       throw ApiException('Pas de connexion internet');
     } on TimeoutException {
-      throw ApiException('DÃ©lai d\'attente dÃ©passÃ©');
+      throw ApiException("Delai d'attente depasse");
     } catch (e) {
-      throw ApiException('Erreur: ${e.toString()}');
+      throw ApiException('Erreur: $e');
     }
   }
 
@@ -223,71 +164,112 @@ class ApiService {
   }) async {
     try {
       final url = '$baseUrl$endpoint';
-      debugPrint('ðŸŸ¦ [ApiService][POST multipart] $url');
-      final request = http.MultipartRequest('POST', Uri.parse(url));
-      request.headers.addAll(await _authHeaders());
-      if (fields != null) {
-        request.fields.addAll(fields);
+      _log('[ApiService][POST multipart] $url');
+
+      Future<http.Response> sender() async {
+        final request = http.MultipartRequest('POST', Uri.parse(url));
+        request.headers.addAll(_authHeaders());
+        if (fields != null) {
+          request.fields.addAll(fields);
+        }
+
+        if (bytes != null) {
+          request.files.add(
+            http.MultipartFile.fromBytes(
+              fileField,
+              bytes,
+              filename: filename,
+              contentType: contentType,
+            ),
+          );
+        } else if (filePath != null) {
+          request.files.add(
+            await http.MultipartFile.fromPath(fileField, filePath),
+          );
+        } else {
+          throw ApiException('Aucun fichier fourni');
+        }
+
+        final streamed = await request.send().timeout(ApiConfig.timeout);
+        return http.Response.fromStream(streamed);
       }
 
-      if (bytes != null) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            fileField,
-            bytes,
-            filename: filename,
-            contentType: contentType,
-          ),
-        );
-      } else if (filePath != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath(fileField, filePath),
-        );
-      } else {
-        throw ApiException('Aucun fichier fourni');
-      }
-
-      final streamed = await request.send().timeout(
-        const Duration(seconds: 30),
-      );
-      final response = await http.Response.fromStream(streamed);
-      debugPrint(
-        'ðŸŸ¦ [ApiService][POST multipart] status=${response.statusCode}',
-      );
+      final response = await _sendWithAutoRefresh(sender);
+      _log('[ApiService][POST multipart] status=${response.statusCode}');
       return _handleResponse(response);
     } on ApiException {
       rethrow;
     } on SocketException {
       throw ApiException('Pas de connexion internet');
     } on TimeoutException {
-      throw ApiException('DÃ©lai d\'attente dÃ©passÃ©');
+      throw ApiException("Delai d'attente depasse");
     } catch (e) {
-      throw ApiException('Erreur: ${e.toString()}');
+      throw ApiException('Erreur: $e');
     }
   }
 
-  // Gestion des rÃ©ponses
   dynamic _handleResponse(http.Response response) {
-    debugPrint(
-      'ðŸŸ¦ [ApiService][RESP] status=${response.statusCode} body=${response.body}',
-    );
+    _log('[ApiService][RESP] status=${response.statusCode}');
     if (response.statusCode >= 200 && response.statusCode < 300) {
       if (response.body.isEmpty) return null;
       return json.decode(response.body);
     } else if (response.statusCode == 401) {
-      throw ApiException('Non autorisÃ© - Token invalide');
+      throw ApiException('Session expiree, reconnectez-vous');
     } else if (response.statusCode == 404) {
-      throw ApiException('Ressource non trouvÃ©e');
+      throw ApiException('Ressource non trouvee');
     } else {
       final body = json.decode(response.body) as Map<String, dynamic>;
       throw ApiException(body['message'] as String? ?? 'Erreur serveur');
     }
   }
+
+  Future<http.Response> _sendWithAutoRefresh(
+    Future<http.Response> Function() sender,
+  ) async {
+    _token = await TokenStorage.getToken();
+    var response = await sender();
+    if (response.statusCode != 401) {
+      return response;
+    }
+
+    final refreshed = await TokenRefreshService.refreshToken();
+    if (!refreshed) {
+      return response;
+    }
+
+    _token = await TokenStorage.getToken();
+    response = await sender();
+    return response;
+  }
+
+  Map<String, String> _headers() {
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+    };
+    if (_token != null && _token!.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $_token';
+    }
+    return headers;
+  }
+
+  Map<String, String> _authHeaders() {
+    final headers = <String, String>{};
+    if (_token != null && _token!.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $_token';
+    }
+    return headers;
+  }
+
+  void _log(String message) {
+    if (!kDebugMode) return;
+    debugPrint(message);
+  }
 }
 
 class ApiException implements Exception {
-  final String message;
   ApiException(this.message);
+
+  final String message;
 
   @override
   String toString() => message;

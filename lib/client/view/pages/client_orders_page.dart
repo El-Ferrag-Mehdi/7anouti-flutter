@@ -13,7 +13,7 @@ import 'package:sevenouti/core/widgets/app_background.dart';
 import 'package:sevenouti/core/widgets/app_widgets.dart';
 import 'package:sevenouti/core/widgets/modern_sheet.dart';
 import 'package:sevenouti/l10n/l10n.dart';
-import 'package:sevenouti/utils/date_utils.dart' as app_date;
+import 'package:sevenouti/utils/localized_formatters.dart';
 
 /// Page d'historique des commandes du client
 class ClientOrdersPage extends StatelessWidget {
@@ -325,9 +325,7 @@ class ClientOrdersView extends StatelessWidget {
                     Expanded(
                       child: _buildInfoItem(
                         icon: Icons.access_time,
-                        text: app_date.DateUtils.formatRelativeDate(
-                          order.createdAt,
-                        ),
+                        text: formatRelativeDateLocalized(context, order.createdAt),
                       ),
                     ),
 
@@ -346,7 +344,7 @@ class ClientOrdersView extends StatelessWidget {
                       Expanded(
                         child: _buildInfoItem(
                           icon: Icons.payments,
-                          text: '${order.totalAmount!.toStringAsFixed(2)} DH',
+                          text: formatDh(context, order.totalAmount!),
                         ),
                       ),
                   ],
@@ -491,7 +489,8 @@ class ClientOrdersView extends StatelessWidget {
                     Expanded(
                       child: _buildInfoItem(
                         icon: Icons.access_time,
-                        text: app_date.DateUtils.formatRelativeDate(
+                        text: formatRelativeDateLocalized(
+                          context,
                           request.createdAt,
                         ),
                       ),
@@ -499,7 +498,7 @@ class ClientOrdersView extends StatelessWidget {
                     Expanded(
                       child: _buildInfoItem(
                         icon: Icons.payments,
-                        text: '${request.total.toStringAsFixed(0)} DH',
+                        text: formatDh(context, request.total, decimals: 0),
                       ),
                     ),
                     Expanded(

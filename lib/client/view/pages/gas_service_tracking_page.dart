@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:sevenouti/client/data/api_service.dart';
 import 'package:sevenouti/client/l10n/client_l10n.dart';
 import 'package:sevenouti/client/models/models.dart';
@@ -11,6 +12,7 @@ import 'package:sevenouti/core/widgets/buttons.dart'
 import 'package:sevenouti/core/widgets/modern_sheet.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/utils/date_utils.dart' as app_date;
+import 'package:sevenouti/utils/localized_formatters.dart';
 import 'package:sevenouti/utils/phone_launcher.dart';
 
 class GasServiceTrackingPage extends StatefulWidget {
@@ -27,6 +29,7 @@ class _GasServiceTrackingPageState extends State<GasServiceTrackingPage> {
   late GasServiceRepository _repository;
   ReviewModel? _review;
   bool _isSubmittingReview = false;
+  Timer? _pollingTimer;
 
   @override
   void initState() {
@@ -34,6 +37,13 @@ class _GasServiceTrackingPageState extends State<GasServiceTrackingPage> {
     _order = widget.order;
     _repository = GasServiceRepository(ApiService());
     _loadExistingReview();
+    _startAutoPolling();
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -149,7 +159,10 @@ class _GasServiceTrackingPageState extends State<GasServiceTrackingPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(context.l10n.clientOrderTrackingDetailedTracking, style: AppTextStyles.h3),
+            Text(
+              context.l10n.clientOrderTrackingDetailedTracking,
+              style: AppTextStyles.h3,
+            ),
             const SizedBox(height: AppSpacing.md),
             _buildTimelineStep(
               title: context.l10n.clientGasStatusPending,
@@ -293,16 +306,29 @@ class _GasServiceTrackingPageState extends State<GasServiceTrackingPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _detailRow(context.l10n.clientGasServiceLabel, context.l10n.clientGasBottleTitle),
+                _detailRow(
+                  context.l10n.clientGasServiceLabel,
+                  context.l10n.clientGasBottleTitle,
+                ),
                 const Divider(height: AppSpacing.lg),
                 if (_order.clientAddress != null)
-                  _detailRow(context.l10n.clientOrderTrackingAddress, _order.clientAddress!),
+                  _detailRow(
+                    context.l10n.clientOrderTrackingAddress,
+                    _order.clientAddress!,
+                  ),
                 const Divider(height: AppSpacing.lg),
-                _detailRow(context.l10n.clientGasBottleTitle, '${_order.price} DH'),
-                const Divider(height: AppSpacing.lg),
-                _detailRow(context.l10n.clientCommonServiceFee, '${_order.serviceFee} DH'),
-                const Divider(height: AppSpacing.lg),
-                _detailRow(context.l10n.clientCommonTotal, '${_order.total} DH', isTotal: true),
+                _detailRow(
+                  context.l10n.clientGasPromoPriceAllInclusive,
+                  formatDh(context, _order.total, decimals: 0),
+                  isTotal: true,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  context.l10n.clientGasPromoNormalPrice,
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ],
             ),
           ),
@@ -346,7 +372,9 @@ class _GasServiceTrackingPageState extends State<GasServiceTrackingPage> {
         ),
         child: SafeArea(
           child: PrimaryButton(
-            label: _review == null ? context.l10n.clientOrdersRateDriver : context.l10n.clientOrderTrackingEditReview,
+            label: _review == null
+                ? context.l10n.clientOrdersRateDriver
+                : context.l10n.clientOrderTrackingEditReview,
             icon: Icons.star,
             onPressed: _isSubmittingReview ? null : _showReviewSheet,
             fullWidth: true,
@@ -356,6 +384,46 @@ class _GasServiceTrackingPageState extends State<GasServiceTrackingPage> {
     }
 
     return null;
+  }
+
+  void _startAutoPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 6), (_) {
+      unawaited(_refreshOrderSilently());
+    });
+  }
+
+  Future<void> _refreshOrderSilently() async {
+    if (!mounted) return;
+    if (_isTerminalStatus(_order.status)) {
+      _pollingTimer?.cancel();
+      return;
+    }
+    try {
+      final latest = await _repository.getRequestById(_order.id);
+      if (!mounted) return;
+      if (latest.status != _order.status ||
+          latest.livreurPhone != _order.livreurPhone ||
+          latest.acceptedAt != _order.acceptedAt ||
+          latest.arrivedAt != _order.arrivedAt ||
+          latest.pickedUpAt != _order.pickedUpAt ||
+          latest.deliveredAt != _order.deliveredAt) {
+        setState(() {
+          _order = latest;
+        });
+      }
+      if (_isTerminalStatus(latest.status)) {
+        _pollingTimer?.cancel();
+      }
+    } catch (_) {
+      // Silent polling: ignore transient errors and retry on next tick.
+    }
+  }
+
+  bool _isTerminalStatus(GasServiceStatus status) {
+    return status == GasServiceStatus.livre ||
+        status == GasServiceStatus.cancelled ||
+        status == GasServiceStatus.rejected;
   }
 
   Future<void> _refreshOrder() async {
@@ -471,7 +539,9 @@ class _GasServiceTrackingPageState extends State<GasServiceTrackingPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(context.l10n.clientCommonErrorWithMessage(e.toString())),
+          content: Text(
+            context.l10n.clientCommonErrorWithMessage(e.toString()),
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -509,6 +579,3 @@ class _GasServiceTrackingPageState extends State<GasServiceTrackingPage> {
     }
   }
 }
-
-
-

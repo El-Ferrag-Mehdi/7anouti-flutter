@@ -164,7 +164,7 @@ class HanoutCarnetDetailsView extends StatelessWidget {
                     ),
                   ),
                 Text(
-                  formatDh(context, carnet.balance.abs()).split(' ').first,
+                  formatAmountNumber(context, carnet.balance.abs()),
                   style: AppTextStyles.h1.copyWith(
                     fontSize: 36,
                     fontWeight: FontWeight.bold,
@@ -175,7 +175,7 @@ class HanoutCarnetDetailsView extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    isArabicLocale(context) ? 'د.م' : 'DH',
+                    currencyLabel(context),
                     style: AppTextStyles.h3.copyWith(
                       color: Colors.white.withOpacity(0.9),
                     ),
@@ -406,7 +406,8 @@ class HanoutCarnetDetailsView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      transaction.formattedAmount,
+                      '${transaction.type == TransactionType.credit ? '+' : '-'}'
+                      '${formatDh(context, transaction.amount)}',
                       style: AppTextStyles.bodyLarge.copyWith(
                         fontWeight: FontWeight.bold,
                         color: color,
@@ -853,3 +854,4 @@ class HanoutCarnetDetailsView extends StatelessWidget {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 }
+

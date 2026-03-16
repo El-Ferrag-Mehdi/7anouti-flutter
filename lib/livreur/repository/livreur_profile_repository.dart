@@ -16,6 +16,9 @@ class LivreurProfileRepository {
     required String name,
     required String phone,
     String? address,
+    double? latitude,
+    double? longitude,
+    bool? isLivreurZoneActive,
   }) async {
     final dynamic response = await _apiService.put(
       '/auth/me',
@@ -23,6 +26,9 @@ class LivreurProfileRepository {
         'name': name,
         'phone': phone,
         'address': address,
+        'latitude': latitude,
+        'longitude': longitude,
+        'isLivreurZoneActive': isLivreurZoneActive,
       },
     );
     final responseMap = response as Map<String, dynamic>;
@@ -31,5 +37,18 @@ class LivreurProfileRepository {
 
   Future<void> deleteMyAccount() async {
     await _apiService.delete('/auth/me');
+  }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _apiService.put(
+      '/auth/change-password',
+      body: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      },
+    );
   }
 }

@@ -12,6 +12,7 @@ import 'package:sevenouti/core/widgets/app_background.dart';
 import 'package:sevenouti/core/widgets/app_widgets.dart';
 import 'package:sevenouti/core/widgets/modern_sheet.dart';
 import 'package:sevenouti/l10n/l10n.dart';
+import 'package:sevenouti/utils/localized_formatters.dart';
 import 'package:sevenouti/core/widgets/buttons.dart'
     hide IconButton, TextButton;
 
@@ -67,7 +68,9 @@ class HanoutDetailsView extends StatelessWidget {
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
           AppSnackBar.show(
             context,
-            message: context.l10n.clientHanoutOrderSentSuccess,
+            message: state.willBeProcessedWhenOpen
+                ? context.l10n.clientHanoutOrderQueuedWhenOpen
+                : context.l10n.clientHanoutOrderSentSuccess,
             type: SnackBarType.success,
           );
 
@@ -327,7 +330,7 @@ class HanoutDetailsView extends StatelessWidget {
                   ),
                   Text(
                     context.l10n.clientHanoutCurrentBalance(
-                      state.carnet!.formattedBalance,
+                      formatDh(context, state.carnet!.balance.abs()),
                     ),
                     style: AppTextStyles.bodySmall,
                   ),
@@ -452,7 +455,11 @@ class HanoutDetailsView extends StatelessWidget {
         _buildOptionTile(
           title: context.l10n.clientDeliveryDelivery,
           subtitle: context.l10n.clientHanoutDeliveryFee(
-            '${(state.hanout.deliveryFee ?? AppConstants.defaultDeliveryFee).toStringAsFixed(0)} DH',
+            formatDh(
+              context,
+              state.hanout.deliveryFee ?? AppConstants.defaultDeliveryFee,
+              decimals: 0,
+            ),
           ),
           icon: Icons.delivery_dining,
           isSelected: state.deliveryType == DeliveryType.delivery,

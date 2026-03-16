@@ -32,4 +32,17 @@ class ClientProfileRepository {
   Future<void> deleteMyAccount() async {
     await _apiService.delete('/auth/me');
   }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _apiService.put(
+      '/auth/change-password',
+      body: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      },
+    );
+  }
 }

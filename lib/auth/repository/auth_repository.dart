@@ -37,14 +37,21 @@ class AuthRepository {
     );
 
     final token = data['token'] as String?;
+    final refreshToken = data['refreshToken'] as String?;
     final role = data['user']?['role'] as String?;
+    final userId = data['user']?['id'] as String?;
 
     if (token == null || role == null) {
       throw Exception('Login response is missing token or role');
     }
 
     // 🔐 SAUVEGARDE DU TOKEN
-    await TokenStorage.saveToken(token, role);
+    await TokenStorage.saveToken(
+      token,
+      role,
+      refreshToken: refreshToken,
+      userId: userId,
+    );
 
     debugPrint('AuthRepository → login: token saved, role=$role');
 

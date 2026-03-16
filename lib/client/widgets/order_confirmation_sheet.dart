@@ -7,6 +7,7 @@ import 'package:sevenouti/core/widgets/buttons.dart';
 import 'package:sevenouti/core/widgets/distance_pill.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/utils/location_service.dart';
+import 'package:sevenouti/utils/localized_formatters.dart';
 
 /// Bottom Sheet de confirmation de commande
 class OrderConfirmationSheet extends StatefulWidget {
@@ -380,7 +381,7 @@ class _OrderConfirmationSheetState extends State<OrderConfirmationSheet> {
               ),
               Text(
                 deliveryFee > 0
-                    ? '${deliveryFee.toStringAsFixed(2)} DH'
+                    ? formatDh(context, deliveryFee)
                     : context.l10n.clientConfirmFree,
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontWeight: FontWeight.w600,
