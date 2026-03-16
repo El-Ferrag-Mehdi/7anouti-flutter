@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "en",
   "counterAppBarTitle": "Counter",
 
@@ -135,7 +135,7 @@
   "clientHomeHanoutOrdersSubtitle": "Choose a nearby hanout",
   "clientHomeScrollForHanouts": "Scroll to view hanouts.",
   "clientHomeGasDirectSubtitle": "Direct driver",
-  "clientHomeGasBadge": "13 DH + 2 DH",
+  "clientHomeGasBadge": "15 DH",
   "clientHomeCarnetInfoBanner": "Hanouts with the notebook icon support credit payments.",
   "clientHomeHeroWelcome": "Welcome",
   "clientHomeHeroTitle": "Your nearby hanouts",
@@ -242,6 +242,7 @@
   "clientConfirmLocationUsed": "Current location used",
 
   "clientHanoutOrderSentSuccess": "Order sent successfully!",
+  "clientHanoutOrderQueuedWhenOpen": "Order received. It will be processed when the hanout opens.",
   "clientHanoutSendingOrder": "Sending your order...",
   "clientHanoutRedirectTracking": "Redirecting to tracking...",
   "clientHanoutGenericError": "An error occurred",
@@ -441,9 +442,13 @@
   "hanoutSettingsLongitude": "Longitude",
   "hanoutSettingsUseCurrentPosition": "Use my current position",
   "hanoutSettingsServicesTitle": "Services",
+  "hanoutSettingsDirectToLivreurTitle": "Send orders directly to drivers",
+  "hanoutSettingsDirectToLivreurHelp": "If enabled: delivery orders are broadcast to nearby drivers while still visible on your side.",
   "hanoutSettingsEnableCarnet": "Enable notebook",
   "hanoutSettingsEnableCarnetHelp": "Enable this if you accept notebook customers.",
   "hanoutSettingsDeliveryFeeDh": "Delivery fee (DH)",
+  "hanoutSettingsOpeningTime": "Opening time",
+  "hanoutSettingsClosingTime": "Closing time",
   "hanoutSettingsEstimatedTimeMinutes": "Estimated delivery time (minutes)",
   "hanoutSettingsImageSelectError": "Image selection error: {message}",
   "@hanoutSettingsImageSelectError": {"placeholders": {"message": {"type": "String"}}},
@@ -505,7 +510,7 @@
 
   "livreurGasServiceTitle": "Gas bottle service",
   "livreurGasServiceDirect": "Direct service (no hanout)",
-  "livreurGasServicePriceBadge": "13 DH + 2 DH",
+  "livreurGasServicePriceBadge": "15 DH",
   "livreurGasActionArrived": "Arrived",
   "livreurGasActionPickedBottle": "Bottle picked",
   "livreurGasActionToHanout": "To hanout",
@@ -527,4 +532,5 @@
   "livreurEarningsServiceFeesValue": "Service fees: {value} DH",
   "@livreurEarningsServiceFeesValue": {"placeholders": {"value": {"type": "String"}}}
 }
+
 

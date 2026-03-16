@@ -1,7 +1,6 @@
 {
   "@@locale": "fr",
   "counterAppBarTitle": "Compteur",
-
   "authWelcomeTitle": "Bienvenue à 7anouti",
   "authWelcomeSubtitle": "Connectez-vous pour continuer",
   "authLoginTitle": "Connexion",
@@ -10,53 +9,62 @@
   "authPasswordLabel": "Mot de passe",
   "authPasswordInvalid": "Mot de passe invalide",
   "authLoginButton": "Se connecter",
-  "authCreateAccount": "Creer un compte",
-  "authRegisterTitle": "Creer un compte",
+  "authCreateAccount": "Créer un compte",
+  "authRegisterTitle": "Créer un compte",
   "authRegisterCardTitle": "Inscription",
-  "authRegisterButton": "Creer le compte",
-  "authAlreadyHaveAccount": "Deja un compte ? Se connecter",
-  "authRegistrationSuccess": "Inscription reussie",
+  "authRegisterButton": "Créer le compte",
+  "authAlreadyHaveAccount": "Déjà un compte ? Se connecter",
+  "authRegistrationSuccess": "Inscription réussie",
   "authRegistrationError": "Erreur d'inscription",
   "authLanguageLabel": "Langue",
-  "authFrench": "Francais",
+  "authFrench": "Français",
   "authArabic": "Arabe",
-
-  "settingsTitle": "Parametres",
+  "settingsTitle": "Paramètres",
   "settingsLanguageSectionTitle": "Langue",
   "settingsDeleteAccountSectionTitle": "Suppression du compte",
-  "settingsDeleteAccountDescription": "Cette action desactive votre compte et ne peut pas etre annulee.",
+  "settingsDeleteAccountDescription": "Cette action désactive votre compte et ne peut pas être annulée.",
   "settingsDeleteAccountButton": "Supprimer mon compte",
   "settingsDeleteAccountInProgress": "Suppression...",
   "settingsDeleteAccountDialogTitle": "Supprimer le compte ?",
-  "settingsDeleteAccountDialogMessage": "Votre compte sera desactive immediatement.",
+  "settingsDeleteAccountDialogMessage": "Votre compte sera désactivé immédiatement.",
   "settingsDeleteAccountDialogConfirm": "Continuer",
   "settingsDeleteAccountFinalTitle": "Confirmation finale",
-  "settingsDeleteAccountFinalMessage": "Confirmez-vous la suppression definitive de votre compte ?",
+  "settingsDeleteAccountFinalMessage": "Confirmez-vous la suppression définitive de votre compte ?",
   "settingsDeleteAccountFinalConfirm": "Oui, supprimer",
   "settingsDeleteAccountError": "Erreur suppression du compte: {message}",
-  "@settingsDeleteAccountError": {"placeholders": {"message": {"type": "String"}}},
-  "clientSettingsTitle": "Parametres du compte",
+  "@settingsDeleteAccountError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "clientSettingsTitle": "Paramètres du compte",
   "clientSettingsLoading": "Chargement du profil...",
   "clientSettingsSaveButton": "Enregistrer",
   "clientSettingsAccountSectionTitle": "Informations du compte",
   "clientSettingsNameLabel": "Nom complet",
-  "clientSettingsPhoneLabel": "Telephone",
+  "clientSettingsPhoneLabel": "Téléphone",
   "clientSettingsEmailLabel": "Email",
   "clientSettingsAddressLabel": "Adresse",
-  "clientSettingsRequiredFields": "Nom et telephone sont obligatoires.",
-  "clientSettingsSaved": "Profil mis a jour",
+  "clientSettingsRequiredFields": "Nom et téléphone sont obligatoires.",
+  "clientSettingsSaved": "Profil mis à jour",
   "clientSettingsSaveError": "Erreur de sauvegarde: {message}",
-  "@clientSettingsSaveError": {"placeholders": {"message": {"type": "String"}}},
-
-  "clientMenuSettings": "Parametres du compte",
-  "clientMenuLogout": "Se deconnecter",
+  "@clientSettingsSaveError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "clientMenuSettings": "Paramètres du compte",
+  "clientMenuLogout": "Se déconnecter",
   "clientShellCompareHomeTooltip": "Comparer l'accueil",
   "clientShellHomeModeAggressive": "Mode accueil: agressif",
   "clientShellHomeModeStandard": "Mode accueil: standard",
   "clientHomeTab": "Accueil",
   "clientOrdersTab": "Commandes",
   "clientCarnetTab": "Carnet",
-
   "clientCommonLoading": "Chargement...",
   "clientCommonError": "Erreur",
   "clientCommonClose": "Fermer",
@@ -73,72 +81,98 @@
   "clientCommonDeliveryAddress": "Adresse de livraison",
   "clientCommonDeliveryAddressHint": "Quartier, rue, immeuble",
   "clientCommonDriverNotesOptional": "Notes livreur (optionnel)",
-  "clientCommonDriverNotesHint": "Ex: sonner, 3eme etage",
+  "clientCommonDriverNotesHint": "Ex: sonner, 3ème étage",
   "clientCommonServiceFee": "Frais de service",
   "clientCommonTotal": "Total",
   "clientCommonSending": "Envoi...",
-  "clientCommonUnknownState": "Etat inconnu",
-  "clientCommonRecently": "recentement",
+  "clientCommonUnknownState": "État inconnu",
+  "clientCommonRecently": "récemment",
   "clientCommonDays": "{count} jour(s)",
-  "@clientCommonDays": {"placeholders": {"count": {"type": "int"}}},
+  "@clientCommonDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "clientCommonWeeks": "{count} semaine(s)",
-  "@clientCommonWeeks": {"placeholders": {"count": {"type": "int"}}},
+  "@clientCommonWeeks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "clientCommonMonths": "{count} mois",
-  "@clientCommonMonths": {"placeholders": {"count": {"type": "int"}}},
+  "@clientCommonMonths": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "clientCommonContactHanout": "Contacter le hanout",
   "clientCommonContactDriver": "Contacter le livreur",
   "clientCommonErrorWithMessage": "Erreur: {message}",
-  "@clientCommonErrorWithMessage": {"placeholders": {"message": {"type": "String"}}},
-
+  "@clientCommonErrorWithMessage": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "clientDeliveryPickup": "Collecte",
   "clientDeliveryDelivery": "Livraison",
-  "clientPaymentCash": "Especes",
+  "clientPaymentCash": "Espèces",
   "clientPaymentCarnet": "Carnet",
-
   "clientOrderStatusPending": "En attente",
-  "clientOrderStatusAccepted": "Acceptee",
-  "clientOrderStatusPreparing": "Preparation",
-  "clientOrderStatusReady": "Prete",
-  "clientOrderStatusPickedUp": "Recuperee",
+  "clientOrderStatusAccepted": "Acceptée",
+  "clientOrderStatusPreparing": "Préparation",
+  "clientOrderStatusReady": "Prête",
+  "clientOrderStatusPickedUp": "Récupérée",
   "clientOrderStatusDelivering": "En livraison",
-  "clientOrderStatusDelivered": "Livree",
-  "clientOrderStatusCancelled": "Annulee",
-
+  "clientOrderStatusDelivered": "Livrée",
+  "clientOrderStatusCancelled": "Annulée",
   "clientGasStatusPending": "En attente",
   "clientGasStatusEnRoute": "En route",
-  "clientGasStatusArrive": "Arrive",
-  "clientGasStatusPickedEmpty": "Bouteille vide recuperee",
+  "clientGasStatusArrive": "Arrivé",
+  "clientGasStatusPickedEmpty": "Bouteille vide récupérée",
   "clientGasStatusToHanout": "Vers le hanout",
   "clientGasStatusReturnHome": "Retour maison",
-  "clientGasStatusDelivered": "Livree",
-  "clientGasStatusCancelled": "Annulee",
-  "clientGasStatusRejected": "Refusee",
+  "clientGasStatusDelivered": "Livrée",
+  "clientGasStatusCancelled": "Annulée",
+  "clientGasStatusRejected": "Refusée",
   "clientGasMessagePending": "En attente d'un livreur.",
   "clientGasMessageEnRoute": "Le livreur est en route vers vous.",
-  "clientGasMessageArrive": "Le livreur est arrive pour recuperer la bouteille vide.",
-  "clientGasMessagePickedEmpty": "La bouteille vide a ete recuperee.",
+  "clientGasMessageArrive": "Le livreur est arrivé pour récupérer la bouteille vide.",
+  "clientGasMessagePickedEmpty": "La bouteille vide a été récupérée.",
   "clientGasMessageToHanout": "Le livreur va au hanout.",
-  "clientGasMessageReturnHome": "Le livreur revient a votre adresse.",
-  "clientGasMessageDelivered": "Nouvelle bouteille livree.",
-  "clientGasMessageCancelled": "Demande annulee.",
-  "clientGasMessageRejected": "Demande refusee.",
-
+  "clientGasMessageReturnHome": "Le livreur revient ? votre adresse.",
+  "clientGasMessageDelivered": "Nouvelle bouteille livrée.",
+  "clientGasMessageCancelled": "Demande annulée.",
+  "clientGasMessageRejected": "Demande refusée.",
   "clientHomeLoadingNearby": "Recherche des hanouts proches...",
-  "clientHomeNoHanoutNearby": "Aucun hanout proche trouve.",
-  "clientHomeLocationPermissionDenied": "Permission de localisation refusee.",
-  "clientHomeNearbyHanoutsTitle": "Hanouts a proximite",
-  "clientHomeHanoutsFound": "{count} hanout(s) trouves",
-  "@clientHomeHanoutsFound": {"placeholders": {"count": {"type": "int"}}},
+  "clientHomeNoHanoutNearby": "Aucun hanout proche trouv?.",
+  "clientHomeLocationPermissionDenied": "Permission de localisation refusée.",
+  "clientHomeNearbyHanoutsTitle": "Hanouts à proximité",
+  "clientHomeHanoutsFound": "{count} hanout(s) trouvés",
+  "@clientHomeHanoutsFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "clientHomeOrdersServicesTitle": "Commandes et services",
   "clientHomeOrdersServicesSubtitle": "Hanouts proches et service direct",
   "clientHomeHanoutOrdersTitle": "Commandes hanout",
   "clientHomeHanoutOrdersSubtitle": "Choisissez un hanout proche",
-  "clientHomeScrollForHanouts": "Defilez pour voir les hanouts.",
+  "clientHomeScrollForHanouts": "Défilez pour voir les hanouts.",
   "clientHomeGasDirectSubtitle": "Livreur direct",
-  "clientHomeGasBadge": "13 DH + 2 DH",
-  "clientHomeCarnetInfoBanner": "Les hanouts avec l'icone carnet acceptent le paiement a credit.",
+  "clientHomeGasBadge": "15 DH",
+  "clientHomeCarnetInfoBanner": "Les hanouts avec l'icone carnet acceptent le paiement à crédit.",
   "clientHomeHeroWelcome": "Bienvenue à 7anouti",
-  "clientHomeHeroTitle": "Vos hanouts a proximite",
+  "clientHomeHeroTitle": "Vos hanouts à proximité",
   "clientHomeHeroSubtitle": "Commande rapide, paiement flexible.",
   "clientHomeHeroSubtitleCustom": "Continuez vos courses habituelles, sans bouger.",
   "clientHomeQuickActionsTitle": "Choisir et commander",
@@ -149,7 +183,6 @@
   "clientHomeQuickActionsGasBadge": "15 DH",
   "clientHomeAggressiveTitle": "7anouti Express",
   "clientHomeAggressiveSubtitle": "Courses et gaz, livre rapidement.",
-
   "clientGasBottleTitle": "Bouteille de gaz",
   "clientGasServiceTitle": "Service bouteille de gaz",
   "clientGasServiceDescription": "Un livreur vient chez vous, prend la bouteille vide, prend une nouvelle et vous la livre.",
@@ -158,12 +191,11 @@
   "clientGasPromoNormalPrice": "+ le prix normal de gaz que vous payez",
   "clientGasRequestDriver": "Demander un livreur",
   "clientGasEnterAddress": "Veuillez entrer votre adresse.",
-  "clientGasRequestSent": "Demande envoyee au livreur.",
-  "clientGasNoDeliveredToRate": "Aucune demande livree a evaluer.",
+  "clientGasRequestSent": "Demande envoyée au livreur.",
+  "clientGasNoDeliveredToRate": "Aucune demande livrée à évaluer.",
   "clientGasDetailsTitle": "Details du service",
   "clientGasServiceLabel": "Service",
   "clientGasRefreshError": "Impossible d'actualiser la demande",
-
   "clientOrdersLoading": "Chargement de vos commandes...",
   "clientOrdersEmptyMessage": "Vous n'avez pas encore de commande.",
   "clientOrdersSeeHanouts": "Voir les hanouts",
@@ -171,13 +203,25 @@
   "clientOrdersFilterAll": "Tout",
   "clientOrdersFilterInProgress": "En cours",
   "clientOrdersFilterAllFeminine": "Toutes",
-  "clientOrdersFilterDelivered": "Livrees",
-  "clientOrdersFilterCancelled": "Annulees",
+  "clientOrdersFilterDelivered": "Livrées",
+  "clientOrdersFilterCancelled": "Annulées",
   "clientOrdersOrderNumber": "Commande #{id}",
-  "@clientOrdersOrderNumber": {"placeholders": {"id": {"type": "String"}}},
+  "@clientOrdersOrderNumber": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
   "clientOrdersHeaderTitle": "Mes commandes",
   "clientOrdersHeaderCount": "{count} commande(s) au total",
-  "@clientOrdersHeaderCount": {"placeholders": {"count": {"type": "int"}}},
+  "@clientOrdersHeaderCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "clientOrdersClientAddressFallback": "Adresse client",
   "clientOrdersTrack": "Suivre",
   "clientOrdersRateDriver": "Noter le livreur",
@@ -185,7 +229,13 @@
   "clientOrdersRate": "Noter",
   "clientOrdersTrackOrder": "Suivre la commande",
   "clientOrdersReorderSoon": "Recommander \"{order}\" (bientot)",
-  "@clientOrdersReorderSoon": {"placeholders": {"order": {"type": "String"}}},
+  "@clientOrdersReorderSoon": {
+    "placeholders": {
+      "order": {
+        "type": "String"
+      }
+    }
+  },
   "clientOrdersRateOrderTitle": "Noter la commande",
   "clientOrdersRateDriverTitle": "Noter le livreur",
   "clientOrdersHanoutRating": "Note du hanout",
@@ -193,7 +243,6 @@
   "clientOrdersDriverRating": "Note du livreur",
   "clientOrdersDriverCommentHint": "Commentaire livreur (optionnel)",
   "clientOrdersThanksReview": "Merci pour votre avis",
-
   "clientCarnetLoading": "Chargement des carnets...",
   "clientCarnetEmptyMessage": "Vous n'avez pas de carnet actif.",
   "clientCarnetSeeHanouts": "Voir les hanouts",
@@ -202,32 +251,55 @@
   "clientCarnetToRepay": "A rembourser",
   "clientCarnetNoDebt": "Aucune dette",
   "clientCarnetActiveCount": "{count} carnet(s) actif(s)",
-  "@clientCarnetActiveCount": {"placeholders": {"count": {"type": "int"}}},
-  "clientCarnetInfoBanner": "Le carnet vous permet d'acheter a credit.",
+  "@clientCarnetActiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clientCarnetInfoBanner": "Le carnet vous permet d'acheter à crédit.",
   "clientCarnetActiveSince": "Actif depuis {value}",
-  "@clientCarnetActiveSince": {"placeholders": {"value": {"type": "String"}}},
+  "@clientCarnetActiveSince": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "clientCarnetCurrentBalance": "Solde actuel",
   "clientCarnetLastActivity": "Derniere activite: {value}",
-  "@clientCarnetLastActivity": {"placeholders": {"value": {"type": "String"}}},
+  "@clientCarnetLastActivity": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "clientCarnetDetailsTitle": "Details du carnet",
   "clientCarnetTransactionsLoading": "Chargement des transactions...",
   "clientCarnetNoTransactions": "Aucune transaction",
   "clientCarnetTransactionHistory": "Historique des transactions",
-  "clientCarnetCreditPurchases": "Achats a credit",
+  "clientCarnetCreditPurchases": "Achats à crédit",
   "clientCarnetPayments": "Paiements",
   "clientCarnetBalanceAfter": "Solde: {value} DH",
-  "@clientCarnetBalanceAfter": {"placeholders": {"value": {"type": "String"}}},
+  "@clientCarnetBalanceAfter": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "clientCarnetMakePayment": "Effectuer un paiement",
   "clientCarnetCallingHanout": "Appel du hanout...",
   "clientCarnetPaymentTitle": "Effectuer un paiement",
   "clientCarnetPaymentMessage": "Pour payer votre dette, rendez-vous directement chez le hanout.",
   "clientCarnetOnlineSoon": "Le paiement en ligne sera disponible bientot",
   "clientCarnetCallHanout": "Appeler le hanout",
-
   "clientConfirmOrderTitle": "Confirmer votre commande",
   "clientConfirmYourOrder": "Votre commande",
-  "clientConfirmAddressHint": "Entrez votre adresse complete",
-  "clientConfirmAddressDetailsHint": "Details (immeuble, etage, porte)",
+  "clientConfirmAddressHint": "Entrez votre adresse complète",
+  "clientConfirmAddressDetailsHint": "Details (immeuble, étage, porte)",
   "clientConfirmPickupPoint": "Point de collecte",
   "clientConfirmTypeLabel": "Type",
   "clientConfirmPaymentLabel": "Paiement",
@@ -240,20 +312,26 @@
   "clientConfirmLocationError": "Impossible d'obtenir votre position",
   "clientConfirmMyCurrentGps": "Ma position GPS actuelle",
   "clientConfirmLocationUsed": "Position actuelle utilisee",
-
-  "clientHanoutOrderSentSuccess": "Commande envoyee avec succes !",
+  "clientHanoutOrderSentSuccess": "Commande envoyée avec succès !",
+  "clientHanoutOrderQueuedWhenOpen": "Commande enregistrée. Elle sera traitée à l'ouverture du hanout.",
   "clientHanoutSendingOrder": "Envoi de votre commande...",
   "clientHanoutRedirectTracking": "Redirection vers le suivi...",
   "clientHanoutGenericError": "Une erreur est survenue",
   "clientHanoutOpen": "Ouvert",
-  "clientHanoutClosed": "Ferme",
+  "clientHanoutClosed": "Fermé",
   "clientHanoutCarnetActive": "Carnet actif",
   "clientHanoutCurrentBalance": "Solde actuel: {balance}",
-  "@clientHanoutCurrentBalance": {"placeholders": {"balance": {"type": "String"}}},
+  "@clientHanoutCurrentBalance": {
+    "placeholders": {
+      "balance": {
+        "type": "String"
+      }
+    }
+  },
   "clientHanoutCarnetAvailable": "Carnet disponible",
   "clientHanoutCarnetExplain": "Ce hanout accepte le paiement carnet. Demandez l'activation pour l'utiliser.",
   "clientHanoutCarnetCredit": "Credit carnet",
-  "clientHanoutAddedToCarnet": "Le montant sera ajoute a votre carnet",
+  "clientHanoutAddedToCarnet": "Le montant sera ajout? ? votre carnet",
   "clientHanoutCarnetUnavailable": "Carnet indisponible pour ce compte",
   "clientHanoutRequestActivation": "Demander l'activation",
   "clientHanoutYourOrder": "Votre commande",
@@ -262,39 +340,72 @@
   "clientHanoutCharactersCount": "{current}/{max} caracteres",
   "@clientHanoutCharactersCount": {
     "placeholders": {
-      "current": {"type": "int"},
-      "max": {"type": "int"}
+      "current": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
     }
   },
   "clientHanoutSuggestedProducts": "Produits suggeres",
   "clientHanoutSeeAllProductsSoon": "Affichage de tous les produits bientot",
-  "clientHanoutProductAdded": "{name} ajoute a la commande",
-  "@clientHanoutProductAdded": {"placeholders": {"name": {"type": "String"}}},
+  "clientHanoutProductAdded": "{name} ajout? a la commande",
+  "@clientHanoutProductAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "clientHanoutCategories": "Categories",
   "clientHanoutPickupType": "Type de retrait",
   "clientHanoutDeliveryFee": "Frais de livraison: {fee}",
-  "@clientHanoutDeliveryFee": {"placeholders": {"fee": {"type": "String"}}},
+  "@clientHanoutDeliveryFee": {
+    "placeholders": {
+      "fee": {
+        "type": "String"
+      }
+    }
+  },
   "clientHanoutPickupFree": "Gratuit - retrait sur place",
   "clientHanoutPayOnDelivery": "Payer a la livraison",
   "clientHanoutDistance": "Distance: {distance}",
-  "@clientHanoutDistance": {"placeholders": {"distance": {"type": "String"}}},
+  "@clientHanoutDistance": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
   "clientHanoutEstimatedMinutes": "{minutes} min",
-  "@clientHanoutEstimatedMinutes": {"placeholders": {"minutes": {"type": "String"}}},
+  "@clientHanoutEstimatedMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
   "clientHanoutRating": "Note: {rating}",
-  "@clientHanoutRating": {"placeholders": {"rating": {"type": "String"}}},
-
+  "@clientHanoutRating": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
   "clientOrderTrackingTitle": "Suivi de commande",
   "clientOrderTrackingCancelOrder": "Annuler la commande",
   "clientOrderTrackingEta": "Temps estime: 15-20 min",
   "clientOrderTrackingDetailedTracking": "Suivi detaille",
   "clientOrderTrackingStepPlaced": "Commande passee",
-  "clientOrderTrackingStepAccepted": "Acceptee par le hanout",
+  "clientOrderTrackingStepAccepted": "Acceptée par le hanout",
   "clientOrderTrackingStepPreparing": "En preparation",
-  "clientOrderTrackingStepReady": "Prete",
-  "clientOrderTrackingStepPickedUp": "Recuperee par le livreur",
+  "clientOrderTrackingStepReady": "Prête",
+  "clientOrderTrackingStepPickedUp": "Récupérée par le livreur",
   "clientOrderTrackingStepDelivering": "En livraison",
-  "clientOrderTrackingStepDelivered": "Livree",
-  "clientOrderTrackingStepCollected": "Recuperee",
+  "clientOrderTrackingStepDelivered": "Livrée",
+  "clientOrderTrackingStepCollected": "Récupérée",
   "clientOrderTrackingOrderDetails": "Details de la commande",
   "clientOrderTrackingNumber": "Numero",
   "clientOrderTrackingContent": "Contenu",
@@ -309,63 +420,72 @@
   "clientOrderTrackingRateOrder": "Noter la commande",
   "clientOrderTrackingEditReview": "Modifier mon avis",
   "clientOrderTrackingReviewSaved": "Avis enregistre",
-  "clientOrderTrackingMessagePending": "Votre commande a ete envoyee au hanout.",
+  "clientOrderTrackingMessagePending": "Votre commande a été envoyée au hanout.",
   "clientOrderTrackingMessageAccepted": "Le hanout a accepte votre commande.",
   "clientOrderTrackingMessagePreparing": "Votre commande est en cours de preparation.",
-  "clientOrderTrackingMessageReadyDelivery": "Votre commande est prete et attend le livreur.",
-  "clientOrderTrackingMessageReadyPickup": "Votre commande est prete a etre recuperee.",
-  "clientOrderTrackingMessagePickedUp": "Le livreur a recupere votre commande.",
+  "clientOrderTrackingMessageReadyDelivery": "Votre commande est prête et attend le livreur.",
+  "clientOrderTrackingMessageReadyPickup": "Votre commande est prête a être récupérée.",
+  "clientOrderTrackingMessagePickedUp": "Le livreur a récupéré votre commande.",
   "clientOrderTrackingMessageDelivering": "Votre commande est en cours de livraison.",
-  "clientOrderTrackingMessageDelivered": "Votre commande a ete livree avec succes !",
-  "clientOrderTrackingMessageCancelled": "Cette commande a ete annulee.",
-  "clientOrderTrackingCancelConfirm": "Etes-vous sur de vouloir annuler cette commande ?",
+  "clientOrderTrackingMessageDelivered": "Votre commande a été livrée avec succès !",
+  "clientOrderTrackingMessageCancelled": "Cette commande a été annulée.",
+  "clientOrderTrackingCancelConfirm": "Êtes-vous sûr de vouloir annuler cette commande ?",
   "clientOrderTrackingCancelYes": "Oui, annuler",
-  "clientOrderTrackingCancelled": "Commande annulee",
-  "clientOrderTrackingHanoutPhoneUnavailable": "Telephone hanout indisponible",
-  "clientOrderTrackingDriverPhoneUnavailable": "Telephone livreur indisponible",
-
+  "clientOrderTrackingCancelled": "Commande annulée",
+  "clientOrderTrackingHanoutPhoneUnavailable": "Téléphone hanout indisponible",
+  "clientOrderTrackingDriverPhoneUnavailable": "Téléphone livreur indisponible",
   "hanoutNavOrders": "Commandes",
   "hanoutNavHistory": "Historique",
   "hanoutNavClients": "Clients",
   "hanoutNavCarnet": "Carnet",
-  "hanoutMenuSettings": "Parametres du hanout",
-  "hanoutMenuLogout": "Se deconnecter",
+  "hanoutMenuSettings": "Paramètres du hanout",
+  "hanoutMenuLogout": "Se déconnecter",
   "hanoutCommonClient": "Client",
   "hanoutCommonName": "Nom",
-  "hanoutCommonPhone": "Telephone",
+  "hanoutCommonPhone": "Téléphone",
   "hanoutCommonAddress": "Adresse",
   "hanoutCommonDescription": "Description",
   "hanoutCommonSave": "Enregistrer",
   "hanoutCommonValidate": "Valider",
   "hanoutOrderNumber": "Commande #{id}",
-  "@hanoutOrderNumber": {"placeholders": {"id": {"type": "String"}}},
-
+  "@hanoutOrderNumber": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
   "hanoutOrdersLoading": "Chargement des commandes...",
   "hanoutOrdersEmpty": "Aucune commande pour le moment.",
   "hanoutOrdersNoActive": "Aucune commande en cours.",
   "hanoutOrdersTitle": "Commandes du hanout",
   "hanoutOrdersTotalCount": "{count} commande(s) au total",
-  "@hanoutOrdersTotalCount": {"placeholders": {"count": {"type": "int"}}},
+  "@hanoutOrdersTotalCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "hanoutOrdersFilterAll": "Toutes",
   "hanoutOrdersFilterPending": "En attente",
   "hanoutOrdersFilterAccepted": "Acceptees",
-  "hanoutOrdersFilterReady": "Pretes",
+  "hanoutOrdersFilterReady": "Prêtes",
   "hanoutOrdersActionAccept": "Accepter",
-  "hanoutOrdersActionReady": "Prete",
-  "hanoutOrdersDriverAssigned": "Livreur assigne",
-  "hanoutOrdersDeliveryRequestSent": "Demande envoyee",
+  "hanoutOrdersActionReady": "Prête",
+  "hanoutOrdersDriverAssigned": "Livreur assigné",
+  "hanoutOrdersDeliveryRequestSent": "Demande envoyée",
   "hanoutOrdersActionAskDriver": "Demander livreur",
   "hanoutOrdersActionStartInternal": "Demarrer interne",
-  "hanoutOrdersActionMarkDelivered": "Marquer livree",
-  "hanoutOrdersActionDeliveredInternal": "Livree (interne)",
+  "hanoutOrdersActionMarkDelivered": "Marquer livrée",
+  "hanoutOrdersActionDeliveredInternal": "Livrée (interne)",
   "hanoutOrdersAcceptDialogTitle": "Accepter la commande",
   "hanoutOrdersTotalOptional": "Prix total (DH) - optionnel",
   "hanoutOrdersEditTotalDialogTitle": "Modifier le prix total",
   "hanoutOrdersTotalRequired": "Prix total (DH) *",
-  "hanoutOrdersReadyRequiresTotal": "Obligatoire pour passer a Prete",
+  "hanoutOrdersReadyRequiresTotal": "Obligatoire pour passer a Prête",
   "hanoutOrdersRequestDriverDialogTitle": "Demander un livreur",
-  "hanoutOrdersRequestDriverDialogBody": "Une demande sera envoyee aux livreurs disponibles.",
-
+  "hanoutOrdersRequestDriverDialogBody": "Une demande sera envoyée aux livreurs disponibles.",
   "hanoutOrderDetailsClientSection": "Client",
   "hanoutOrderDetailsOpenMaps": "Ouvrir dans Maps",
   "hanoutOrderDetailsOrderSection": "Commande",
@@ -375,27 +495,36 @@
   "hanoutOrderDetailsDeliveryType": "Livraison",
   "hanoutOrderDetailsPaymentMethod": "Paiement",
   "hanoutOrderDetailsAmountSection": "Montant",
-
   "hanoutHistoryLoading": "Chargement de l'historique...",
   "hanoutHistoryEmpty": "Aucune commande terminee.",
   "hanoutHistoryNoData": "Aucun historique pour le moment.",
   "hanoutHistoryTitle": "Historique des commandes",
   "hanoutHistoryCount": "{count} commande(s)",
-  "@hanoutHistoryCount": {"placeholders": {"count": {"type": "int"}}},
+  "@hanoutHistoryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "hanoutHistoryStatTotal": "Total",
-  "hanoutHistoryStatDelivered": "Livrees",
-  "hanoutHistoryStatCancelled": "Annulees",
+  "hanoutHistoryStatDelivered": "Livrées",
+  "hanoutHistoryStatCancelled": "Annulées",
   "hanoutHistoryStatRevenue": "Chiffre d'affaires",
-
   "hanoutClientsLoading": "Chargement des clients...",
   "hanoutClientsEmpty": "Aucun client avec carnet actif.",
   "hanoutClientsDebt": "Dette: {value}",
-  "@hanoutClientsDebt": {"placeholders": {"value": {"type": "String"}}},
-
+  "@hanoutClientsDebt": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "hanoutCarnetTabCarnets": "Carnets",
   "hanoutCarnetTabRequests": "Demandes",
   "hanoutCarnetLoading": "Chargement du carnet...",
-  "hanoutCarnetEmptyAll": "Aucune donnee pour le moment.",
+  "hanoutCarnetEmptyAll": "Aucune donnée pour le moment.",
   "hanoutCarnetEmptyActive": "Aucun carnet actif.",
   "hanoutCarnetNoRequests": "Aucune demande en attente.",
   "hanoutCarnetDebt": "Dette",
@@ -404,7 +533,7 @@
   "hanoutCarnetPayment": "Paiement",
   "hanoutCarnetReject": "Refuser",
   "hanoutCarnetApprove": "Approuver",
-  "hanoutCarnetRejectReason": "Refuse",
+  "hanoutCarnetRejectReason": "Refus?",
   "hanoutCarnetLimitReached": "Plafond atteint",
   "hanoutCarnetLimitNear": "Plafond 80%",
   "hanoutCarnetSetLimitTitle": "Definir le plafond",
@@ -417,10 +546,16 @@
   "hanoutCarnetTransactionsEmpty": "Aucune transaction pour le moment",
   "hanoutCarnetCurrentDebt": "Dette actuelle",
   "hanoutCarnetTransactionsHistory": "Historique des transactions",
-  "hanoutCarnetCreditPurchases": "Achats a credit",
+  "hanoutCarnetCreditPurchases": "Achats à crédit",
   "hanoutCarnetPayments": "Paiements",
   "hanoutCarnetBalanceAfter": "Solde: {value} DH",
-  "@hanoutCarnetBalanceAfter": {"placeholders": {"value": {"type": "String"}}},
+  "@hanoutCarnetBalanceAfter": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "hanoutCarnetPhysicalOrderShort": "Cmd physique",
   "hanoutCarnetAddPhysicalOrderTitle": "Ajouter une commande physique",
   "hanoutCarnetOrderDescription": "Description de la commande",
@@ -430,10 +565,9 @@
   "hanoutOrderLoadError": "Impossible de charger le detail de la commande.",
   "hanoutCarnetPhysicalOrderTitle": "Commande physique",
   "hanoutCarnetNoDescription": "Aucune description disponible.",
-
-  "hanoutSettingsTitle": "Parametres du hanout",
+  "hanoutSettingsTitle": "Paramètres du hanout",
   "hanoutSettingsLoading": "Chargement du hanout...",
-  "hanoutSettingsGeneralInfo": "Informations generales",
+  "hanoutSettingsGeneralInfo": "Informations générales",
   "hanoutSettingsNameLabel": "Nom du hanout",
   "hanoutSettingsUploadImage": "Uploader une image",
   "hanoutSettingsLocationTitle": "Localisation",
@@ -441,78 +575,112 @@
   "hanoutSettingsLongitude": "Longitude",
   "hanoutSettingsUseCurrentPosition": "Utiliser ma position actuelle",
   "hanoutSettingsServicesTitle": "Services",
+  "hanoutSettingsDirectToLivreurTitle": "Envoyer les commandes directement aux livreurs",
+  "hanoutSettingsDirectToLivreurHelp": "Si activé : la commande de livraison est diffusée aux livreurs proches tout en restant visible chez vous.",
   "hanoutSettingsEnableCarnet": "Activer le carnet",
   "hanoutSettingsEnableCarnetHelp": "Choisis cette option si tu acceptes les clients avec carnet.",
   "hanoutSettingsDeliveryFeeDh": "Frais de livraison (DH)",
-  "hanoutSettingsEstimatedTimeMinutes": "Temps de livraison estime (minutes)",
-  "hanoutSettingsImageSelectError": "Erreur selection image: {message}",
-  "@hanoutSettingsImageSelectError": {"placeholders": {"message": {"type": "String"}}},
-  "hanoutSettingsPositionUnavailable": "Position indisponible ou permission refusee",
-  "hanoutSettingsPositionUpdated": "Position mise a jour",
+  "hanoutSettingsOpeningTime": "Heure d'ouverture",
+  "hanoutSettingsClosingTime": "Heure de fermeture",
+  "hanoutSettingsEstimatedTimeMinutes": "Temps de livraison estimé (minutes)",
+  "hanoutSettingsImageSelectError": "Erreur sélection image: {message}",
+  "@hanoutSettingsImageSelectError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "hanoutSettingsPositionUnavailable": "Position indisponible ou permission refusée",
+  "hanoutSettingsPositionUpdated": "Position mise à jour",
   "hanoutSettingsPositionError": "Erreur position: {message}",
-  "@hanoutSettingsPositionError": {"placeholders": {"message": {"type": "String"}}},
-  "hanoutSettingsRequiredFields": "Nom, adresse, telephone, latitude et longitude sont obligatoires",
+  "@hanoutSettingsPositionError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "hanoutSettingsRequiredFields": "Nom, adresse, téléphone, latitude et longitude sont obligatoires",
   "hanoutSettingsInvalidDeliveryFee": "Frais de livraison invalide",
   "hanoutSettingsInvalidEstimatedTime": "Temps de livraison invalide",
-  "hanoutSettingsSaved": "Parametres enregistres",
+  "hanoutSettingsSaved": "Paramètres enregistrés",
   "hanoutSettingsSaveError": "Erreur sauvegarde: {message}",
-  "@hanoutSettingsSaveError": {"placeholders": {"message": {"type": "String"}}},
-
+  "@hanoutSettingsSaveError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "livreurNavAvailable": "Disponible",
   "livreurNavInProgress": "En cours",
   "livreurNavEarnings": "Gains",
-  "livreurMenuSettings": "Parametres du compte",
-  "livreurMenuLogout": "Se deconnecter",
-  "livreurSettingsTitle": "Parametres du compte livreur",
+  "livreurMenuSettings": "Paramètres du compte",
+  "livreurMenuLogout": "Se déconnecter",
+  "livreurSettingsTitle": "Paramètres du compte livreur",
   "livreurSettingsLoading": "Chargement du profil...",
   "livreurSettingsSaveButton": "Enregistrer",
   "livreurSettingsAccountSectionTitle": "Informations du compte",
   "livreurSettingsNameLabel": "Nom complet",
-  "livreurSettingsPhoneLabel": "Telephone",
+  "livreurSettingsPhoneLabel": "Téléphone",
   "livreurSettingsEmailLabel": "Email",
   "livreurSettingsAddressLabel": "Adresse",
-  "livreurSettingsRequiredFields": "Nom et telephone sont obligatoires.",
-  "livreurSettingsSaved": "Profil mis a jour",
+  "livreurSettingsRequiredFields": "Nom et téléphone sont obligatoires.",
+  "livreurSettingsSaved": "Profil mis à jour",
   "livreurSettingsSaveError": "Erreur de sauvegarde: {message}",
-  "@livreurSettingsSaveError": {"placeholders": {"message": {"type": "String"}}},
+  "@livreurSettingsSaveError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "livreurOpenMaps": "Ouvrir dans Maps",
   "livreurAccept": "Accepter",
   "livreurReject": "Refuser",
   "livreurOrderFallback": "Commande",
   "livreurClientFallback": "Client",
   "livreurClientAddressFallback": "Adresse client",
-
   "livreurRequestStatusPending": "En attente",
-  "livreurRequestStatusAccepted": "Acceptee",
-  "livreurRequestStatusRejected": "Refusee",
-
+  "livreurRequestStatusAccepted": "Acceptée",
+  "livreurRequestStatusRejected": "Refusée",
   "livreurAvailableLoading": "Chargement des demandes...",
   "livreurAvailableEmpty": "Aucune demande pour le moment.",
   "livreurAvailableTitle": "Demandes disponibles",
   "livreurAvailableCount": "{count} demande(s) a traiter",
-  "@livreurAvailableCount": {"placeholders": {"count": {"type": "int"}}},
-
+  "@livreurAvailableCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "livreurInProgressLoading": "Chargement des livraisons...",
   "livreurInProgressEmpty": "Aucune livraison en cours.",
   "livreurInProgressTitle": "Livraisons en cours",
   "livreurInProgressCount": "{count} livraison(s) active(s)",
-  "@livreurInProgressCount": {"placeholders": {"count": {"type": "int"}}},
+  "@livreurInProgressCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "livreurHanoutOrdersTitle": "Commandes hanout",
-  "livreurActionPickedUp": "Recuperee",
+  "livreurActionPickedUp": "Récupérée",
   "livreurActionDelivering": "En livraison",
-  "livreurActionDelivered": "Livree",
+  "livreurActionDelivered": "Livrée",
   "livreurCallClient": "Appeler le client",
-
   "livreurGasServiceTitle": "Service bouteille a gaz",
   "livreurGasServiceDirect": "Service direct (sans hanout)",
-  "livreurGasServicePriceBadge": "13 DH + 2 DH",
-  "livreurGasActionArrived": "Arrive",
-  "livreurGasActionPickedBottle": "Bouteille recuperee",
+  "livreurGasServicePriceBadge": "15 DH",
+  "livreurGasActionArrived": "Arrivé",
+  "livreurGasActionPickedBottle": "Bouteille récupérée",
   "livreurGasActionToHanout": "Vers le hanout",
   "livreurGasActionReturnHome": "Retour maison",
   "livreurGasActionDelivered": "Livre",
   "livreurGasActionUpdate": "Mettre a jour",
-
   "livreurEarningsLoading": "Chargement des gains...",
   "livreurEarningsTitle": "Gains du livreur",
   "livreurEarningsSubtitle": "Suivez vos revenus en temps reel",
@@ -523,8 +691,19 @@
   "livreurEarningsHistory": "Historique",
   "livreurEarningsNoIncome": "Aucun revenu enregistre.",
   "livreurEarningsDeliveryFees": "Frais livraison: {value} DH",
-  "@livreurEarningsDeliveryFees": {"placeholders": {"value": {"type": "String"}}},
+  "@livreurEarningsDeliveryFees": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "livreurEarningsServiceFeesValue": "Frais service: {value} DH",
-  "@livreurEarningsServiceFeesValue": {"placeholders": {"value": {"type": "String"}}}
+  "@livreurEarningsServiceFeesValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  }
 }
-

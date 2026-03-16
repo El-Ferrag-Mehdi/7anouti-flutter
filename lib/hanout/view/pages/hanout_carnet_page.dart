@@ -11,6 +11,7 @@ import 'package:sevenouti/hanout/models/hanout_models.dart';
 import 'package:sevenouti/hanout/repository/hanout_repositories.dart';
 import 'package:sevenouti/hanout/view/pages/hanout_carnet_details_page.dart';
 import 'package:sevenouti/l10n/l10n.dart';
+import 'package:sevenouti/utils/localized_formatters.dart';
 
 class HanoutCarnetPage extends StatelessWidget {
   const HanoutCarnetPage({super.key});
@@ -161,7 +162,7 @@ class HanoutCarnetView extends StatelessWidget {
                       Expanded(
                         child: _buildInfoChip(
                           label: l10n.hanoutCarnetDebt,
-                          value: carnet.formattedBalance,
+                          value: formatDh(context, carnet.balance.abs()),
                           color: carnet.hasDebt
                               ? AppColors.error
                               : AppColors.success,
@@ -172,7 +173,7 @@ class HanoutCarnetView extends StatelessWidget {
                         child: _buildInfoChip(
                           label: l10n.hanoutCarnetLimit,
                           value: carnet.creditLimit != null
-                              ? '${carnet.creditLimit!.toStringAsFixed(2)} DH'
+                              ? formatDh(context, carnet.creditLimit!)
                               : l10n.hanoutCarnetUndefined,
                           color: AppColors.info,
                         ),

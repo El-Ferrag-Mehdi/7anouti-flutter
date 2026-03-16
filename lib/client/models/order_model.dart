@@ -24,6 +24,7 @@ class OrderModel {
   final DateTime? deliveredAt;
   final DateTime? cancelledAt;
   final String? cancellationReason;
+  final bool willBeProcessedWhenOpen;
 
   const OrderModel({
     required this.id,
@@ -50,6 +51,7 @@ class OrderModel {
     this.deliveredAt,
     this.cancelledAt,
     this.cancellationReason,
+    this.willBeProcessedWhenOpen = false,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -92,6 +94,8 @@ class OrderModel {
           ? DateTime.parse(json['cancelledAt'] as String)
           : null,
       cancellationReason: json['cancellationReason'] as String?,
+      willBeProcessedWhenOpen:
+          json['willBeProcessedWhenOpen'] as bool? ?? false,
     );
   }
 
@@ -121,6 +125,7 @@ class OrderModel {
       'deliveredAt': deliveredAt?.toIso8601String(),
       'cancelledAt': cancelledAt?.toIso8601String(),
       'cancellationReason': cancellationReason,
+      'willBeProcessedWhenOpen': willBeProcessedWhenOpen,
     };
   }
 }

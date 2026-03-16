@@ -53,6 +53,9 @@ class ClientHomeView extends StatelessWidget {
   });
 
   final ClientHomeVariant variant;
+  static final GlobalKey _hanoutsSectionKey = const GlobalObjectKey(
+    'client-home-hanouts-section',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -138,13 +141,17 @@ class ClientHomeView extends StatelessWidget {
                   AppSpacing.md,
                   AppSpacing.sm,
                 ),
-                child: _buildQuickActions(context),
+                child: _buildQuickActions(
+                  context,
+                  hasHanouts: state.hanouts.isNotEmpty,
+                ),
               ),
             ),
 
             // Section title + info carnet
             SliverToBoxAdapter(
               child: Padding(
+                key: _hanoutsSectionKey,
                 padding: const EdgeInsetsDirectional.fromSTEB(
                   AppSpacing.md,
                   AppSpacing.lg,
@@ -201,11 +208,17 @@ class ClientHomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActions(BuildContext context) {
-    return _buildAggressiveQuickActions(context);
+  Widget _buildQuickActions(
+    BuildContext context, {
+    required bool hasHanouts,
+  }) {
+    return _buildAggressiveQuickActions(context, hasHanouts: hasHanouts);
   }
 
-  Widget _buildAggressiveQuickActions(BuildContext context) {
+  Widget _buildAggressiveQuickActions(
+    BuildContext context, {
+    required bool hasHanouts,
+  }) {
     final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,13 +233,7 @@ class ClientHomeView extends StatelessWidget {
           subtitle: l10n.clientHomeQuickActionsCoursesSubtitle,
           icon: Icons.storefront,
           color: AppColors.primary,
-          onTap: () {
-            AppSnackBar.show(
-              context,
-              message: context.l10n.clientHomeScrollForHanouts,
-              type: SnackBarType.info,
-            );
-          },
+          onTap: () => _scrollToHanouts(context, hasHanouts: hasHanouts),
         ),
         const SizedBox(height: AppSpacing.sm),
         _buildAggressiveCtaCard(
@@ -238,6 +245,37 @@ class ClientHomeView extends StatelessWidget {
           badge: l10n.clientHomeQuickActionsGasBadge,
         ),
       ],
+    );
+  }
+
+  void _scrollToHanouts(
+    BuildContext context, {
+    required bool hasHanouts,
+  }) {
+    if (!hasHanouts) {
+      AppSnackBar.show(
+        context,
+        message: context.l10n.clientHomeNoHanoutNearby,
+        type: SnackBarType.warning,
+      );
+      return;
+    }
+
+    final targetContext = _hanoutsSectionKey.currentContext;
+    if (targetContext == null) {
+      AppSnackBar.show(
+        context,
+        message: context.l10n.clientHomeScrollForHanouts,
+        type: SnackBarType.info,
+      );
+      return;
+    }
+
+    Scrollable.ensureVisible(
+      targetContext,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeOutCubic,
+      alignment: 0.05,
     );
   }
 
@@ -719,8 +757,8 @@ class ClientHomeView extends StatelessWidget {
     try {
       final repo = GasServiceRepository(ApiService());
       return await repo.createRequest(
-        price: 13,
-        serviceFee: 2,
+        price: 15,
+        serviceFee: 0,
         clientAddress: address,
         clientLatitude: clientLatitude,
         clientLongitude: clientLongitude,

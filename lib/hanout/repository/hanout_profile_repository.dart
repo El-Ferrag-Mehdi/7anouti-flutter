@@ -22,7 +22,10 @@ class HanoutProfileRepository {
     String? phone,
     String? image,
     bool? hasCarnet,
+    bool? sendOrdersDirectToLivreur,
     double? deliveryFee,
+    String? openingTime,
+    String? closingTime,
   }) async {
     final Map<String, dynamic> body = {};
     if (name != null) body['name'] = name;
@@ -33,7 +36,12 @@ class HanoutProfileRepository {
     if (phone != null) body['phone'] = phone;
     if (image != null) body['image'] = image;
     if (hasCarnet != null) body['hasCarnet'] = hasCarnet;
+    if (sendOrdersDirectToLivreur != null) {
+      body['sendOrdersDirectToLivreur'] = sendOrdersDirectToLivreur;
+    }
     if (deliveryFee != null) body['deliveryFee'] = deliveryFee;
+    if (openingTime != null) body['openingTime'] = openingTime;
+    if (closingTime != null) body['closingTime'] = closingTime;
 
     final dynamic response = await _apiService.put(
       '/hanouts/me',
@@ -73,5 +81,18 @@ class HanoutProfileRepository {
 
   Future<void> deleteMyAccount() async {
     await _apiService.delete('/auth/me');
+  }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _apiService.put(
+      '/auth/change-password',
+      body: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      },
+    );
   }
 }

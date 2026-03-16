@@ -13,26 +13,40 @@ class LivreurRequestsRepository {
     double? latitude,
     double? longitude,
     int radius = 5000,
+    int limit = 60,
   }) async {
     var endpoint = '/delivery-requests/livreur/available';
+    final params = <String>[
+      'radius=$radius',
+      'limit=$limit',
+    ];
     if (latitude != null && longitude != null) {
-      endpoint +=
-          '?latitude=$latitude&longitude=$longitude&radius=$radius';
+      params.add('latitude=$latitude');
+      params.add('longitude=$longitude');
     }
-    final dynamic response = await _apiService.get(endpoint);
-    final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
-    final List<dynamic> jsonList = responseMap['data'] as List<dynamic>;
-    final deliveryRequests = jsonList.map((dynamic jsonItem) {
-      return LivreurDeliveryRequestModel.fromJson(
-        jsonItem as Map<String, dynamic>,
-      );
-    }).toList();
+    endpoint += '?${params.join('&')}';
 
-    final gasRequests = await _getAvailableGasRequests(
-      latitude: latitude,
-      longitude: longitude,
-      radius: radius,
-    );
+    final responses = await Future.wait<dynamic>([
+      _apiService.get(endpoint),
+      _getAvailableGasRequests(
+        latitude: latitude,
+        longitude: longitude,
+        radius: radius,
+        limit: limit,
+      ),
+    ]);
+
+    final responseMap = responses[0] as Map<String, dynamic>;
+    final jsonList = responseMap['data'] as List<dynamic>;
+    final deliveryRequests = jsonList
+        .map(
+          (dynamic jsonItem) => LivreurDeliveryRequestModel.fromJson(
+            jsonItem as Map<String, dynamic>,
+          ),
+        )
+        .toList();
+
+    final gasRequests = responses[1] as List<LivreurDeliveryRequestModel>;
 
     final merged = [...deliveryRequests, ...gasRequests];
     merged.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -59,13 +73,19 @@ class LivreurRequestsRepository {
     double? latitude,
     double? longitude,
     int radius = 5000,
+    int limit = 60,
   }) async {
     try {
       var endpoint = '/gas-service/requests/livreur/available';
+      final params = <String>[
+        'radius=$radius',
+        'limit=$limit',
+      ];
       if (latitude != null && longitude != null) {
-        endpoint +=
-            '?latitude=$latitude&longitude=$longitude&radius=$radius';
+        params.add('latitude=$latitude');
+        params.add('longitude=$longitude');
       }
+      endpoint += '?${params.join('&')}';
 
       final dynamic response = await _apiService.get(endpoint);
       final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
@@ -201,8 +221,9 @@ class LivreurEarningsRepository {
   final ApiService _apiService;
 
   Future<Map<String, dynamic>> getEarnings({int limit = 100}) async {
-    final dynamic response =
-        await _apiService.get('/livreur/earnings?limit=$limit');
+    final dynamic response = await _apiService.get(
+      '/livreur/earnings?limit=$limit',
+    );
     final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
     return responseMap['data'] as Map<String, dynamic>;
   }

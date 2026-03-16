@@ -5,14 +5,19 @@ bool isArabicLocale(BuildContext context) {
   return Localizations.localeOf(context).languageCode == 'ar';
 }
 
-String formatDh(BuildContext context, num amount, {int decimals = 2}) {
+String currencyLabel(BuildContext context) {
+  return isArabicLocale(context) ? 'د.م' : 'DH';
+}
+
+String formatAmountNumber(BuildContext context, num amount, {int decimals = 2}) {
   final localeCode = Localizations.localeOf(context).languageCode;
   final pattern = decimals == 0 ? '#,##0' : '#,##0.${'0' * decimals}';
-  final value = NumberFormat(pattern, localeCode).format(amount);
-  if (localeCode == 'ar') {
-    return '$value Ø¯.Ù…';
-  }
-  return '$value DH';
+  return NumberFormat(pattern, localeCode).format(amount);
+}
+
+String formatDh(BuildContext context, num amount, {int decimals = 2}) {
+  final value = formatAmountNumber(context, amount, decimals: decimals);
+  return '$value ${currencyLabel(context)}';
 }
 
 String formatRelativeDateLocalized(BuildContext context, DateTime date) {
@@ -24,27 +29,27 @@ String formatRelativeDateLocalized(BuildContext context, DateTime date) {
   if (difference.inDays == 0) {
     if (difference.inHours == 0) {
       if (difference.inMinutes == 0) {
-        if (localeCode == 'ar') return 'Ø§Ù„Ø¢Ù†';
+        if (localeCode == 'ar') return 'الآن';
         if (localeCode == 'en') return 'Just now';
         return "A l'instant";
       }
-      if (localeCode == 'ar') return 'Ù…Ù†Ø° ${difference.inMinutes} Ø¯';
+      if (localeCode == 'ar') return 'منذ ${difference.inMinutes} د';
       if (localeCode == 'en') return '${difference.inMinutes} min ago';
       return 'Il y a ${difference.inMinutes} min';
     }
-    if (localeCode == 'ar') return 'Ù…Ù†Ø° ${difference.inHours} Ø³';
+    if (localeCode == 'ar') return 'منذ ${difference.inHours} س';
     if (localeCode == 'en') return '${difference.inHours} h ago';
     return 'Il y a ${difference.inHours} h';
   }
 
   if (difference.inDays == 1) {
-    if (localeCode == 'ar') return 'Ø£Ù…Ø³ Ø¹Ù„Ù‰ $time';
+    if (localeCode == 'ar') return 'أمس مع $time';
     if (localeCode == 'en') return 'Yesterday at $time';
     return 'Hier a $time';
   }
 
   if (difference.inDays < 7) {
-    if (localeCode == 'ar') return 'Ù…Ù†Ø° ${difference.inDays} ÙŠÙˆÙ…';
+    if (localeCode == 'ar') return 'منذ ${difference.inDays} يوم';
     if (localeCode == 'en') return '${difference.inDays} days ago';
     return 'Il y a ${difference.inDays} jours';
   }

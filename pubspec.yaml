@@ -1,6 +1,6 @@
 name: sevenouti
 description: A Very Good Project created by Very Good CLI.
-version: 1.0.0+2
+version: 1.0.0+3
 publish_to: none
 
 environment:
@@ -41,8 +41,11 @@ dev_dependencies:
 
 flutter_launcher_icons:
   android: true
-  ios: true
+  ios: truex
   image_path: assets/logo/icon.png
+  adaptive_icon_foreground: assets/logo/icon.png
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground_inset: 15
   min_sdk_android: 21
 
 flutter:

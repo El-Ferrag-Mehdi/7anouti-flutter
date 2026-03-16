@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sevenouti/client/data/api_service.dart';
 import 'package:sevenouti/core/notifications/local_notification_service.dart';
+import 'package:sevenouti/core/storage/token_storage.dart';
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -28,7 +30,6 @@ class PushNotificationService {
   Future<void> init() async {
     if (_initialized) return;
     _initialized = true;
-    // TODO(ios): Re-enable when Apple Developer account/APNs is configured.
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       debugPrint('FCM iOS is temporarily disabled.');
       return;
@@ -54,9 +55,18 @@ class PushNotificationService {
       sound: true,
     );
 
-    _onMessageSub = FirebaseMessaging.onMessage.listen((message) {
+    _onMessageSub = FirebaseMessaging.onMessage.listen((message) async {
       final notification = message.notification;
       if (notification == null) return;
+
+      final allowed = await _shouldDisplayNotification(message);
+      if (!allowed) {
+        debugPrint(
+          'FCM notification ignored: not intended for current session.',
+        );
+        return;
+      }
+
       unawaited(
         LocalNotificationService.instance.show(
           title: notification.title ?? '7anouti',
@@ -84,15 +94,39 @@ class PushNotificationService {
 
   Future<void> clearTokenOnBackend() async {
     try {
+      final authToken = await TokenStorage.getToken();
+      if (authToken == null || authToken.isEmpty) {
+        return;
+      }
       await ApiService().delete('/auth/fcm-token');
+    } on ApiException catch (error) {
+      if (error.message.contains('Session expiree')) {
+        return;
+      }
+      debugPrint('FCM token clear failed: ${error.message}');
     } on Object catch (error, stackTrace) {
       debugPrint('FCM token clear failed: $error');
       debugPrintStack(stackTrace: stackTrace);
     }
   }
 
+  Future<void> clearDeviceTokenForLogout() async {
+    await clearTokenOnBackend();
+    if (!_firebaseAvailable) return;
+    try {
+      await FirebaseMessaging.instance.deleteToken();
+    } on Object catch (error, stackTrace) {
+      debugPrint('FCM local token delete failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
+  }
+
   Future<void> _sendTokenToBackend(String token) async {
     try {
+      final authToken = await TokenStorage.getToken();
+      if (authToken == null || authToken.isEmpty) {
+        return;
+      }
       await ApiService().post(
         '/auth/fcm-token',
         body: {'token': token},
@@ -100,6 +134,40 @@ class PushNotificationService {
     } on Object catch (error, stackTrace) {
       debugPrint('FCM token upload failed: $error');
       debugPrintStack(stackTrace: stackTrace);
+    }
+  }
+
+  Future<bool> _shouldDisplayNotification(RemoteMessage message) async {
+    final currentUserId = await TokenStorage.getUserId();
+    if (currentUserId == null || currentUserId.isEmpty) {
+      return false;
+    }
+
+    final data = message.data;
+    final singleRecipient = (data['recipientUserId'] as String?)?.trim();
+    if (singleRecipient != null && singleRecipient.isNotEmpty) {
+      return singleRecipient == currentUserId;
+    }
+
+    final recipientsRaw = (data['recipientUserIds'] as String?)?.trim();
+    if (recipientsRaw == null || recipientsRaw.isEmpty) {
+      return true;
+    }
+
+    try {
+      final decoded = jsonDecode(recipientsRaw);
+      if (decoded is! List) return true;
+      final recipients = decoded
+          .map(
+            (value) => value == null ? null : value.toString().trim(),
+          )
+          .whereType<String>()
+          .where((value) => value.isNotEmpty)
+          .toSet();
+      if (recipients.isEmpty) return true;
+      return recipients.contains(currentUserId);
+    } on Object {
+      return true;
     }
   }
 

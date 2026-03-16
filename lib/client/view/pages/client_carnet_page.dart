@@ -10,7 +10,7 @@ import 'package:sevenouti/core/constants/app_constrants.dart';
 import 'package:sevenouti/core/widgets/app_background.dart';
 import 'package:sevenouti/core/widgets/app_widgets.dart';
 import 'package:sevenouti/l10n/l10n.dart';
-import 'package:sevenouti/utils/date_utils.dart' as app_date;
+import 'package:sevenouti/utils/localized_formatters.dart';
 
 /// Page Carnet du client - Gestion du crédit
 class ClientCarnetPage extends StatelessWidget {
@@ -91,7 +91,7 @@ class ClientCarnetView extends StatelessWidget {
           slivers: [
           // Header avec solde total
           SliverToBoxAdapter(
-            child: _buildTotalBalanceHeader(state, l10n),
+            child: _buildTotalBalanceHeader(context, state, l10n),
           ),
 
           // Info explicative
@@ -129,7 +129,11 @@ class ClientCarnetView extends StatelessWidget {
   }
 
   /// Header avec le solde total
-  Widget _buildTotalBalanceHeader(ClientCarnetLoaded state, AppLocalizations l10n) {
+  Widget _buildTotalBalanceHeader(
+    BuildContext context,
+    ClientCarnetLoaded state,
+    AppLocalizations l10n,
+  ) {
     final totalBalance = state.totalBalance;
     final hasDebt = totalBalance > 0;
 
@@ -184,7 +188,7 @@ class ClientCarnetView extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  totalBalance.abs().toStringAsFixed(2),
+                  formatAmountNumber(context, totalBalance.abs()),
                   style: AppTextStyles.h1.copyWith(
                     color: Colors.white,
                     fontSize: 48,
@@ -195,7 +199,7 @@ class ClientCarnetView extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
                   child: Text(
-                    'DH',
+                    currencyLabel(context),
                     style: AppTextStyles.h3.copyWith(
                       color: Colors.white.withOpacity(0.9),
                     ),
@@ -391,7 +395,7 @@ class ClientCarnetView extends StatelessWidget {
                             ),
                           ),
                         Text(
-                          carnet.balance.abs().toStringAsFixed(2),
+                          formatAmountNumber(context, carnet.balance.abs()),
                           style: AppTextStyles.h3.copyWith(
                             color: hasDebt
                                 ? AppColors.error
@@ -403,7 +407,7 @@ class ClientCarnetView extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
-                            'DH',
+                            currencyLabel(context),
                             style: AppTextStyles.bodySmall.copyWith(
                               color: hasDebt
                                   ? AppColors.error
@@ -421,7 +425,7 @@ class ClientCarnetView extends StatelessWidget {
                 // Dernière mise à jour
                 Text(
                   l10n.clientCarnetLastActivity(
-                    app_date.DateUtils.formatRelativeDate(carnet.updatedAt),
+                    formatRelativeDateLocalized(context, carnet.updatedAt),
                   ),
                   style: AppTextStyles.caption.copyWith(
                     color: AppColors.textSecondary,

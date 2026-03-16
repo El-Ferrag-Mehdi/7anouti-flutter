@@ -40,7 +40,7 @@ class HanoutDetailsCubit extends Cubit<HanoutDetailsState> {
       if (_hanout.hasCarnet) {
         try {
           carnet = await _carnetRepository.getCarnet(_hanout.id);
-          canUseCarnet = carnet?.isActive ?? false;
+          canUseCarnet = carnet.isActive;
         } catch (e) {
           // Pas de carnet existant, c'est normal
           canUseCarnet = false;
@@ -160,6 +160,7 @@ class HanoutDetailsCubit extends Cubit<HanoutDetailsState> {
         HanoutDetailsOrderSuccess(
           order: order,
           hanoutPhone: _hanout.phone,
+          willBeProcessedWhenOpen: order.willBeProcessedWhenOpen,
         ),
       );
     } on ApiException catch (e) {
@@ -357,6 +358,7 @@ class HanoutDetailsCubit extends Cubit<HanoutDetailsState> {
       HanoutDetailsOrderSuccess(
         order: mockOrder,
         hanoutPhone: _hanout.phone,
+        willBeProcessedWhenOpen: !_hanout.isOpen,
       ),
     );
   }

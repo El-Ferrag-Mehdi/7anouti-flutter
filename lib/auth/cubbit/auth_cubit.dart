@@ -1,13 +1,35 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sevenouti/auth/cubbit/auth_state.dart';
 import 'package:sevenouti/auth/models/user_role.dart';
 import 'package:sevenouti/auth/repository/auth_repository.dart';
+import 'package:sevenouti/core/auth/auth_session_notifier.dart';
 import 'package:sevenouti/core/notifications/push_notification_service.dart';
 
 class AuthCubit extends Cubit<AuthState> {
-  AuthCubit(this._repository) : super(AuthInitial());
+  AuthCubit(this._repository) : super(AuthInitial()) {
+    _sessionExpiredSubscription = AuthSessionNotifier.instance.onSessionExpired
+        .listen((_) async {
+      // Session already invalid: skip extra backend calls.
+      final alreadyUnauthenticated = state is Unauthenticated;
+      if (alreadyUnauthenticated || _isHandlingSessionExpiry) {
+        return;
+      }
+      _isHandlingSessionExpiry = true;
+      try {
+        await PushNotificationService.instance.clearDeviceTokenForLogout();
+        await _repository.logout();
+        emit(Unauthenticated());
+      } finally {
+        _isHandlingSessionExpiry = false;
+      }
+    });
+  }
   final AuthRepository _repository;
+  late final StreamSubscription<void> _sessionExpiredSubscription;
+  bool _isHandlingSessionExpiry = false;
 
   Future<void> register({
     required String email,
@@ -76,9 +98,15 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> logout() async {
-    await PushNotificationService.instance.clearTokenOnBackend();
+    await PushNotificationService.instance.clearDeviceTokenForLogout();
     await _repository.logout();
     debugPrint('[Auth] logout');
     emit(Unauthenticated());
+  }
+
+  @override
+  Future<void> close() async {
+    await _sessionExpiredSubscription.cancel();
+    return super.close();
   }
 }

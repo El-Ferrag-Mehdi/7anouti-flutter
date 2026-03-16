@@ -8,9 +8,12 @@ class HanoutModel {
   final double longitude;
   final String phone;
   final String? image;
+  final String? openingTime;
+  final String? closingTime;
   final bool isOpen;
   final bool showRating;
   final bool hasCarnet;
+  final bool sendOrdersDirectToLivreur;
   final double? deliveryFee;
   final int? estimatedDeliveryTime;
   final double? rating;
@@ -27,9 +30,12 @@ class HanoutModel {
     required this.longitude,
     required this.phone,
     this.image,
+    this.openingTime,
+    this.closingTime,
     required this.isOpen,
     this.showRating = true,
     required this.hasCarnet,
+    this.sendOrdersDirectToLivreur = false,
     this.deliveryFee,
     this.estimatedDeliveryTime,
     this.rating,
@@ -52,9 +58,13 @@ class HanoutModel {
       longitude: (longitudeValue as num).toDouble(),
       phone: json['phone'] as String,
       image: json['image'] as String?,
+      openingTime: json['openingTime'] as String?,
+      closingTime: json['closingTime'] as String?,
       isOpen: json['isOpen'] as bool? ?? true,
       showRating: json['showRating'] as bool? ?? true,
       hasCarnet: json['hasCarnet'] as bool? ?? false,
+      sendOrdersDirectToLivreur:
+          json['sendOrdersDirectToLivreur'] as bool? ?? false,
       deliveryFee: deliveryFeeValue == null
           ? null
           : (deliveryFeeValue as num).toDouble(),
@@ -76,9 +86,12 @@ class HanoutModel {
       'longitude': longitude,
       'phone': phone,
       'image': image,
+      'openingTime': openingTime,
+      'closingTime': closingTime,
       'isOpen': isOpen,
       'showRating': showRating,
       'hasCarnet': hasCarnet,
+      'sendOrdersDirectToLivreur': sendOrdersDirectToLivreur,
       'deliveryFee': deliveryFee,
       'estimatedDeliveryTime': estimatedDeliveryTime,
       'rating': rating,
@@ -97,9 +110,12 @@ class HanoutModel {
     double? longitude,
     String? phone,
     String? image,
+    String? openingTime,
+    String? closingTime,
     bool? isOpen,
     bool? showRating,
     bool? hasCarnet,
+    bool? sendOrdersDirectToLivreur,
     double? deliveryFee,
     int? estimatedDeliveryTime,
     double? rating,
@@ -116,9 +132,13 @@ class HanoutModel {
       longitude: longitude ?? this.longitude,
       phone: phone ?? this.phone,
       image: image ?? this.image,
+      openingTime: openingTime ?? this.openingTime,
+      closingTime: closingTime ?? this.closingTime,
       isOpen: isOpen ?? this.isOpen,
       showRating: showRating ?? this.showRating,
       hasCarnet: hasCarnet ?? this.hasCarnet,
+      sendOrdersDirectToLivreur:
+          sendOrdersDirectToLivreur ?? this.sendOrdersDirectToLivreur,
       deliveryFee: deliveryFee ?? this.deliveryFee,
       estimatedDeliveryTime:
           estimatedDeliveryTime ?? this.estimatedDeliveryTime,
@@ -143,9 +163,12 @@ class HanoutWithDistance extends HanoutModel {
     required super.longitude,
     required super.phone,
     super.image,
+    super.openingTime,
+    super.closingTime,
     required super.isOpen,
     super.showRating = true,
     required super.hasCarnet,
+    super.sendOrdersDirectToLivreur = false,
     super.deliveryFee,
     super.estimatedDeliveryTime,
     super.rating,
@@ -176,9 +199,12 @@ class HanoutWithDistance extends HanoutModel {
       longitude: hanout.longitude,
       phone: hanout.phone,
       image: hanout.image,
+      openingTime: hanout.openingTime,
+      closingTime: hanout.closingTime,
       isOpen: hanout.isOpen,
       showRating: hanout.showRating,
       hasCarnet: hanout.hasCarnet,
+      sendOrdersDirectToLivreur: hanout.sendOrdersDirectToLivreur,
       deliveryFee: hanout.deliveryFee,
       estimatedDeliveryTime: hanout.estimatedDeliveryTime,
       rating: hanout.rating,

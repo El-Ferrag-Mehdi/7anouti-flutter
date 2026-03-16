@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sevenouti/client/cubit/client_orders_state.dart';
 import 'package:sevenouti/client/data/api_service.dart';
@@ -11,46 +13,25 @@ class ClientOrdersCubit extends Cubit<ClientOrdersState> {
     required GasServiceRepository gasServiceRepository,
   }) : _orderRepository = orderRepository,
        _gasServiceRepository = gasServiceRepository,
-       super(const ClientOrdersInitial());
+       super(const ClientOrdersInitial()) {
+    _startAutoRefresh();
+  }
 
   final OrderRepository _orderRepository;
   final GasServiceRepository _gasServiceRepository;
+  Timer? _autoRefreshTimer;
+  bool _isRefreshing = false;
 
   /// Charge toutes les commandes du client
   Future<void> loadOrders({
     OrderStatus? status,
     ClientOrdersFilter filter = ClientOrdersFilter.inProgress,
   }) async {
-    emit(const ClientOrdersLoading());
-
-    try {
-      final orders = await _orderRepository.getClientOrders(
-        status: status?.value,
-        limit: 100,
-      );
-      final gasRequests = await _gasServiceRepository.getMyRequests();
-
-      if (orders.isEmpty && gasRequests.isEmpty) {
-        emit(const ClientOrdersEmpty());
-      } else {
-        emit(
-          ClientOrdersLoaded(
-            orders: orders,
-            gasRequests: gasRequests,
-            selectedStatus: status,
-            filter: filter,
-          ),
-        );
-      }
-    } on ApiException catch (e) {
-      emit(ClientOrdersError(message: e.message));
-    } catch (e) {
-      emit(
-        ClientOrdersError(
-          message: e.toString(),
-        ),
-      );
-    }
+    await _fetchOrders(
+      status: status,
+      filter: filter,
+      showLoading: true,
+    );
   }
 
   /// Filtre par statut
@@ -85,6 +66,83 @@ class ClientOrdersCubit extends Cubit<ClientOrdersState> {
     }
 
     await loadOrders(status: currentStatus, filter: currentFilter);
+  }
+
+  @override
+  Future<void> close() {
+    _autoRefreshTimer?.cancel();
+    return super.close();
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 8), (_) {
+      unawaited(_refreshSilently());
+    });
+  }
+
+  Future<void> _refreshSilently() async {
+    if (_isRefreshing) return;
+    final currentState = state;
+    OrderStatus? currentStatus;
+    var currentFilter = ClientOrdersFilter.inProgress;
+    if (currentState is ClientOrdersLoaded) {
+      currentStatus = currentState.selectedStatus;
+      currentFilter = currentState.filter;
+    }
+    _isRefreshing = true;
+    try {
+      await _fetchOrders(
+        status: currentStatus,
+        filter: currentFilter,
+        showLoading: false,
+      );
+    } finally {
+      _isRefreshing = false;
+    }
+  }
+
+  Future<void> _fetchOrders({
+    required OrderStatus? status,
+    required ClientOrdersFilter filter,
+    required bool showLoading,
+  }) async {
+    if (showLoading) {
+      emit(const ClientOrdersLoading());
+    }
+
+    try {
+      final orders = await _orderRepository.getClientOrders(
+        status: status?.value,
+        limit: 100,
+      );
+      final gasRequests = await _gasServiceRepository.getMyRequests();
+
+      if (orders.isEmpty && gasRequests.isEmpty) {
+        emit(const ClientOrdersEmpty());
+      } else {
+        emit(
+          ClientOrdersLoaded(
+            orders: orders,
+            gasRequests: gasRequests,
+            selectedStatus: status,
+            filter: filter,
+          ),
+        );
+      }
+    } on ApiException catch (e) {
+      if (showLoading) {
+        emit(ClientOrdersError(message: e.message));
+      }
+    } catch (e) {
+      if (showLoading) {
+        emit(
+          ClientOrdersError(
+            message: e.toString(),
+          ),
+        );
+      }
+    }
   }
 
   /// VERSION MOCK pour tester sans API

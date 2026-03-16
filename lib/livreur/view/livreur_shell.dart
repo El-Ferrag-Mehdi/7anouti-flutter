@@ -3,12 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sevenouti/auth/cubbit/auth_cubit.dart';
-import 'package:sevenouti/client/data/api_service.dart';
+import 'package:sevenouti/client/models/gas_service_order.dart';
+import 'package:sevenouti/client/models/order_model.dart';
 import 'package:sevenouti/core/notifications/local_notification_service.dart';
-import 'package:sevenouti/core/notifications/polling_notification_watchers.dart';
+import 'package:sevenouti/core/realtime/realtime_event_service.dart';
 import 'package:sevenouti/core/widgets/app_logo_header.dart';
 import 'package:sevenouti/l10n/l10n.dart';
-import 'package:sevenouti/livreur/repository/livreur_repositories.dart';
+import 'package:sevenouti/livreur/l10n/livreur_l10n.dart';
 import 'package:sevenouti/livreur/view/pages/livreur_available_page.dart';
 import 'package:sevenouti/livreur/view/pages/livreur_earnings_page.dart';
 import 'package:sevenouti/livreur/view/pages/livreur_inprogress_page.dart';
@@ -23,52 +24,37 @@ class LivreurShell extends StatefulWidget {
 
 class _LivreurShellState extends State<LivreurShell> {
   int _currentIndex = 0;
-  late final LivreurRequestsWatcher _requestsWatcher;
-
-  final List<Widget> _pages = const [
-    LivreurAvailablePage(),
-    LivreurInProgressPage(),
-    LivreurEarningsPage(),
-  ];
+  int _availableRefreshSeed = 0;
+  int _inProgressRefreshSeed = 0;
+  late final RealtimeEventService _realtimeService;
+  StreamSubscription<RealtimeEvent>? _realtimeSubscription;
 
   @override
   void initState() {
     super.initState();
-    _requestsWatcher = LivreurRequestsWatcher(
-      repository: LivreurRequestsRepository(ApiService()),
-    );
-    unawaited(
-      _requestsWatcher.start((event) {
-        if (!mounted) return;
-        final request = event.request;
-        final title =
-            request.hanout?.name ?? context.l10n.clientGasServiceTitle;
-        final message = '${context.l10n.livreurAvailableTitle}: $title';
-        unawaited(
-          LocalNotificationService.instance.show(
-            title: '7anouti Livreur',
-            body: message,
-          ),
-        );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }),
-    );
+    _realtimeService = RealtimeEventService();
+    _realtimeSubscription = _realtimeService.events.listen(_onRealtimeEvent);
+    unawaited(_realtimeService.start());
   }
 
   @override
   void dispose() {
-    _requestsWatcher.stop();
+    unawaited(_realtimeSubscription?.cancel());
+    unawaited(_realtimeService.dispose());
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final pages = <Widget>[
+      LivreurAvailablePage(
+        key: ValueKey(_availableRefreshSeed),
+        onAccepted: _switchToInProgress,
+      ),
+      LivreurInProgressPage(key: ValueKey(_inProgressRefreshSeed)),
+      const LivreurEarningsPage(),
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -117,7 +103,10 @@ class _LivreurShellState extends State<LivreurShell> {
           ),
         ],
       ),
-      body: _pages[_currentIndex],
+      body: IndexedStack(
+        index: _currentIndex,
+        children: pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
@@ -137,5 +126,121 @@ class _LivreurShellState extends State<LivreurShell> {
         ],
       ),
     );
+  }
+
+  void _switchToInProgress() {
+    if (!mounted) return;
+    setState(() {
+      _currentIndex = 1;
+      _availableRefreshSeed++;
+      _inProgressRefreshSeed++;
+    });
+  }
+
+  void _onRealtimeEvent(RealtimeEvent event) {
+    if (!mounted) return;
+    if (!_isLivreurRelevantEvent(event.type)) return;
+
+    final shouldSwitchToInProgress =
+        event.type == 'ORDER_ASSIGNED' ||
+        (event.type == 'DELIVERY_REQUEST_UPDATED' &&
+            (event.payload['status']?.toString().toUpperCase() ==
+                'ACCEPTED')) ||
+        (event.type == 'GAS_REQUEST_STATUS_CHANGED' &&
+            event.payload['status']?.toString().toUpperCase() == 'EN_ROUTE');
+
+    setState(() {
+      if (shouldSwitchToInProgress) {
+        _currentIndex = 1;
+      }
+      _availableRefreshSeed++;
+      _inProgressRefreshSeed++;
+    });
+
+    final message = _buildRealtimeMessage(event);
+    if (message == null) return;
+
+    unawaited(
+      LocalNotificationService.instance.show(
+        title: '7anouti Livreur',
+        body: message,
+      ),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  bool _isLivreurRelevantEvent(String type) {
+    return type == 'DELIVERY_REQUEST_CREATED' ||
+        type == 'DELIVERY_REQUEST_UPDATED' ||
+        type == 'ORDER_ASSIGNED' ||
+        type == 'ORDER_STATUS_CHANGED' ||
+        type == 'GAS_REQUEST_CREATED' ||
+        type == 'GAS_REQUEST_STATUS_CHANGED';
+  }
+
+  String? _buildRealtimeMessage(RealtimeEvent event) {
+    final orderId = event.payload['orderId']?.toString() ?? '';
+    final gasId = event.payload['gasRequestId']?.toString() ?? '';
+    final shortId = _shortId(orderId.isNotEmpty ? orderId : gasId);
+
+    switch (event.type) {
+      case 'DELIVERY_REQUEST_CREATED':
+        return shortId.isEmpty
+            ? context.l10n.livreurAvailableTitle
+            : '${context.l10n.livreurAvailableTitle}: #$shortId';
+      case 'ORDER_ASSIGNED':
+        return shortId.isEmpty
+            ? context.l10n.livreurInProgressTitle
+            : '${context.l10n.clientOrdersOrderNumber(shortId)}: '
+                '${context.l10n.livreurInProgressTitle}';
+      case 'GAS_REQUEST_CREATED':
+        return shortId.isEmpty
+            ? context.l10n.livreurGasServiceTitle
+            : '${context.l10n.clientGasBottleTitle} #$shortId: '
+                '${context.l10n.livreurGasServiceTitle}';
+      case 'GAS_REQUEST_STATUS_CHANGED':
+        final gasStatus = event.payload['status']?.toString();
+        if (gasStatus == null || gasStatus.isEmpty) return null;
+        final label = _gasStatusLabel(gasStatus);
+        return shortId.isEmpty
+            ? '${context.l10n.clientGasServiceTitle}: $label'
+            : '${context.l10n.clientGasBottleTitle} #$shortId: $label';
+      case 'ORDER_STATUS_CHANGED':
+        final orderStatus = event.payload['status']?.toString();
+        if (orderStatus == null || orderStatus.isEmpty) return null;
+        final label = _orderStatusLabel(orderStatus);
+        return shortId.isEmpty
+            ? '${context.l10n.livreurHanoutOrdersTitle}: $label'
+            : '${context.l10n.clientOrdersOrderNumber(shortId)}: $label';
+      case 'DELIVERY_REQUEST_UPDATED':
+        final requestStatus = event.payload['status']?.toString();
+        if (requestStatus == null || requestStatus.isEmpty) return null;
+        final label = context.livreurRequestStatusLabel(requestStatus);
+        return shortId.isEmpty
+            ? '${context.l10n.livreurAvailableTitle}: $label'
+            : '${context.l10n.livreurAvailableTitle} #$shortId: $label';
+      default:
+        return null;
+    }
+  }
+
+  String _shortId(String value) {
+    if (value.length <= 8) return value;
+    return value.substring(0, 8);
+  }
+
+  String _orderStatusLabel(String rawStatus) {
+    final status = OrderStatus.fromString(rawStatus);
+    return context.livreurOrderStatusLabel(status);
+  }
+
+  String _gasStatusLabel(String rawStatus) {
+    final status = GasServiceStatusX.fromString(rawStatus);
+    return context.livreurGasStatusLabel(status);
   }
 }

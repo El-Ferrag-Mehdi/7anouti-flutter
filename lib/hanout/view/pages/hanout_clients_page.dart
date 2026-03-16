@@ -10,6 +10,7 @@ import 'package:sevenouti/hanout/models/hanout_models.dart';
 import 'package:sevenouti/hanout/repository/hanout_repositories.dart';
 import 'package:sevenouti/hanout/view/pages/hanout_carnet_details_page.dart';
 import 'package:sevenouti/l10n/l10n.dart';
+import 'package:sevenouti/utils/localized_formatters.dart';
 
 class HanoutClientsPage extends StatelessWidget {
   const HanoutClientsPage({super.key});
@@ -117,7 +118,9 @@ class HanoutClientsView extends StatelessWidget {
                           ),
                           const SizedBox(height: AppSpacing.xs),
                           Text(
-                            l10n.hanoutClientsDebt(carnet.formattedBalance),
+                            l10n.hanoutClientsDebt(
+                              formatDh(context, carnet.balance.abs()),
+                            ),
                             style: AppTextStyles.bodySmall.copyWith(
                               color: carnet.hasDebt
                                   ? AppColors.error
