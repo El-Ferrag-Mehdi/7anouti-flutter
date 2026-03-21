@@ -38,6 +38,8 @@
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Your location is used to find nearby hanouts and prefill your address.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Your location is used to find nearby hanouts and prefill your address, and help set delivery zones when you choose to use your current location.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Your photo library is used to choose your hanout image.</string>
 	<key>UILaunchStoryboardName</key>
