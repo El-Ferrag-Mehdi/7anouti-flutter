@@ -7,6 +7,7 @@ import 'package:sevenouti/client/data/api_service.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
 import 'package:sevenouti/core/widgets/app_widgets.dart';
 import 'package:sevenouti/core/widgets/language_selector_tile.dart';
+import 'package:sevenouti/core/widgets/privacy_policy_button.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/livreur/repository/livreur_profile_repository.dart';
 import 'package:sevenouti/utils/location_service.dart';
@@ -262,7 +263,9 @@ class _LivreurSettingsPageState extends State<LivreurSettingsPage> {
     nextController.dispose();
     confirmController.dispose();
 
-    if (currentPassword.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
+    if (currentPassword.isEmpty ||
+        newPassword.isEmpty ||
+        confirmPassword.isEmpty) {
       AppSnackBar.show(
         context,
         message: 'Tous les champs sont obligatoires',
@@ -466,6 +469,13 @@ class _LivreurSettingsPageState extends State<LivreurSettingsPage> {
           const LanguageSelectorTile(),
           const SizedBox(height: AppSpacing.lg),
           Text(
+            l10n.commonLegalSectionTitle,
+            style: AppTextStyles.h3,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          const PrivacyPolicyButton(),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
             l10n.livreurSettingsAccountSectionTitle,
             style: AppTextStyles.h3,
           ),
@@ -556,9 +566,7 @@ class _LivreurSettingsPageState extends State<LivreurSettingsPage> {
                   )
                 : const Icon(Icons.lock_outline),
             label: Text(
-              _changingPassword
-                  ? 'Modification...'
-                  : 'Changer mot de passe',
+              _changingPassword ? 'Modification...' : 'Changer mot de passe',
             ),
           ),
           const SizedBox(height: AppSpacing.xl),

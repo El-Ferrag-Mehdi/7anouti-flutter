@@ -1,13 +1,20 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sevenouti/auth/cubbit/auth_cubit.dart';
+import 'package:sevenouti/auth/cubbit/auth_state.dart';
+import 'package:sevenouti/auth/models/user_role.dart';
 import 'package:sevenouti/client/cubit/hanout_details_cubit.dart';
 import 'package:sevenouti/client/cubit/hanout_details_state.dart';
 import 'package:sevenouti/client/data/api_service.dart';
-import 'package:sevenouti/client/models/models.dart';
+import 'package:sevenouti/client/models/models.dart' hide UserRole;
 import 'package:sevenouti/client/repository/repositories.dart';
 import 'package:sevenouti/client/view/pages/order_tracking_page.dart';
+import 'package:sevenouti/client/widgets/client_auth_prompt.dart';
 import 'package:sevenouti/client/widgets/order_confirmation_sheet.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
+import 'package:sevenouti/core/notifications/local_notification_service.dart';
 import 'package:sevenouti/core/widgets/app_background.dart';
 import 'package:sevenouti/core/widgets/app_widgets.dart';
 import 'package:sevenouti/core/widgets/modern_sheet.dart';
@@ -45,6 +52,10 @@ class HanoutDetailsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authState = context.watch<AuthCubit>().state;
+    final isAuthenticatedClient =
+        authState is Authenticated && authState.role == UserRole.client;
+
     return BlocConsumer<HanoutDetailsCubit, HanoutDetailsState>(
       listener: (context, state) {
         // Gere les erreurs
@@ -115,7 +126,11 @@ class HanoutDetailsView extends StatelessWidget {
 
         // Loaded state
         if (state is HanoutDetailsLoaded) {
-          return _buildLoadedView(context, state);
+          return _buildLoadedView(
+            context,
+            state,
+            isAuthenticatedClient: isAuthenticatedClient,
+          );
         }
 
         // Error with previous loaded state: keep UI visible (snackbar is shown by listener).
@@ -124,6 +139,7 @@ class HanoutDetailsView extends StatelessWidget {
           return _buildLoadedView(
             context,
             state.previousState! as HanoutDetailsLoaded,
+            isAuthenticatedClient: isAuthenticatedClient,
           );
         }
 
@@ -136,7 +152,11 @@ class HanoutDetailsView extends StatelessWidget {
     );
   }
 
-  Widget _buildLoadedView(BuildContext context, HanoutDetailsLoaded state) {
+  Widget _buildLoadedView(
+    BuildContext context,
+    HanoutDetailsLoaded state, {
+    required bool isAuthenticatedClient,
+  }) {
     return Scaffold(
       appBar: AppBar(
         title: Text(state.hanout.name),
@@ -161,10 +181,18 @@ class HanoutDetailsView extends StatelessWidget {
                     // Header du hanout
                     _buildHanoutHeader(context, state.hanout),
                     const SizedBox(height: AppSpacing.lg),
+                    if (!isAuthenticatedClient) ...[
+                      _buildGuestOrderBanner(context),
+                      const SizedBox(height: AppSpacing.lg),
+                    ],
 
                     // Info carnet
                     if (state.hanout.hasCarnet)
-                      _buildCarnetInfo(context, state),
+                      _buildCarnetInfo(
+                        context,
+                        state,
+                        isAuthenticatedClient: isAuthenticatedClient,
+                      ),
                     if (state.hanout.hasCarnet)
                       const SizedBox(height: AppSpacing.lg),
 
@@ -178,7 +206,11 @@ class HanoutDetailsView extends StatelessWidget {
                     const SizedBox(height: AppSpacing.lg),
 
                     // Options de paiement
-                    _buildPaymentOptions(context, state),
+                    _buildPaymentOptions(
+                      context,
+                      state,
+                      isAuthenticatedClient: isAuthenticatedClient,
+                    ),
                     const SizedBox(height: 100), // Espace pour le bouton fixe
                   ],
                 ),
@@ -186,7 +218,11 @@ class HanoutDetailsView extends StatelessWidget {
             ),
 
             // Bouton de validation fixe en bas
-            _buildSubmitButton(context, state),
+            _buildSubmitButton(
+              context,
+              state,
+              isAuthenticatedClient: isAuthenticatedClient,
+            ),
           ],
         ),
       ),
@@ -303,7 +339,57 @@ class HanoutDetailsView extends StatelessWidget {
   }
 
   /// Info sur le carnet
-  Widget _buildCarnetInfo(BuildContext context, HanoutDetailsLoaded state) {
+  Widget _buildCarnetInfo(
+    BuildContext context,
+    HanoutDetailsLoaded state, {
+    required bool isAuthenticatedClient,
+  }) {
+    if (!isAuthenticatedClient) {
+      return Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: AppColors.gold.withOpacity(0.16),
+          borderRadius: AppRadius.large,
+          border: Border.all(color: AppColors.gold.withOpacity(0.5)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.book_outlined, color: AppColors.brown),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    context.l10n.clientGuestCarnetInlineTitle,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.brown,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              context.l10n.clientGuestCarnetInlineMessage,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.brown,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            SecondaryButton(
+              label: context.l10n.clientGuestCarnetInlineAction,
+              icon: Icons.login,
+              onPressed: () => unawaited(
+                _promptCarnetAccess(context),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     if (state.canUseCarnet && state.carnet != null) {
       // Client a dÃƒÆ’Ã‚Â©jÃƒÆ’Ã‚Â  un carnet actif
       return Container(
@@ -490,8 +576,9 @@ class HanoutDetailsView extends StatelessWidget {
   /// Options de paiement
   Widget _buildPaymentOptions(
     BuildContext context,
-    HanoutDetailsLoaded state,
-  ) {
+    HanoutDetailsLoaded state, {
+    required bool isAuthenticatedClient,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -516,12 +603,14 @@ class HanoutDetailsView extends StatelessWidget {
         if (state.hanout.hasCarnet)
           _buildOptionTile(
             title: context.l10n.clientHanoutCarnetCredit,
-            subtitle: state.canUseCarnet
+            subtitle: !isAuthenticatedClient
+                ? context.l10n.clientGuestCarnetOptionMessage
+                : state.canUseCarnet
                 ? context.l10n.clientHanoutAddedToCarnet
                 : context.l10n.clientHanoutCarnetUnavailable,
             icon: Icons.book,
             isSelected: state.paymentMethod == PaymentMethod.carnet,
-            isEnabled: state.canUseCarnet,
+            isEnabled: isAuthenticatedClient && state.canUseCarnet,
             onTap: () {
               context.read<HanoutDetailsCubit>().changePaymentMethod(
                 PaymentMethod.carnet,
@@ -618,7 +707,11 @@ class HanoutDetailsView extends StatelessWidget {
   }
 
   /// Bouton de soumission fixe en bas
-  Widget _buildSubmitButton(BuildContext context, HanoutDetailsLoaded state) {
+  Widget _buildSubmitButton(
+    BuildContext context,
+    HanoutDetailsLoaded state, {
+    required bool isAuthenticatedClient,
+  }) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -630,13 +723,68 @@ class HanoutDetailsView extends StatelessWidget {
       ),
       child: SafeArea(
         child: PrimaryButton(
-          label: context.l10n.clientCommonConfirmOrder,
+          label: isAuthenticatedClient
+              ? context.l10n.clientCommonConfirmOrder
+              : context.l10n.clientGuestOrderAction,
           icon: Icons.check,
           onPressed: state.canSubmitOrder
-              ? () => _showOrderConfirmation(context, state)
+              ? () => unawaited(
+                  _handleSubmitPressed(
+                    context,
+                    state,
+                    isAuthenticatedClient: isAuthenticatedClient,
+                  ),
+                )
               : null,
           fullWidth: true,
         ),
+      ),
+    );
+  }
+
+  Widget _buildGuestOrderBanner(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppRadius.large,
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.card,
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 48,
+            width: 48,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.12),
+              borderRadius: AppRadius.medium,
+            ),
+            child: const Icon(
+              Icons.shopping_bag_outlined,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.l10n.clientGuestOrderBannerTitle,
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  context.l10n.clientGuestOrderBannerMessage,
+                  style: AppTextStyles.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -660,7 +808,9 @@ class HanoutDetailsView extends StatelessWidget {
             required double? latitude,
             required double? longitude,
             required String? notes,
-          }) {
+          }) async {
+            await LocalNotificationService.instance
+                .requestPermissionsIfNeeded();
             // Soumet la commande avec les infos confirmÃƒÆ’Ã‚Â©es
             context.read<HanoutDetailsCubit>().submitOrder(
               clientAddress: address,
@@ -672,6 +822,33 @@ class HanoutDetailsView extends StatelessWidget {
             );
           },
     );
+  }
+
+  Future<void> _handleSubmitPressed(
+    BuildContext context,
+    HanoutDetailsLoaded state, {
+    required bool isAuthenticatedClient,
+  }) async {
+    if (!isAuthenticatedClient) {
+      final authenticated = await showClientAuthPrompt(
+        context: context,
+        title: context.l10n.clientGuestOrderPromptTitle,
+        message: context.l10n.clientGuestOrderPromptMessage,
+      );
+      if (!context.mounted || !authenticated) return;
+    }
+
+    _showOrderConfirmation(context, state);
+  }
+
+  Future<void> _promptCarnetAccess(BuildContext context) async {
+    final authenticated = await showClientAuthPrompt(
+      context: context,
+      title: context.l10n.clientGuestCarnetPromptTitle,
+      message: context.l10n.clientGuestCarnetPromptMessage,
+    );
+    if (!context.mounted || !authenticated) return;
+    context.read<HanoutDetailsCubit>().requestCarnetActivation();
   }
 
   /// Dialog d'info du hanout

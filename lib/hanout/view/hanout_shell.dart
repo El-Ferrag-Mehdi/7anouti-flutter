@@ -7,6 +7,7 @@ import 'package:sevenouti/client/models/order_model.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
 import 'package:sevenouti/core/notifications/local_notification_service.dart';
 import 'package:sevenouti/core/realtime/realtime_event_service.dart';
+import 'package:sevenouti/core/utils/legal_links.dart';
 import 'package:sevenouti/core/widgets/app_logo_header.dart';
 import 'package:sevenouti/hanout/l10n/hanout_l10n.dart';
 import 'package:sevenouti/hanout/view/pages/hanout_carnet_page.dart';
@@ -40,6 +41,7 @@ class _HanoutShellState extends State<HanoutShell> {
   @override
   void initState() {
     super.initState();
+    unawaited(LocalNotificationService.instance.requestPermissionsIfNeeded());
     _realtimeService = RealtimeEventService();
     _realtimeSubscription = _realtimeService.events.listen(_onRealtimeEvent);
     unawaited(_realtimeService.start());
@@ -74,6 +76,10 @@ class _HanoutShellState extends State<HanoutShell> {
               }
               if (value == 'logout') {
                 unawaited(context.read<AuthCubit>().logout());
+                return;
+              }
+              if (value == 'privacy') {
+                unawaited(_openPrivacyPolicy(context));
               }
             },
             itemBuilder: (context) => [
@@ -84,6 +90,16 @@ class _HanoutShellState extends State<HanoutShell> {
                     const Icon(Icons.settings, color: AppColors.textPrimary),
                     const SizedBox(width: 8),
                     Text(l10n.hanoutMenuSettings),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'privacy',
+                child: Row(
+                  children: [
+                    const Icon(Icons.privacy_tip_outlined),
+                    const SizedBox(width: 8),
+                    Text(l10n.commonPrivacyPolicy),
                   ],
                 ),
               ),
@@ -209,5 +225,13 @@ class _HanoutShellState extends State<HanoutShell> {
   String _orderStatusLabel(String rawStatus) {
     final status = OrderStatus.fromString(rawStatus);
     return context.hanoutOrderStatusLabel(status);
+  }
+
+  Future<void> _openPrivacyPolicy(BuildContext context) async {
+    final opened = await openPrivacyPolicy();
+    if (!context.mounted || opened) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(context.l10n.commonLinkOpenError)),
+    );
   }
 }

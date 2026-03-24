@@ -30,33 +30,39 @@ class ClientHomeLoaded extends ClientHomeState {
     required this.hanouts,
     required this.userLatitude,
     required this.userLongitude,
+    this.isUsingFallbackLocation = false,
     this.selectedHanout,
   });
 
   final List<HanoutWithDistance> hanouts;
   final double userLatitude;
   final double userLongitude;
+  final bool isUsingFallbackLocation;
   final HanoutWithDistance? selectedHanout;
 
   @override
   List<Object?> get props => [
-        hanouts,
-        userLatitude,
-        userLongitude,
-        selectedHanout,
-      ];
+    hanouts,
+    userLatitude,
+    userLongitude,
+    isUsingFallbackLocation,
+    selectedHanout,
+  ];
 
   /// Copie l'état avec modifications
   ClientHomeLoaded copyWith({
     List<HanoutWithDistance>? hanouts,
     double? userLatitude,
     double? userLongitude,
+    bool? isUsingFallbackLocation,
     HanoutWithDistance? selectedHanout,
   }) {
     return ClientHomeLoaded(
       hanouts: hanouts ?? this.hanouts,
       userLatitude: userLatitude ?? this.userLatitude,
       userLongitude: userLongitude ?? this.userLongitude,
+      isUsingFallbackLocation:
+          isUsingFallbackLocation ?? this.isUsingFallbackLocation,
       selectedHanout: selectedHanout ?? this.selectedHanout,
     );
   }
@@ -67,13 +73,19 @@ class ClientHomeEmpty extends ClientHomeState {
   const ClientHomeEmpty({
     required this.userLatitude,
     required this.userLongitude,
+    this.isUsingFallbackLocation = false,
   });
 
   final double userLatitude;
   final double userLongitude;
+  final bool isUsingFallbackLocation;
 
   @override
-  List<Object?> get props => [userLatitude, userLongitude];
+  List<Object?> get props => [
+    userLatitude,
+    userLongitude,
+    isUsingFallbackLocation,
+  ];
 }
 
 /// État d'erreur - problème lors du chargement

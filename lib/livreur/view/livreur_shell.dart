@@ -7,6 +7,7 @@ import 'package:sevenouti/client/models/gas_service_order.dart';
 import 'package:sevenouti/client/models/order_model.dart';
 import 'package:sevenouti/core/notifications/local_notification_service.dart';
 import 'package:sevenouti/core/realtime/realtime_event_service.dart';
+import 'package:sevenouti/core/utils/legal_links.dart';
 import 'package:sevenouti/core/widgets/app_logo_header.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/livreur/l10n/livreur_l10n.dart';
@@ -32,6 +33,7 @@ class _LivreurShellState extends State<LivreurShell> {
   @override
   void initState() {
     super.initState();
+    unawaited(LocalNotificationService.instance.requestPermissionsIfNeeded());
     _realtimeService = RealtimeEventService();
     _realtimeSubscription = _realtimeService.events.listen(_onRealtimeEvent);
     unawaited(_realtimeService.start());
@@ -76,6 +78,11 @@ class _LivreurShellState extends State<LivreurShell> {
 
               if (value == 'logout') {
                 unawaited(context.read<AuthCubit>().logout());
+                return;
+              }
+
+              if (value == 'privacy') {
+                unawaited(_openPrivacyPolicy(context));
               }
             },
             itemBuilder: (context) => [
@@ -86,6 +93,16 @@ class _LivreurShellState extends State<LivreurShell> {
                     const Icon(Icons.settings),
                     const SizedBox(width: 8),
                     Text(l10n.livreurMenuSettings),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'privacy',
+                child: Row(
+                  children: [
+                    const Icon(Icons.privacy_tip_outlined),
+                    const SizedBox(width: 8),
+                    Text(l10n.commonPrivacyPolicy),
                   ],
                 ),
               ),
@@ -197,12 +214,12 @@ class _LivreurShellState extends State<LivreurShell> {
         return shortId.isEmpty
             ? context.l10n.livreurInProgressTitle
             : '${context.l10n.clientOrdersOrderNumber(shortId)}: '
-                '${context.l10n.livreurInProgressTitle}';
+                  '${context.l10n.livreurInProgressTitle}';
       case 'GAS_REQUEST_CREATED':
         return shortId.isEmpty
             ? context.l10n.livreurGasServiceTitle
             : '${context.l10n.clientGasBottleTitle} #$shortId: '
-                '${context.l10n.livreurGasServiceTitle}';
+                  '${context.l10n.livreurGasServiceTitle}';
       case 'GAS_REQUEST_STATUS_CHANGED':
         final gasStatus = event.payload['status']?.toString();
         if (gasStatus == null || gasStatus.isEmpty) return null;
@@ -227,6 +244,14 @@ class _LivreurShellState extends State<LivreurShell> {
       default:
         return null;
     }
+  }
+
+  Future<void> _openPrivacyPolicy(BuildContext context) async {
+    final opened = await openPrivacyPolicy();
+    if (!context.mounted || opened) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(context.l10n.commonLinkOpenError)),
+    );
   }
 
   String _shortId(String value) {

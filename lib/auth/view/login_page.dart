@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sevenouti/auth/cubbit/auth_cubit.dart';
+import 'package:sevenouti/auth/cubbit/auth_state.dart';
 import 'package:sevenouti/auth/view/register_page.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
 import 'package:sevenouti/core/widgets/app_background.dart';
@@ -12,7 +13,12 @@ import 'package:sevenouti/core/widgets/language_selector_tile.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({
+    this.closeOnAuthenticated = false,
+    super.key,
+  });
+
+  final bool closeOnAuthenticated;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -68,130 +74,147 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
 
-    return Scaffold(
-      body: AppBackground(
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: AppSpacing.lg),
+    return BlocListener<AuthCubit, AuthState>(
+      listenWhen: (_, state) =>
+          widget.closeOnAuthenticated && state is Authenticated,
+      listener: (context, state) {
+        if (!mounted) return;
+        final route = ModalRoute.of(context);
+        if (route?.isCurrent != true) return;
+        Navigator.of(context).pop(true);
+      },
+      child: Scaffold(
+        body: AppBackground(
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: AppSpacing.lg),
 
-                  Center(
-                    child: Image.asset(
-                      'assets/logo/logo_full.png',
-                      height: 64,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const SizedBox.shrink(),
+                    Center(
+                      child: Image.asset(
+                        'assets/logo/logo_full.png',
+                        height: 64,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const SizedBox.shrink(),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
+                    const SizedBox(height: AppSpacing.sm),
 
-                  Text(
-                    l10n.authWelcomeTitle,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.h2,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    l10n.authWelcomeSubtitle,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.bodySmall,
-                  ),
+                    Text(
+                      l10n.authWelcomeTitle,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.h2,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      l10n.authWelcomeSubtitle,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.bodySmall,
+                    ),
 
-                  const SizedBox(height: AppSpacing.xl),
+                    const SizedBox(height: AppSpacing.xl),
 
-                  AppCard(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          l10n.authLoginTitle,
-                          style: AppTextStyles.h3,
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-
-                        const LanguageSelectorTile(),
-                        const SizedBox(height: AppSpacing.md),
-
-                        TextFormField(
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: InputDecoration(
-                            labelText: l10n.authEmailLabel,
-                            prefixIcon: const Icon(Icons.email_outlined),
+                    AppCard(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            l10n.authLoginTitle,
+                            style: AppTextStyles.h3,
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return l10n.authEmailRequired;
-                            }
-                            return null;
-                          },
-                        ),
+                          const SizedBox(height: AppSpacing.md),
 
-                        const SizedBox(height: AppSpacing.md),
+                          const LanguageSelectorTile(),
+                          const SizedBox(height: AppSpacing.md),
 
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: _obscurePassword,
-                          decoration: InputDecoration(
-                            labelText: l10n.authPasswordLabel,
-                            prefixIcon: const Icon(Icons.lock_outline),
-                            suffixIcon: IconButton(
-                              onPressed: () => setState(
-                                () => _obscurePassword = !_obscurePassword,
-                              ),
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                              ),
+                          TextFormField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: InputDecoration(
+                              labelText: l10n.authEmailLabel,
+                              prefixIcon: const Icon(Icons.email_outlined),
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return l10n.authEmailRequired;
+                              }
+                              return null;
+                            },
                           ),
-                          validator: (value) {
-                            if (value == null || value.length < 6) {
-                              return l10n.authPasswordInvalid;
-                            }
-                            return null;
-                          },
-                        ),
 
-                        const SizedBox(height: AppSpacing.lg),
+                          const SizedBox(height: AppSpacing.md),
 
-                        app_buttons.PrimaryButton(
-                          label: l10n.authLoginButton,
-                          icon: Icons.login,
-                          isLoading: _isLoading,
-                          onPressed: _isLoading ? null : _onLogin,
-                          fullWidth: true,
-                        ),
-
-                        const SizedBox(height: AppSpacing.md),
-
-                        TextButton(
-                          onPressed: () {
-                            unawaited(
-                              Navigator.push<void>(
-                                context,
-                                MaterialPageRoute<void>(
-                                  builder: (_) => const RegisterPage(),
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            decoration: InputDecoration(
+                              labelText: l10n.authPasswordLabel,
+                              prefixIcon: const Icon(Icons.lock_outline),
+                              suffixIcon: IconButton(
+                                onPressed: () => setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                ),
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
                                 ),
                               ),
-                            );
-                          },
-                          child: Text(l10n.authCreateAccount),
-                        ),
-                      ],
-                    ),
-                  ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.length < 6) {
+                                return l10n.authPasswordInvalid;
+                              }
+                              return null;
+                            },
+                          ),
 
-                  const SizedBox(height: AppSpacing.xl),
-                ],
+                          const SizedBox(height: AppSpacing.lg),
+
+                          app_buttons.PrimaryButton(
+                            label: l10n.authLoginButton,
+                            icon: Icons.login,
+                            isLoading: _isLoading,
+                            onPressed: _isLoading ? null : _onLogin,
+                            fullWidth: true,
+                          ),
+
+                          const SizedBox(height: AppSpacing.md),
+
+                          TextButton(
+                            onPressed: () async {
+                              final result = await Navigator.push<bool>(
+                                context,
+                                MaterialPageRoute<bool>(
+                                  builder: (_) => RegisterPage(
+                                    closeOnAuthenticated:
+                                        widget.closeOnAuthenticated,
+                                  ),
+                                ),
+                              );
+                              if (!mounted ||
+                                  !widget.closeOnAuthenticated ||
+                                  result != true) {
+                                return;
+                              }
+                              Navigator.of(context).pop(true);
+                            },
+                            child: Text(l10n.authCreateAccount),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: AppSpacing.xl),
+                  ],
+                ),
               ),
             ),
           ),

@@ -5,11 +5,9 @@ import 'package:sevenouti/client/cubit/client_home_state.dart';
 import 'package:sevenouti/client/data/api_service.dart';
 import 'package:sevenouti/client/models/hanout_model.dart';
 import 'package:sevenouti/client/repository/repositories.dart';
-import 'package:sevenouti/utils/hanout_cache.dart';
 import 'package:sevenouti/utils/location_cache.dart';
 import 'package:sevenouti/utils/location_utils.dart';
 
-/// Cubit pour gérer la page Home du client
 class ClientHomeCubit extends Cubit<ClientHomeState> {
   ClientHomeCubit({
     required HanoutRepository hanoutRepository,
@@ -18,84 +16,49 @@ class ClientHomeCubit extends Cubit<ClientHomeState> {
 
   final HanoutRepository _hanoutRepository;
 
-  /// Charge les hanouts proches de l'utilisateur
   Future<void> loadNearbyHanouts() async {
-    debugPrint('🟦 [ClientHomeCubit] loadNearbyHanouts() called');
-    var emittedCache = false;
-    final cachedLocation = await LocationCache().getLastKnown();
-    final cachedHanouts = await HanoutCache().getCachedHanouts();
-    if (cachedLocation != null &&
-        cachedHanouts != null &&
-        cachedHanouts.isNotEmpty) {
-      final cachedWithDistance = _withDistance(
-        cachedHanouts,
-        cachedLocation.latitude,
-        cachedLocation.longitude,
-      );
-      emit(
-        ClientHomeLoaded(
-          hanouts: cachedWithDistance,
-          userLatitude: cachedLocation.latitude,
-          userLongitude: cachedLocation.longitude,
-        ),
-      );
-      emittedCache = true;
-    } else {
-      emit(const ClientHomeLoading());
-    }
+    debugPrint('[ClientHomeCubit] loadNearbyHanouts() called');
+    emit(const ClientHomeLoading());
 
     Object? lastError;
     for (var attempt = 1; attempt <= 2; attempt++) {
       try {
-        // 1. Récupère la position de l'utilisateur
-        final position = await _getUserPosition(
-          emitLoadingState: !emittedCache && attempt == 1,
-          // Évite le faux message d'erreur au 1er essai (erreurs transitoires)
-          emitErrors: !emittedCache && attempt == 2,
-        );
+        final position = await _getUserPosition(emitLoadingState: attempt == 1);
         if (position == null) {
-          if (attempt < 2) {
-            await Future<void>.delayed(const Duration(milliseconds: 400));
-            continue;
-          }
-          debugPrint(
-            '🟨 [ClientHomeCubit] Position is null -> aborting API call',
-          );
+          emit(const ClientHomeLocationPermissionDenied());
           return;
         }
+
         debugPrint(
-          '🟦 [ClientHomeCubit] Position: lat=${position.latitude}, lon=${position.longitude}',
+          '[ClientHomeCubit] Position: lat=${position.latitude}, '
+          'lon=${position.longitude}',
         );
         await LocationCache().save(
           latitude: position.latitude,
           longitude: position.longitude,
         );
 
-        // 2. Récupère les hanouts proches depuis l'API
         final hanouts = await _hanoutRepository.getNearbyHanouts(
           latitude: position.latitude,
           longitude: position.longitude,
-          radius: 100000, // 500m par défaut
+          radius: 100000,
         );
         debugPrint(
-          '🟦 [ClientHomeCubit] API returned ${hanouts.length} hanouts',
+          '[ClientHomeCubit] API returned ${hanouts.length} hanouts',
         );
 
-        // 3. Calcule les distances et trie
         final hanoutsWithDistance = _withDistance(
           hanouts,
           position.latitude,
           position.longitude,
         );
 
-        await HanoutCache().saveHanouts(hanouts);
-
-        // 4. Émet le bon état
         if (hanoutsWithDistance.isEmpty) {
           emit(
             ClientHomeEmpty(
               userLatitude: position.latitude,
               userLongitude: position.longitude,
+              isUsingFallbackLocation: false,
             ),
           );
         } else {
@@ -103,7 +66,8 @@ class ClientHomeCubit extends Cubit<ClientHomeState> {
           if (currentState is ClientHomeLoaded &&
               _sameHanouts(currentState.hanouts, hanoutsWithDistance) &&
               currentState.userLatitude == position.latitude &&
-              currentState.userLongitude == position.longitude) {
+              currentState.userLongitude == position.longitude &&
+              !currentState.isUsingFallbackLocation) {
             return;
           }
           emit(
@@ -111,6 +75,7 @@ class ClientHomeCubit extends Cubit<ClientHomeState> {
               hanouts: hanoutsWithDistance,
               userLatitude: position.latitude,
               userLongitude: position.longitude,
+              isUsingFallbackLocation: false,
             ),
           );
         }
@@ -121,36 +86,32 @@ class ClientHomeCubit extends Cubit<ClientHomeState> {
           await Future<void>.delayed(const Duration(milliseconds: 400));
           continue;
         }
-        if (!emittedCache) {
-          emit(
-            ClientHomeError(
-              message: e.message,
-              canRetry: true,
-            ),
-          );
-        }
+        emit(
+          ClientHomeError(
+            message: e.message,
+            canRetry: true,
+          ),
+        );
       } catch (e) {
         lastError = e;
         if (attempt < 2) {
           await Future<void>.delayed(const Duration(milliseconds: 400));
           continue;
         }
-        if (!emittedCache) {
-          emit(
-            ClientHomeError(
-              message: 'Une erreur est survenue: ${e.toString()}',
-              canRetry: true,
-            ),
-          );
-        }
+        emit(
+          ClientHomeError(
+            message: 'Une erreur est survenue: ${e.toString()}',
+            canRetry: true,
+          ),
+        );
       }
     }
+
     if (lastError != null) {
-      debugPrint('🟥 [ClientHomeCubit] loadNearbyHanouts failed: $lastError');
+      debugPrint('[ClientHomeCubit] loadNearbyHanouts failed: $lastError');
     }
   }
 
-  /// Sélectionne un hanout (pour le marquer comme favoris ou habituel)
   void selectHanout(HanoutWithDistance hanout) {
     final currentState = state;
     if (currentState is ClientHomeLoaded) {
@@ -158,80 +119,50 @@ class ClientHomeCubit extends Cubit<ClientHomeState> {
     }
   }
 
-  /// Rafraîchit la liste des hanouts
   Future<void> refresh() async {
-    debugPrint('🟦 [ClientHomeCubit] refresh() called');
+    debugPrint('[ClientHomeCubit] refresh() called');
     await loadNearbyHanouts();
   }
 
-  /// Récupère la position GPS de l'utilisateur
   Future<Position?> _getUserPosition({
     bool emitLoadingState = true,
-    bool emitErrors = true,
   }) async {
     try {
-      // Vérifie si le service de localisation est activé
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        debugPrint('🟥 [ClientHomeCubit] Location service disabled');
-        if (emitErrors) {
-          emit(
-            const ClientHomeError(
-              message:
-                  'Le service de localisation est désactivé. '
-                  'Veuillez l\'activer dans les paramètres.',
-              canRetry: true,
-            ),
-          );
-        }
+        debugPrint('[ClientHomeCubit] Location service disabled');
         return null;
       }
 
-      // Vérifie les permissions
       var permission = await Geolocator.checkPermission();
-      debugPrint('🟦 [ClientHomeCubit] Location permission: $permission');
+      debugPrint('[ClientHomeCubit] Location permission: $permission');
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         debugPrint(
-          '🟦 [ClientHomeCubit] Permission after request: $permission',
+          '[ClientHomeCubit] Permission after request: $permission',
         );
         if (permission == LocationPermission.denied) {
-          debugPrint('🟥 [ClientHomeCubit] Permission denied (user)');
-          if (emitErrors) {
-            emit(const ClientHomeLocationPermissionDenied());
-          }
+          debugPrint('[ClientHomeCubit] Permission denied by user');
           return null;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        debugPrint('🟥 [ClientHomeCubit] Permission denied forever');
-        if (emitErrors) {
-          emit(const ClientHomeLocationPermissionDenied());
-        }
+        debugPrint('[ClientHomeCubit] Permission denied forever');
         return null;
       }
 
-      // Récupère la position
       if (emitLoadingState) {
         emit(const ClientHomeLoadingLocation());
       }
+
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-      debugPrint('🟦 [ClientHomeCubit] Got position from Geolocator');
-
+      debugPrint('[ClientHomeCubit] Got position from Geolocator');
       return position;
     } catch (e) {
-      debugPrint('🟥 [ClientHomeCubit] getUserPosition error: $e');
-      if (emitErrors) {
-        emit(
-          ClientHomeError(
-            message: 'Impossible de récupérer votre position: ${e.toString()}',
-            canRetry: true,
-          ),
-        );
-      }
+      debugPrint('[ClientHomeCubit] getUserPosition error: $e');
       return null;
     }
   }
@@ -268,24 +199,19 @@ class ClientHomeCubit extends Cubit<ClientHomeState> {
     return true;
   }
 
-  /// VERSION MOCK - Pour tester sans API ni GPS
-  /// À utiliser pendant le développement
   Future<void> loadNearbyHanoutsMock() async {
     emit(const ClientHomeLoading());
 
-    // Simule un délai réseau
     await Future<void>.delayed(const Duration(seconds: 1));
 
-    // Position fictive (Casablanca centre)
     const userLat = 33.5731;
     const userLon = -7.5898;
 
-    // Données fictives
     final mockHanouts = [
       HanoutModel(
         id: '1',
         name: 'Hanout Hassan',
-        description: 'Épicerie de quartier',
+        description: 'Epicerie de quartier',
         address: '12 Rue Mohammed V, Casablanca',
         latitude: 33.5735,
         longitude: -7.5895,
@@ -302,7 +228,7 @@ class ClientHomeCubit extends Cubit<ClientHomeState> {
       ),
       HanoutModel(
         id: '2',
-        name: 'Épicerie Fatima',
+        name: 'Epicerie Fatima',
         description: 'Produits frais tous les jours',
         address: '45 Boulevard Zerktouni, Casablanca',
         latitude: 33.5720,
@@ -338,8 +264,8 @@ class ClientHomeCubit extends Cubit<ClientHomeState> {
       ),
       HanoutModel(
         id: '4',
-        name: 'Épicerie du Coin',
-        description: 'Fermé actuellement',
+        name: 'Epicerie du Coin',
+        description: 'Ferme actuellement',
         address: '23 Rue Ibn Batouta, Casablanca',
         latitude: 33.5750,
         longitude: -7.5920,
@@ -356,7 +282,6 @@ class ClientHomeCubit extends Cubit<ClientHomeState> {
       ),
     ];
 
-    // Calcule les distances
     final hanoutsWithDistance = mockHanouts.map((hanout) {
       final distance = LocationUtils.calculateDistance(
         userLat,
@@ -367,7 +292,6 @@ class ClientHomeCubit extends Cubit<ClientHomeState> {
       return HanoutWithDistance.fromHanout(hanout, distance);
     }).toList();
 
-    // Trie par distance
     hanoutsWithDistance.sort(
       (a, b) => a.distanceInMeters.compareTo(b.distanceInMeters),
     );

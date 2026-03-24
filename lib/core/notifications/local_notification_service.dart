@@ -10,6 +10,7 @@ class LocalNotificationService {
       FlutterLocalNotificationsPlugin();
 
   bool _initialized = false;
+  bool _permissionsRequested = false;
   int _notificationId = 0;
 
   Future<void> init() async {
@@ -21,8 +22,17 @@ class LocalNotificationService {
     );
 
     await _plugin.initialize(settings);
-    await _requestPermissions();
     _initialized = true;
+  }
+
+  Future<void> requestPermissionsIfNeeded() async {
+    if (_permissionsRequested) return;
+    if (!_initialized) {
+      await init();
+    }
+
+    await _requestPermissions();
+    _permissionsRequested = true;
   }
 
   Future<void> show({
@@ -49,12 +59,18 @@ class LocalNotificationService {
   }
 
   Future<void> _requestPermissions() async {
-    final android = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
-    final ios = _plugin.resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin>();
-    final macos = _plugin.resolvePlatformSpecificImplementation<
-        MacOSFlutterLocalNotificationsPlugin>();
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    final ios = _plugin
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
+    final macos = _plugin
+        .resolvePlatformSpecificImplementation<
+          MacOSFlutterLocalNotificationsPlugin
+        >();
 
     try {
       await android?.requestNotificationsPermission();

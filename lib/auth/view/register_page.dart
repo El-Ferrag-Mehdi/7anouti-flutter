@@ -10,7 +10,12 @@ import 'package:sevenouti/core/widgets/language_selector_tile.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+  const RegisterPage({
+    this.closeOnAuthenticated = false,
+    super.key,
+  });
+
+  final bool closeOnAuthenticated;
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -78,9 +83,14 @@ class _RegisterPageState extends State<RegisterPage> {
     return BlocListener<AuthCubit, AuthState>(
       listenWhen: (_, state) => state is Authenticated,
       listener: (context, state) {
+        if (!widget.closeOnAuthenticated) {
+          return;
+        }
+        final route = ModalRoute.of(context);
+        if (route?.isCurrent != true) return;
         final navigator = Navigator.of(context);
         if (navigator.canPop()) {
-          navigator.popUntil((route) => route.isFirst);
+          navigator.pop(true);
         }
       },
       child: Scaffold(

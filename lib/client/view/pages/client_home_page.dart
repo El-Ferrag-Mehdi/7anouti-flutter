@@ -1,5 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:sevenouti/auth/cubbit/auth_cubit.dart';
+import 'package:sevenouti/auth/cubbit/auth_state.dart';
+import 'package:sevenouti/auth/models/user_role.dart';
 import 'package:sevenouti/client/cubit/client_home_cubit.dart';
 import 'package:sevenouti/client/cubit/client_home_state.dart';
 import 'package:sevenouti/client/data/api_service.dart';
@@ -7,7 +13,9 @@ import 'package:sevenouti/client/models/hanout_model.dart';
 import 'package:sevenouti/client/repository/repositories.dart';
 import 'package:sevenouti/client/view/pages/gas_service_tracking_page.dart';
 import 'package:sevenouti/client/view/pages/hanout_details_page.dart';
+import 'package:sevenouti/client/widgets/client_auth_prompt.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
+import 'package:sevenouti/core/notifications/local_notification_service.dart';
 import 'package:sevenouti/core/widgets/app_background.dart';
 import 'package:sevenouti/core/widgets/app_widgets.dart';
 import 'package:sevenouti/core/widgets/buttons.dart'
@@ -60,6 +68,9 @@ class ClientHomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final authState = context.watch<AuthCubit>().state;
+    final isAuthenticatedClient =
+        authState is Authenticated && authState.role == UserRole.client;
     return Scaffold(
       body: BlocBuilder<ClientHomeCubit, ClientHomeState>(
         builder: (context, state) {
@@ -76,7 +87,11 @@ class ClientHomeView extends StatelessWidget {
 
           // État de succès - affiche les hanouts
           if (state is ClientHomeLoaded) {
-            return _buildLoadedView(context, state);
+            return _buildLoadedView(
+              context,
+              state,
+              isAuthenticatedClient: isAuthenticatedClient,
+            );
           }
 
           // État vide - pas de hanouts trouvés
@@ -93,11 +108,9 @@ class ClientHomeView extends StatelessWidget {
 
           // État d'erreur de permission
           if (state is ClientHomeLocationPermissionDenied) {
-            return AppBackground(
-              child: ErrorView(
-                message: l10n.clientHomeLocationPermissionDenied,
-                onRetry: () => context.read<ClientHomeCubit>().refresh(),
-              ),
+            return _buildLocationPermissionDeniedView(
+              context,
+              isAuthenticatedClient: isAuthenticatedClient,
             );
           }
 
@@ -121,7 +134,11 @@ class ClientHomeView extends StatelessWidget {
   }
 
   /// Construit la vue quand les données sont chargées
-  Widget _buildLoadedView(BuildContext context, ClientHomeLoaded state) {
+  Widget _buildLoadedView(
+    BuildContext context,
+    ClientHomeLoaded state, {
+    required bool isAuthenticatedClient,
+  }) {
     return AppBackground(
       child: RefreshIndicator(
         onRefresh: () => context.read<ClientHomeCubit>().refresh(),
@@ -144,6 +161,7 @@ class ClientHomeView extends StatelessWidget {
                 child: _buildQuickActions(
                   context,
                   hasHanouts: state.hanouts.isNotEmpty,
+                  isAuthenticatedClient: isAuthenticatedClient,
                 ),
               ),
             ),
@@ -211,13 +229,19 @@ class ClientHomeView extends StatelessWidget {
   Widget _buildQuickActions(
     BuildContext context, {
     required bool hasHanouts,
+    required bool isAuthenticatedClient,
   }) {
-    return _buildAggressiveQuickActions(context, hasHanouts: hasHanouts);
+    return _buildAggressiveQuickActions(
+      context,
+      hasHanouts: hasHanouts,
+      isAuthenticatedClient: isAuthenticatedClient,
+    );
   }
 
   Widget _buildAggressiveQuickActions(
     BuildContext context, {
     required bool hasHanouts,
+    required bool isAuthenticatedClient,
   }) {
     final l10n = context.l10n;
     return Column(
@@ -241,32 +265,147 @@ class ClientHomeView extends StatelessWidget {
           subtitle: l10n.clientHomeQuickActionsGasSubtitle,
           icon: Icons.local_fire_department,
           color: AppColors.secondary,
-          onTap: () => _showGasServiceSheet(context),
+          onTap: () => unawaited(
+            _handleGasAction(
+              context,
+              isAuthenticatedClient: isAuthenticatedClient,
+            ),
+          ),
           badge: l10n.clientHomeQuickActionsGasBadge,
         ),
       ],
     );
   }
 
+  Widget _buildLocationPermissionDeniedView(
+    BuildContext context, {
+    required bool isAuthenticatedClient,
+  }) {
+    return AppBackground(
+      child: RefreshIndicator(
+        onRefresh: () => context.read<ClientHomeCubit>().refresh(),
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: _buildHeroHeader(context),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                  AppSpacing.md,
+                  AppSpacing.lg,
+                  AppSpacing.md,
+                  AppSpacing.sm,
+                ),
+                child: _buildQuickActions(
+                  context,
+                  hasHanouts: true,
+                  isAuthenticatedClient: isAuthenticatedClient,
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                key: _hanoutsSectionKey,
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                  AppSpacing.md,
+                  AppSpacing.lg,
+                  AppSpacing.md,
+                  AppSpacing.sm,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionHeader(
+                      title: context.l10n.clientHomeNearbyHanoutsTitle,
+                      subtitle: context.l10n.clientHomeLocationPermissionDenied,
+                      icon: Icons.location_on,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    _buildLocationPermissionCard(context),
+                  ],
+                ),
+              ),
+            ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: AppSpacing.xl),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocationPermissionCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppRadius.large,
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.card,
+      ),
+      child: Column(
+        children: [
+          Container(
+            height: 56,
+            width: 56,
+            decoration: BoxDecoration(
+              color: AppColors.secondary.withOpacity(0.12),
+              borderRadius: AppRadius.large,
+            ),
+            child: const Icon(
+              Icons.location_off_rounded,
+              color: AppColors.secondary,
+              size: 28,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            context.l10n.clientHomeLocationPermissionDenied,
+            style: AppTextStyles.bodyLarge.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          PrimaryButton(
+            label: context.l10n.clientHomeLocationPermissionAction,
+            icon: Icons.my_location_rounded,
+            fullWidth: true,
+            onPressed: () => unawaited(_openLocationSettings()),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          SecondaryButton(
+            label: context.l10n.clientHomeLocationPermissionRetry,
+            icon: Icons.refresh_rounded,
+            fullWidth: true,
+            onPressed: () => unawaited(
+              context.read<ClientHomeCubit>().refresh(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openLocationSettings() async {
+    await Geolocator.openAppSettings();
+  }
+
   void _scrollToHanouts(
     BuildContext context, {
     required bool hasHanouts,
   }) {
-    if (!hasHanouts) {
-      AppSnackBar.show(
-        context,
-        message: context.l10n.clientHomeNoHanoutNearby,
-        type: SnackBarType.warning,
-      );
-      return;
-    }
-
     final targetContext = _hanoutsSectionKey.currentContext;
     if (targetContext == null) {
       AppSnackBar.show(
         context,
-        message: context.l10n.clientHomeScrollForHanouts,
-        type: SnackBarType.info,
+        message: hasHanouts
+            ? context.l10n.clientHomeScrollForHanouts
+            : context.l10n.clientHomeNoHanoutNearby,
+        type: hasHanouts ? SnackBarType.info : SnackBarType.warning,
       );
       return;
     }
@@ -679,6 +818,8 @@ class ClientHomeView extends StatelessWidget {
                               );
                               return;
                             }
+                            await LocalNotificationService.instance
+                                .requestPermissionsIfNeeded();
                             setState(() => isSubmitting = true);
                             GasServiceOrder? order;
                             try {
@@ -724,6 +865,24 @@ class ClientHomeView extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _handleGasAction(
+    BuildContext context, {
+    required bool isAuthenticatedClient,
+  }) async {
+    if (isAuthenticatedClient) {
+      _showGasServiceSheet(context);
+      return;
+    }
+
+    final authenticated = await showClientAuthPrompt(
+      context: context,
+      title: context.l10n.clientGuestGasPromptTitle,
+      message: context.l10n.clientGuestGasPromptMessage,
+    );
+    if (!context.mounted || !authenticated) return;
+    _showGasServiceSheet(context);
   }
 
   Widget _priceRow(String label, String value, {bool isTotal = false}) {

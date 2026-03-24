@@ -24,7 +24,7 @@ class OrderConfirmationSheet extends StatefulWidget {
   final String freeTextOrder;
   final DeliveryType deliveryType;
   final PaymentMethod paymentMethod;
-  final void Function({
+  final Future<void> Function({
     required String address,
     required String? addressFr,
     required String? addressAr,
@@ -486,7 +486,7 @@ class _OrderConfirmationSheetState extends State<OrderConfirmationSheet> {
     // Ferme le bottom sheet et appelle le callback
     Navigator.of(context).pop();
 
-    widget.onConfirm(
+    await widget.onConfirm(
       address: primaryAddress,
       addressFr: addressFr,
       addressAr: addressAr,
@@ -560,7 +560,7 @@ void showOrderConfirmationSheet({
   required String freeTextOrder,
   required DeliveryType deliveryType,
   required PaymentMethod paymentMethod,
-  required void Function({
+  required Future<void> Function({
     required String address,
     required String? addressFr,
     required String? addressAr,

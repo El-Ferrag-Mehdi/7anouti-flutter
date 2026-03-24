@@ -8,6 +8,7 @@ import 'package:sevenouti/client/repository/client_profile_repository.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
 import 'package:sevenouti/core/widgets/app_widgets.dart';
 import 'package:sevenouti/core/widgets/language_selector_tile.dart';
+import 'package:sevenouti/core/widgets/privacy_policy_button.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 
 class ClientSettingsPage extends StatefulWidget {
@@ -254,7 +255,9 @@ class _ClientSettingsPageState extends State<ClientSettingsPage> {
     nextController.dispose();
     confirmController.dispose();
 
-    if (currentPassword.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
+    if (currentPassword.isEmpty ||
+        newPassword.isEmpty ||
+        confirmPassword.isEmpty) {
       AppSnackBar.show(
         context,
         message: 'Tous les champs sont obligatoires',
@@ -359,6 +362,13 @@ class _ClientSettingsPageState extends State<ClientSettingsPage> {
           const LanguageSelectorTile(),
           const SizedBox(height: AppSpacing.lg),
           Text(
+            l10n.commonLegalSectionTitle,
+            style: AppTextStyles.h3,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          const PrivacyPolicyButton(),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
             l10n.clientSettingsAccountSectionTitle,
             style: AppTextStyles.h3,
           ),
@@ -405,9 +415,7 @@ class _ClientSettingsPageState extends State<ClientSettingsPage> {
                   )
                 : const Icon(Icons.lock_outline),
             label: Text(
-              _changingPassword
-                  ? 'Modification...'
-                  : 'Changer mot de passe',
+              _changingPassword ? 'Modification...' : 'Changer mot de passe',
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
