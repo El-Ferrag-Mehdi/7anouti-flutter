@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sevenouti/app/cubbit/app_cubbit.dart';
 import 'package:sevenouti/auth/cubbit/auth_cubit.dart';
 import 'package:sevenouti/auth/cubbit/auth_state.dart';
 import 'package:sevenouti/auth/models/user_role.dart';
@@ -130,6 +131,16 @@ class _ClientShellState extends State<ClientShell> {
               }
 
               return [
+                PopupMenuItem(
+                  value: 'switch_language',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.language),
+                      const SizedBox(width: 8),
+                      Text(_guestLanguageLabel(context)),
+                    ],
+                  ),
+                ),
                 PopupMenuItem(
                   value: 'privacy',
                   child: Row(
@@ -300,6 +311,11 @@ class _ClientShellState extends State<ClientShell> {
       return;
     }
 
+    if (value == 'switch_language') {
+      await _toggleGuestLanguage();
+      return;
+    }
+
     if (value == 'login') {
       await _openLoginPage();
       return;
@@ -464,6 +480,19 @@ class _ClientShellState extends State<ClientShell> {
       MaterialPageRoute<bool>(
         builder: (_) => const LoginPage(closeOnAuthenticated: true),
       ),
+    );
+  }
+
+  String _guestLanguageLabel(BuildContext context) {
+    final code = Localizations.localeOf(context).languageCode;
+    return code == 'ar' ? 'Francais' : 'العربية';
+  }
+
+  Future<void> _toggleGuestLanguage() async {
+    final appCubit = context.read<AppCubit>();
+    final currentCode = appCubit.state.locale.languageCode;
+    await appCubit.setLocale(
+      Locale(currentCode == 'ar' ? 'fr' : 'ar'),
     );
   }
 }
