@@ -199,7 +199,6 @@ class HanoutDetailsView extends StatelessWidget {
                     // Section commande libre
                     _buildOrderSection(context, state),
                     const SizedBox(height: AppSpacing.lg),
-                    // Produits suggeres et categories masques temporairement
 
                     // Options de livraison
                     _buildDeliveryOptions(context, state),
@@ -290,20 +289,21 @@ class HanoutDetailsView extends StatelessWidget {
               children: [
                 Text(hanout.name, style: AppTextStyles.h4),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.location_on,
-                      size: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      hanout.formattedDistance,
-                      style: AppTextStyles.bodySmall,
-                    ),
-                  ],
-                ),
+                if (hanout.formattedDistance.isNotEmpty)
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        size: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        hanout.formattedDistance,
+                        style: AppTextStyles.bodySmall,
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),
@@ -867,10 +867,11 @@ class HanoutDetailsView extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           _infoRow(Icons.phone, hanout.phone),
           const SizedBox(height: AppSpacing.sm),
-          _infoRow(
-            Icons.directions,
-            context.l10n.clientHanoutDistance(hanout.formattedDistance),
-          ),
+          if (hanout.formattedDistance.isNotEmpty)
+            _infoRow(
+              Icons.directions,
+              context.l10n.clientHanoutDistance(hanout.formattedDistance),
+            ),
           if (hanout.rating != null) ...[
             const SizedBox(height: AppSpacing.sm),
             _infoRow(

@@ -184,7 +184,7 @@
   "clientGasMessageRejected": "Demande refusée.",
   "clientHomeLoadingNearby": "Recherche des hanouts proches...",
   "clientHomeNoHanoutNearby": "Aucun hanout proche trouv?.",
-  "clientHomeLocationPermissionDenied": "Autorisez la localisation pour voir les hanouts proches disponibles.",
+  "clientHomeLocationPermissionDenied": "Autorisez la localisation pour voir les hanouts les plus proches.",
   "clientHomeNearbyHanoutsTitle": "Hanouts à proximité",
   "clientHomeHanoutsFound": "{count} hanout(s) trouvés",
   "@clientHomeHanoutsFound": {
@@ -395,6 +395,8 @@
       }
     }
   },
+  "clientHanoutProductAvailable": "Disponible",
+  "clientHanoutProductUnavailable": "Indisponible",
   "clientHanoutCategories": "Categories",
   "clientHanoutPickupType": "Type de retrait",
   "clientHanoutDeliveryFee": "Frais de livraison: {fee}",

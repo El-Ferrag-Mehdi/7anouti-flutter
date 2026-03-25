@@ -184,7 +184,7 @@
   "clientGasMessageRejected": "ترفضات الطلبية.",
   "clientHomeLoadingNearby": "كنقلبو على لحوانت لي حديا...",
   "clientHomeNoHanoutNearby": "ما لقيناش حتى حانوت قريب.",
-  "clientHomeLocationPermissionDenied": "سمح لينا بالموقع باش نبينو ليك الحوانت القريبة المتوفرة.",
+  "clientHomeLocationPermissionDenied": "سمح لينا بالموقع باش نبينو ليك أقرب لحوانت ليك.",
   "clientHomeNearbyHanoutsTitle": "لحوانت لي حديا",
   "clientHomeHanoutsFound": "لقينا {count} حانوت",
   "@clientHomeHanoutsFound": {
@@ -395,6 +395,8 @@
       }
     }
   },
+  "clientHanoutProductAvailable": "متوفر",
+  "clientHanoutProductUnavailable": "غير متوفر",
   "clientHanoutCategories": "الأقسام",
   "clientHanoutPickupType": "نوع الاستلام",
   "clientHanoutDeliveryFee": "مصاريف التوصيل: {fee}",

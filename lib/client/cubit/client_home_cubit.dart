@@ -16,16 +16,21 @@ class ClientHomeCubit extends Cubit<ClientHomeState> {
 
   final HanoutRepository _hanoutRepository;
 
-  Future<void> loadNearbyHanouts() async {
+  Future<void> loadNearbyHanouts({
+    bool requestPermission = false,
+  }) async {
     debugPrint('[ClientHomeCubit] loadNearbyHanouts() called');
     emit(const ClientHomeLoading());
 
     Object? lastError;
     for (var attempt = 1; attempt <= 2; attempt++) {
       try {
-        final position = await _getUserPosition(emitLoadingState: attempt == 1);
+        final position = await _getUserPosition(
+          emitLoadingState: requestPermission && attempt == 1,
+          requestPermission: requestPermission,
+        );
         if (position == null) {
-          emit(const ClientHomeLocationPermissionDenied());
+          await _loadPublicHanouts();
           return;
         }
 
@@ -126,6 +131,7 @@ class ClientHomeCubit extends Cubit<ClientHomeState> {
 
   Future<Position?> _getUserPosition({
     bool emitLoadingState = true,
+    bool requestPermission = false,
   }) async {
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -136,15 +142,16 @@ class ClientHomeCubit extends Cubit<ClientHomeState> {
 
       var permission = await Geolocator.checkPermission();
       debugPrint('[ClientHomeCubit] Location permission: $permission');
-      if (permission == LocationPermission.denied) {
+      if (permission == LocationPermission.denied && requestPermission) {
         permission = await Geolocator.requestPermission();
         debugPrint(
           '[ClientHomeCubit] Permission after request: $permission',
         );
-        if (permission == LocationPermission.denied) {
-          debugPrint('[ClientHomeCubit] Permission denied by user');
-          return null;
-        }
+      }
+
+      if (permission == LocationPermission.denied) {
+        debugPrint('[ClientHomeCubit] Permission denied by user');
+        return null;
       }
 
       if (permission == LocationPermission.deniedForever) {
@@ -165,6 +172,33 @@ class ClientHomeCubit extends Cubit<ClientHomeState> {
       debugPrint('[ClientHomeCubit] getUserPosition error: $e');
       return null;
     }
+  }
+
+  Future<void> _loadPublicHanouts() async {
+    final hanouts = await _hanoutRepository.getNearbyHanouts(
+      radius: 100000,
+      limit: 10,
+    );
+
+    if (hanouts.isEmpty) {
+      emit(
+        const ClientHomeEmpty(
+          userLatitude: 0,
+          userLongitude: 0,
+          isUsingFallbackLocation: true,
+        ),
+      );
+      return;
+    }
+
+    emit(
+      ClientHomeLoaded(
+        hanouts: hanouts,
+        userLatitude: 0,
+        userLongitude: 0,
+        isUsingFallbackLocation: true,
+      ),
+    );
   }
 
   List<HanoutWithDistance> _withDistance(

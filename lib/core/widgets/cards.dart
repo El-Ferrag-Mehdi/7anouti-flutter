@@ -163,24 +163,25 @@ class HanoutCard extends StatelessWidget {
                 // Distance + rating + carnet
                 Row(
                   children: [
-                    // Distance
-                    Icon(
-                      Icons.location_on,
-                      size: 16,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      distance,
-                      style: AppTextStyles.bodySmall.copyWith(
+                    if (distance.trim().isNotEmpty) ...[
+                      Icon(
+                        Icons.location_on,
+                        size: 16,
                         color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
                       ),
-                    ),
+                      const SizedBox(width: 4),
+                      Text(
+                        distance,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
 
-                    // Rating
                     if (rating != null) ...[
-                      const SizedBox(width: AppSpacing.md),
+                      if (distance.trim().isNotEmpty)
+                        const SizedBox(width: AppSpacing.md),
                       Icon(
                         Icons.star,
                         size: 16,
@@ -193,9 +194,9 @@ class HanoutCard extends StatelessWidget {
                       ),
                     ],
 
-                    // Carnet disponible
                     if (hasCarnet) ...[
-                      const Spacer(),
+                      if (distance.trim().isNotEmpty || rating != null)
+                        const Spacer(),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.sm,

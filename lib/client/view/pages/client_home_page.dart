@@ -42,7 +42,7 @@ class ClientHomePage extends StatelessWidget {
     return BlocProvider(
       create: (context) => ClientHomeCubit(
         hanoutRepository: HanoutRepository(ApiService()),
-      )..loadNearbyHanouts(), // Pour l'instant on utilise les données mock
+      )..loadNearbyHanouts(),
       child: ClientHomeView(variant: variant),
     );
   }
@@ -96,6 +96,12 @@ class ClientHomeView extends StatelessWidget {
 
           // État vide - pas de hanouts trouvés
           if (state is ClientHomeEmpty) {
+            if (state.isUsingFallbackLocation) {
+              return _buildLocationPermissionDeniedView(
+                context,
+                isAuthenticatedClient: isAuthenticatedClient,
+              );
+            }
             return AppBackground(
               child: EmptyView(
                 message: l10n.clientHomeNoHanoutNearby,
@@ -165,6 +171,18 @@ class ClientHomeView extends StatelessWidget {
                 ),
               ),
             ),
+            if (state.isUsingFallbackLocation)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                    AppSpacing.md,
+                    0,
+                    AppSpacing.md,
+                    AppSpacing.sm,
+                  ),
+                  child: _buildLocationPermissionCard(context),
+                ),
+              ),
 
             // Section title + info carnet
             SliverToBoxAdapter(
@@ -374,7 +392,7 @@ class ClientHomeView extends StatelessWidget {
             label: context.l10n.clientHomeLocationPermissionAction,
             icon: Icons.my_location_rounded,
             fullWidth: true,
-            onPressed: () => unawaited(_openLocationSettings()),
+            onPressed: () => unawaited(_requestLocationAccess(context)),
           ),
           const SizedBox(height: AppSpacing.sm),
           SecondaryButton(
@@ -390,8 +408,17 @@ class ClientHomeView extends StatelessWidget {
     );
   }
 
-  Future<void> _openLocationSettings() async {
-    await Geolocator.openAppSettings();
+  Future<void> _requestLocationAccess(BuildContext context) async {
+    final permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.deniedForever) {
+      await Geolocator.openAppSettings();
+      return;
+    }
+
+    if (!context.mounted) return;
+    await context.read<ClientHomeCubit>().loadNearbyHanouts(
+      requestPermission: true,
+    );
   }
 
   void _scrollToHanouts(
@@ -673,12 +700,16 @@ class ClientHomeView extends StatelessWidget {
     );
   }
 
-  void _showGasServiceSheet(BuildContext context) {
+  void _showGasServiceSheet(
+    BuildContext context, {
+    required bool isAuthenticatedClient,
+  }) {
     final parentContext = context;
     final addressController = TextEditingController();
     final notesController = TextEditingController();
     bool isSubmitting = false;
     bool isLocating = false;
+    var canSubmitWithoutPrompt = isAuthenticatedClient;
     double? clientLatitude;
     double? clientLongitude;
 
@@ -818,6 +849,18 @@ class ClientHomeView extends StatelessWidget {
                               );
                               return;
                             }
+                            if (!canSubmitWithoutPrompt) {
+                              final authenticated = await showClientAuthPrompt(
+                                context: parentContext,
+                                title: context.l10n.clientGuestGasPromptTitle,
+                                message:
+                                    context.l10n.clientGuestGasPromptMessage,
+                              );
+                              if (!context.mounted || !authenticated) {
+                                return;
+                              }
+                              canSubmitWithoutPrompt = true;
+                            }
                             await LocalNotificationService.instance
                                 .requestPermissionsIfNeeded();
                             setState(() => isSubmitting = true);
@@ -871,18 +914,10 @@ class ClientHomeView extends StatelessWidget {
     BuildContext context, {
     required bool isAuthenticatedClient,
   }) async {
-    if (isAuthenticatedClient) {
-      _showGasServiceSheet(context);
-      return;
-    }
-
-    final authenticated = await showClientAuthPrompt(
-      context: context,
-      title: context.l10n.clientGuestGasPromptTitle,
-      message: context.l10n.clientGuestGasPromptMessage,
+    _showGasServiceSheet(
+      context,
+      isAuthenticatedClient: isAuthenticatedClient,
     );
-    if (!context.mounted || !authenticated) return;
-    _showGasServiceSheet(context);
   }
 
   Widget _priceRow(String label, String value, {bool isTotal = false}) {

@@ -17,13 +17,18 @@ class HanoutRepository {
 
   /// Récupère les hanouts proches d'une position
   Future<List<HanoutWithDistance>> getNearbyHanouts({
-    required double latitude,
-    required double longitude,
+    double? latitude,
+    double? longitude,
     double radius = 500,
+    int? limit,
   }) async {
-    final dynamic response = await _apiService.get(
-      '/hanouts/nearby?latitude=$latitude&longitude=$longitude&radius=$radius',
-    );
+    final query = <String>[
+      if (latitude != null) 'latitude=$latitude',
+      if (longitude != null) 'longitude=$longitude',
+      'radius=$radius',
+      if (limit != null) 'limit=$limit',
+    ].join('&');
+    final dynamic response = await _apiService.get('/hanouts/nearby?$query');
 
     // Cast explicite en Map
     final Map<String, dynamic> responseMap = response as Map<String, dynamic>;

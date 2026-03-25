@@ -156,7 +156,7 @@
 
   "clientHomeLoadingNearby": "Searching nearby hanouts...",
   "clientHomeNoHanoutNearby": "No nearby hanout found.",
-  "clientHomeLocationPermissionDenied": "Allow location to see the nearby available hanouts.",
+  "clientHomeLocationPermissionDenied": "Allow location to see the closest hanouts.",
   "clientHomeNearbyHanoutsTitle": "Nearby hanouts",
   "clientHomeHanoutsFound": "{count} hanout(s) found",
   "@clientHomeHanoutsFound": {"placeholders": {"count": {"type": "int"}}},
@@ -308,6 +308,8 @@
   "clientHanoutSeeAllProductsSoon": "All products view coming soon",
   "clientHanoutProductAdded": "{name} added to order",
   "@clientHanoutProductAdded": {"placeholders": {"name": {"type": "String"}}},
+  "clientHanoutProductAvailable": "Available",
+  "clientHanoutProductUnavailable": "Unavailable",
   "clientHanoutCategories": "Categories",
   "clientHanoutPickupType": "Pickup type",
   "clientHanoutDeliveryFee": "Delivery fee: {fee}",

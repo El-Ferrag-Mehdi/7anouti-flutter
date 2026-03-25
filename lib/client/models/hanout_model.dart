@@ -179,6 +179,9 @@ class HanoutWithDistance extends HanoutModel {
   });
 
   String get formattedDistance {
+    if (distanceInMeters <= 0) {
+      return '';
+    }
     if (distanceInMeters < 1000) {
       return '${distanceInMeters.toInt()}m';
     } else {
