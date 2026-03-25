@@ -703,15 +703,20 @@ class ClientHomeView extends StatelessWidget {
   void _showGasServiceSheet(
     BuildContext context, {
     required bool isAuthenticatedClient,
+    _GasRequestDraft? initialDraft,
   }) {
     final parentContext = context;
-    final addressController = TextEditingController();
-    final notesController = TextEditingController();
+    final addressController = TextEditingController(
+      text: initialDraft?.address ?? '',
+    );
+    final notesController = TextEditingController(
+      text: initialDraft?.notes ?? '',
+    );
     bool isSubmitting = false;
     bool isLocating = false;
     var canSubmitWithoutPrompt = isAuthenticatedClient;
-    double? clientLatitude;
-    double? clientLongitude;
+    double? clientLatitude = initialDraft?.clientLatitude;
+    double? clientLongitude = initialDraft?.clientLongitude;
 
     showAppBottomSheet<void>(
       context: context,
@@ -850,18 +855,27 @@ class ClientHomeView extends StatelessWidget {
                               return;
                             }
                             if (!canSubmitWithoutPrompt) {
+                              final draft = _GasRequestDraft(
+                                address: address,
+                                notes: notes,
+                                clientLatitude: clientLatitude,
+                                clientLongitude: clientLongitude,
+                              );
+                              Navigator.of(context).pop();
                               final authenticated = await showClientAuthPrompt(
                                 context: parentContext,
                                 title: context.l10n.clientGuestGasPromptTitle,
                                 message:
                                     context.l10n.clientGuestGasPromptMessage,
                               );
-                              if (!context.mounted || !authenticated) {
+                              if (!parentContext.mounted || !authenticated) {
                                 return;
                               }
-                              setState(() {
-                                canSubmitWithoutPrompt = true;
-                              });
+                              _showGasServiceSheet(
+                                parentContext,
+                                isAuthenticatedClient: true,
+                                initialDraft: draft,
+                              );
                               return;
                             }
                             await LocalNotificationService.instance
@@ -1025,4 +1039,18 @@ class ClientHomeView extends StatelessWidget {
       ),
     );
   }
+}
+
+class _GasRequestDraft {
+  const _GasRequestDraft({
+    required this.address,
+    required this.notes,
+    required this.clientLatitude,
+    required this.clientLongitude,
+  });
+
+  final String address;
+  final String notes;
+  final double? clientLatitude;
+  final double? clientLongitude;
 }
