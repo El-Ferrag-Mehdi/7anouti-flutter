@@ -859,7 +859,10 @@ class ClientHomeView extends StatelessWidget {
                               if (!context.mounted || !authenticated) {
                                 return;
                               }
-                              canSubmitWithoutPrompt = true;
+                              setState(() {
+                                canSubmitWithoutPrompt = true;
+                              });
+                              return;
                             }
                             await LocalNotificationService.instance
                                 .requestPermissionsIfNeeded();
