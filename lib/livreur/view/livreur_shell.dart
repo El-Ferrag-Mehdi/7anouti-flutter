@@ -230,7 +230,10 @@ class _LivreurShellState extends State<LivreurShell> {
       case 'ORDER_STATUS_CHANGED':
         final orderStatus = event.payload['status']?.toString();
         if (orderStatus == null || orderStatus.isEmpty) return null;
-        final label = _orderStatusLabel(orderStatus);
+        final processingMode = OrderProcessingMode.fromString(
+          event.payload['processingMode']?.toString(),
+        );
+        final label = _orderStatusLabel(orderStatus, processingMode);
         return shortId.isEmpty
             ? '${context.l10n.livreurHanoutOrdersTitle}: $label'
             : '${context.l10n.clientOrdersOrderNumber(shortId)}: $label';
@@ -259,9 +262,15 @@ class _LivreurShellState extends State<LivreurShell> {
     return value.substring(0, 8);
   }
 
-  String _orderStatusLabel(String rawStatus) {
+  String _orderStatusLabel(
+    String rawStatus,
+    OrderProcessingMode processingMode,
+  ) {
     final status = OrderStatus.fromString(rawStatus);
-    return context.livreurOrderStatusLabel(status);
+    return context.livreurOrderStatusLabel(
+      status,
+      processingMode: processingMode,
+    );
   }
 
   String _gasStatusLabel(String rawStatus) {

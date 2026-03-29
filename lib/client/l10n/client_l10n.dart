@@ -4,8 +4,32 @@ import 'package:sevenouti/client/models/order_model.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 
 extension ClientL10nX on BuildContext {
-  String orderStatusLabel(OrderStatus status) {
+  String orderStatusLabel(
+    OrderStatus status, {
+    OrderProcessingMode processingMode = OrderProcessingMode.hanout,
+  }) {
     final l10n = this.l10n;
+    if (processingMode == OrderProcessingMode.directLivreur) {
+      switch (status) {
+        case OrderStatus.pending:
+          return l10n.clientOrderDirectStatusPending;
+        case OrderStatus.accepted:
+          return l10n.clientOrderDirectStatusAccepted;
+        case OrderStatus.preparing:
+          return l10n.clientOrderDirectStatusAccepted;
+        case OrderStatus.ready:
+          return l10n.clientOrderDirectStatusDriverOnWay;
+        case OrderStatus.pickedUp:
+          return l10n.clientOrderDirectStatusPickedUp;
+        case OrderStatus.delivering:
+          return l10n.clientOrderStatusDelivering;
+        case OrderStatus.delivered:
+          return l10n.clientOrderStatusDelivered;
+        case OrderStatus.cancelled:
+          return l10n.clientOrderStatusCancelled;
+      }
+    }
+
     switch (status) {
       case OrderStatus.pending:
         return l10n.clientOrderStatusPending;

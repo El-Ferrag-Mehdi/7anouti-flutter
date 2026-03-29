@@ -300,7 +300,10 @@ class HanoutOrdersView extends StatelessWidget {
                         border: Border.all(color: statusColor.withOpacity(0.3)),
                       ),
                       child: Text(
-                        context.hanoutOrderStatusLabel(order.status),
+                        context.hanoutOrderStatusLabel(
+                          order.status,
+                          processingMode: order.processingMode,
+                        ),
                         style: AppTextStyles.caption.copyWith(
                           color: statusColor,
                           fontWeight: FontWeight.w600,
@@ -365,7 +368,7 @@ class HanoutOrdersView extends StatelessWidget {
                       ),
                   ],
                 ),
-                if (_hasQuickActions(order)) ...[
+                if (_hasQuickActions(order) || order.isDirectLivreurFlow) ...[
                   const SizedBox(height: AppSpacing.sm),
                   const Divider(),
                   const SizedBox(height: AppSpacing.sm),
@@ -400,6 +403,10 @@ class HanoutOrdersView extends StatelessWidget {
   }
 
   bool _hasQuickActions(HanoutOrderModel order) {
+    if (order.isDirectLivreurFlow) {
+      return false;
+    }
+
     return order.status == OrderStatus.pending ||
         order.status == OrderStatus.accepted ||
         order.status == OrderStatus.ready ||
@@ -411,6 +418,31 @@ class HanoutOrdersView extends StatelessWidget {
   Widget _buildQuickActions(BuildContext context, HanoutOrderModel order) {
     final l10n = context.l10n;
     final cubit = context.read<HanoutOrdersCubit>();
+
+    if (order.isDirectLivreurFlow) {
+      final message = order.livreurId != null
+          ? l10n.hanoutOrdersDriverAssigned
+          : l10n.hanoutOrdersDeliveryRequestSent;
+      return Row(
+        children: [
+          Icon(
+            order.livreurId != null
+                ? Icons.delivery_dining
+                : Icons.hourglass_top,
+            color: AppColors.warning,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              message,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
 
     if (order.status == OrderStatus.pending) {
       return SizedBox(

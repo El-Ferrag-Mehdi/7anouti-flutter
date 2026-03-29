@@ -166,7 +166,10 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
 
             // Statut
             Text(
-              context.orderStatusLabel(status),
+              context.orderStatusLabel(
+                status,
+                processingMode: _order.processingMode,
+              ),
               style: AppTextStyles.h2.copyWith(color: Colors.white),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -218,6 +221,10 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
 
   /// Timeline des ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tapes de la commande
   Widget _buildTimeline() {
+    if (_isDirectDriverFlow()) {
+      return _buildDirectDriverTimeline();
+    }
+
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Container(
@@ -231,9 +238,16 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              context.l10n.clientOrderTrackingDetailedTracking,
-              style: AppTextStyles.h3,
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    context.l10n.clientOrderTrackingDetailedTracking,
+                    style: AppTextStyles.h3,
+                  ),
+                ),
+                _buildAmountBadge(),
+              ],
             ),
             const SizedBox(height: AppSpacing.md),
 
@@ -286,6 +300,75 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
               title: _order.deliveryType == DeliveryType.delivery
                   ? context.l10n.clientOrderTrackingStepDelivered
                   : context.l10n.clientOrderTrackingStepCollected,
+              time: _order.deliveredAt,
+              isCompleted: _isStatusReached(OrderStatus.delivered),
+              isActive: _order.status == OrderStatus.delivered,
+              isLast: true,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDirectDriverTimeline() {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: AppRadius.large,
+          border: Border.all(color: AppColors.border),
+          boxShadow: AppShadows.card,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    context.l10n.clientOrderTrackingDetailedTracking,
+                    style: AppTextStyles.h3,
+                  ),
+                ),
+                _buildAmountBadge(),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            _buildTimelineStep(
+              title: context.l10n.clientOrderTrackingStepPlaced,
+              time: _order.createdAt,
+              isCompleted: true,
+              isActive: _order.status == OrderStatus.pending,
+            ),
+            _buildTimelineStep(
+              title: context.l10n.clientOrderTrackingDirectStepAccepted,
+              time: _order.acceptedAt,
+              isCompleted: _isStatusReached(OrderStatus.accepted),
+              isActive: _order.status == OrderStatus.accepted,
+            ),
+            _buildTimelineStep(
+              title: context.l10n.clientOrderTrackingDirectStepOnWay,
+              time: _order.readyAt,
+              isCompleted: _isStatusReached(OrderStatus.ready),
+              isActive: _order.status == OrderStatus.ready,
+            ),
+            _buildTimelineStep(
+              title: context.l10n.clientOrderTrackingDirectStepPickedUp,
+              time: _order.pickedUpAt,
+              isCompleted: _isStatusReached(OrderStatus.pickedUp),
+              isActive: _order.status == OrderStatus.pickedUp,
+            ),
+            _buildTimelineStep(
+              title: context.l10n.clientOrderTrackingStepDelivering,
+              time: null,
+              isCompleted: _isStatusReached(OrderStatus.delivering),
+              isActive: _order.status == OrderStatus.delivering,
+            ),
+            _buildTimelineStep(
+              title: context.l10n.clientOrderTrackingStepDelivered,
               time: _order.deliveredAt,
               isCompleted: _isStatusReached(OrderStatus.delivered),
               isActive: _order.status == OrderStatus.delivered,
@@ -482,6 +565,38 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildAmountBadge() {
+    final hasAmount = _order.totalAmount != null && _order.totalAmount! > 0;
+    final backgroundColor = hasAmount
+        ? AppColors.success.withOpacity(0.12)
+        : AppColors.warning.withOpacity(0.12);
+    final borderColor = hasAmount
+        ? AppColors.success.withOpacity(0.3)
+        : AppColors.warning.withOpacity(0.3);
+    final textColor = hasAmount ? AppColors.success : AppColors.warning;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: AppRadius.round,
+        border: Border.all(color: borderColor),
+      ),
+      child: Text(
+        hasAmount
+            ? formatDh(context, _order.totalAmount!)
+            : context.l10n.clientOrderTrackingAmountPending,
+        style: AppTextStyles.caption.copyWith(
+          color: textColor,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 
@@ -738,6 +853,27 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
   }
 
   String _getStatusMessage(OrderStatus status) {
+    if (_isDirectDriverFlow()) {
+      switch (status) {
+        case OrderStatus.pending:
+          return context.l10n.clientOrderTrackingDirectMessagePending;
+        case OrderStatus.accepted:
+          return context.l10n.clientOrderTrackingDirectMessageAccepted;
+        case OrderStatus.preparing:
+          return context.l10n.clientOrderTrackingDirectMessageAccepted;
+        case OrderStatus.ready:
+          return context.l10n.clientOrderTrackingDirectMessageDriverOnWay;
+        case OrderStatus.pickedUp:
+          return context.l10n.clientOrderTrackingDirectMessagePickedUp;
+        case OrderStatus.delivering:
+          return context.l10n.clientOrderTrackingMessageDelivering;
+        case OrderStatus.delivered:
+          return context.l10n.clientOrderTrackingMessageDelivered;
+        case OrderStatus.cancelled:
+          return context.l10n.clientOrderTrackingMessageCancelled;
+      }
+    }
+
     switch (status) {
       case OrderStatus.pending:
         return context.l10n.clientOrderTrackingMessagePending;
@@ -765,6 +901,10 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
     final targetIndex = OrderStatus.values.indexOf(status);
     return currentIndex >= targetIndex;
   }
+
+  bool _isDirectDriverFlow() =>
+      _order.processingMode == OrderProcessingMode.directLivreur &&
+      _order.deliveryType == DeliveryType.delivery;
 
   bool _canCancelOrder() {
     // Peut annuler si: pending ou accepted (pas encore en prÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©paration)
@@ -1051,6 +1191,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
       if (!mounted) return;
       if (latest.status != _order.status ||
           latest.livreurId != _order.livreurId ||
+          latest.totalAmount != _order.totalAmount ||
           latest.acceptedAt != _order.acceptedAt ||
           latest.readyAt != _order.readyAt ||
           latest.pickedUpAt != _order.pickedUpAt ||
@@ -1116,11 +1257,14 @@ extension OrderModelExtension on OrderModel {
       freeTextOrder: freeTextOrder,
       items: items,
       status: status ?? this.status,
+      processingMode: processingMode,
       deliveryType: deliveryType,
       paymentMethod: paymentMethod,
       deliveryFee: deliveryFee,
       totalAmount: totalAmount,
       clientAddress: clientAddress,
+      clientAddressFr: clientAddressFr,
+      clientAddressAr: clientAddressAr,
       clientLatitude: clientLatitude,
       clientLongitude: clientLongitude,
       notes: notes,

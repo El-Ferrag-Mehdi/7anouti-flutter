@@ -7,6 +7,7 @@ class OrderModel {
   final String freeTextOrder; // Commande en texte libre
   final List<OrderItem>? items; // Items structurés (optionnel)
   final OrderStatus status;
+  final OrderProcessingMode processingMode;
   final DeliveryType deliveryType;
   final PaymentMethod paymentMethod;
   final double? deliveryFee;
@@ -34,6 +35,7 @@ class OrderModel {
     required this.freeTextOrder,
     this.items,
     required this.status,
+    this.processingMode = OrderProcessingMode.hanout,
     required this.deliveryType,
     required this.paymentMethod,
     this.deliveryFee,
@@ -67,6 +69,9 @@ class OrderModel {
                 .toList()
           : null,
       status: OrderStatus.fromString(json['status'] as String),
+      processingMode: OrderProcessingMode.fromString(
+        json['processingMode'] as String?,
+      ),
       deliveryType: DeliveryType.fromString(json['deliveryType'] as String),
       paymentMethod: PaymentMethod.fromString(json['paymentMethod'] as String),
       deliveryFee: json['deliveryFee'] as double?,
@@ -108,6 +113,7 @@ class OrderModel {
       'freeTextOrder': freeTextOrder,
       'items': items?.map((item) => item.toJson()).toList(),
       'status': status.value,
+      'processingMode': processingMode.value,
       'deliveryType': deliveryType.value,
       'paymentMethod': paymentMethod.value,
       'deliveryFee': deliveryFee,
@@ -128,6 +134,9 @@ class OrderModel {
       'willBeProcessedWhenOpen': willBeProcessedWhenOpen,
     };
   }
+
+  bool get isDirectLivreurFlow =>
+      processingMode == OrderProcessingMode.directLivreur;
 }
 
 /// Item individuel dans une commande (optionnel)
@@ -208,6 +217,21 @@ enum OrderStatus {
       case OrderStatus.cancelled:
         return 'Annulée';
     }
+  }
+}
+
+enum OrderProcessingMode {
+  hanout('HANOUT'),
+  directLivreur('DIRECT_LIVREUR');
+
+  const OrderProcessingMode(this.value);
+  final String value;
+
+  static OrderProcessingMode fromString(String? value) {
+    return OrderProcessingMode.values.firstWhere(
+      (mode) => mode.value == value?.toUpperCase(),
+      orElse: () => OrderProcessingMode.hanout,
+    );
   }
 }
 

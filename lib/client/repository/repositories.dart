@@ -19,13 +19,13 @@ class HanoutRepository {
   Future<List<HanoutWithDistance>> getNearbyHanouts({
     double? latitude,
     double? longitude,
-    double radius = 500,
+    double? radius,
     int? limit,
   }) async {
     final query = <String>[
       if (latitude != null) 'latitude=$latitude',
       if (longitude != null) 'longitude=$longitude',
-      'radius=$radius',
+      if (radius != null) 'radius=$radius',
       if (limit != null) 'limit=$limit',
     ].join('&');
     final dynamic response = await _apiService.get('/hanouts/nearby?$query');
@@ -296,6 +296,9 @@ class OrderRepository {
       status: OrderStatus.values.firstWhere(
         (e) => e.value == json['status'],
         orElse: () => OrderStatus.pending,
+      ),
+      processingMode: OrderProcessingMode.fromString(
+        json['processingMode'] as String?,
       ),
       deliveryType: DeliveryType.values.firstWhere(
         (e) => e.value == json['deliveryType'],

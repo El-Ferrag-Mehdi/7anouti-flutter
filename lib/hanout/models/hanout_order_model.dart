@@ -46,6 +46,7 @@ class HanoutOrderModel {
     required this.hanoutId,
     required this.freeTextOrder,
     required this.status,
+    this.processingMode = OrderProcessingMode.hanout,
     required this.deliveryType,
     required this.paymentMethod,
     required this.createdAt,
@@ -74,6 +75,7 @@ class HanoutOrderModel {
   final String hanoutId;
   final String freeTextOrder;
   final OrderStatus status;
+  final OrderProcessingMode processingMode;
   final DeliveryType deliveryType;
   final PaymentMethod paymentMethod;
   final DateTime createdAt;
@@ -104,6 +106,9 @@ class HanoutOrderModel {
       livreurId: json['livreurId'] as String?,
       freeTextOrder: json['freeTextOrder'] as String,
       status: OrderStatus.fromString(json['status'] as String),
+      processingMode: OrderProcessingMode.fromString(
+        json['processingMode'] as String?,
+      ),
       deliveryType: DeliveryType.fromString(json['deliveryType'] as String),
       paymentMethod: PaymentMethod.fromString(json['paymentMethod'] as String),
       deliveryFee: json['deliveryFee'] != null
@@ -184,4 +189,7 @@ class HanoutOrderModel {
     if (fallback != null && fallback.isNotEmpty) return fallback;
     return null;
   }
+
+  bool get isDirectLivreurFlow =>
+      processingMode == OrderProcessingMode.directLivreur;
 }

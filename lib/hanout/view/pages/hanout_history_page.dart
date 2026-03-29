@@ -294,7 +294,10 @@ class HanoutHistoryView extends StatelessWidget {
                     border: Border.all(color: statusColor.withOpacity(0.3)),
                   ),
                   child: Text(
-                    context.hanoutOrderStatusLabel(order.status),
+                    context.hanoutOrderStatusLabel(
+                      order.status,
+                      processingMode: order.processingMode,
+                    ),
                     style: AppTextStyles.caption.copyWith(
                       color: statusColor,
                       fontWeight: FontWeight.w600,

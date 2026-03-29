@@ -30,6 +30,7 @@ class HanoutDetailsLoaded extends HanoutDetailsState {
     this.categories = const [],
     this.carnet,
     this.canUseCarnet = false,
+    this.hasPendingCarnetRequest = false,
   });
 
   final HanoutWithDistance hanout;
@@ -40,6 +41,7 @@ class HanoutDetailsLoaded extends HanoutDetailsState {
   final List<CategoryModel> categories;
   final CarnetModel? carnet;
   final bool canUseCarnet;
+  final bool hasPendingCarnetRequest;
 
   @override
   List<Object?> get props => [
@@ -51,6 +53,7 @@ class HanoutDetailsLoaded extends HanoutDetailsState {
     categories,
     carnet,
     canUseCarnet,
+    hasPendingCarnetRequest,
   ];
 
   /// Copie avec modifications
@@ -63,6 +66,7 @@ class HanoutDetailsLoaded extends HanoutDetailsState {
     List<CategoryModel>? categories,
     CarnetModel? carnet,
     bool? canUseCarnet,
+    bool? hasPendingCarnetRequest,
   }) {
     return HanoutDetailsLoaded(
       hanout: hanout ?? this.hanout,
@@ -73,6 +77,8 @@ class HanoutDetailsLoaded extends HanoutDetailsState {
       categories: categories ?? this.categories,
       carnet: carnet ?? this.carnet,
       canUseCarnet: canUseCarnet ?? this.canUseCarnet,
+      hasPendingCarnetRequest:
+          hasPendingCarnetRequest ?? this.hasPendingCarnetRequest,
     );
   }
 

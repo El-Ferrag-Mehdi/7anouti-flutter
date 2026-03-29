@@ -295,7 +295,10 @@ class ClientOrdersView extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        context.orderStatusLabel(order.status),
+                        context.orderStatusLabel(
+                          order.status,
+                          processingMode: order.processingMode,
+                        ),
                         style: AppTextStyles.caption.copyWith(
                           color: statusColor,
                           fontWeight: FontWeight.w600,
@@ -325,7 +328,10 @@ class ClientOrdersView extends StatelessWidget {
                     Expanded(
                       child: _buildInfoItem(
                         icon: Icons.access_time,
-                        text: formatRelativeDateLocalized(context, order.createdAt),
+                        text: formatRelativeDateLocalized(
+                          context,
+                          order.createdAt,
+                        ),
                       ),
                     ),
 

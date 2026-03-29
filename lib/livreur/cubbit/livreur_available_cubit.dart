@@ -22,67 +22,25 @@ class LivreurAvailableCubit extends Cubit<LivreurAvailableState> {
   }
 
   Future<bool> acceptRequest(String requestId) async {
-    try {
-      await _repository.acceptRequest(requestId);
-      await loadRequests();
-      return true;
-    } on ApiException catch (e) {
-      emit(LivreurAvailableError(message: e.message));
-    } catch (e) {
-      emit(
-        LivreurAvailableError(
-          message: e.toString(),
-        ),
-      );
-    }
-    return false;
+    await _repository.acceptRequest(requestId);
+    await _fetchRequests(showLoading: false);
+    return true;
   }
 
   Future<bool> acceptGasRequest(String requestId) async {
-    try {
-      await _repository.acceptGasRequest(requestId);
-      await loadRequests();
-      return true;
-    } on ApiException catch (e) {
-      emit(LivreurAvailableError(message: e.message));
-    } catch (e) {
-      emit(
-        LivreurAvailableError(
-          message: e.toString(),
-        ),
-      );
-    }
-    return false;
+    await _repository.acceptGasRequest(requestId);
+    await _fetchRequests(showLoading: false);
+    return true;
   }
 
   Future<void> rejectRequest(String requestId) async {
-    try {
-      await _repository.rejectRequest(requestId);
-      await loadRequests();
-    } on ApiException catch (e) {
-      emit(LivreurAvailableError(message: e.message));
-    } catch (e) {
-      emit(
-        LivreurAvailableError(
-          message: e.toString(),
-        ),
-      );
-    }
+    await _repository.rejectRequest(requestId);
+    await _fetchRequests(showLoading: false);
   }
 
   Future<void> rejectGasRequest(String requestId) async {
-    try {
-      await _repository.rejectGasRequest(requestId);
-      await loadRequests();
-    } on ApiException catch (e) {
-      emit(LivreurAvailableError(message: e.message));
-    } catch (e) {
-      emit(
-        LivreurAvailableError(
-          message: e.toString(),
-        ),
-      );
-    }
+    await _repository.rejectGasRequest(requestId);
+    await _fetchRequests(showLoading: false);
   }
 
   @override

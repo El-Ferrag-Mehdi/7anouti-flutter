@@ -25,13 +25,13 @@ Future<void> main() async {
 
   const configuredBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://192.168.1.108:4000/api',
+    defaultValue: 'http://192.168.1.11:4000/api',
   );
   final normalizedBaseUrl = configuredBaseUrl.trim();
   final isRemoteProdUrl =
       normalizedBaseUrl.contains('sevenanouti-backend.onrender.com');
   Env.baseUrl = isRemoteProdUrl
-      ? 'http://192.168.1.108:4000/api'
+      ? 'http://192.168.1.11:4000/api'
       : normalizedBaseUrl;
 
   try {

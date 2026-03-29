@@ -204,7 +204,10 @@ class _HanoutShellState extends State<HanoutShell> {
       case 'ORDER_STATUS_CHANGED':
         final status = event.payload['status']?.toString();
         if (status == null || status.isEmpty) return null;
-        final orderLabel = _orderStatusLabel(status);
+        final processingMode = OrderProcessingMode.fromString(
+          event.payload['processingMode']?.toString(),
+        );
+        final orderLabel = _orderStatusLabel(status, processingMode);
         if (shortId.isEmpty) {
           return '${context.l10n.hanoutNavOrders}: $orderLabel';
         }
@@ -222,9 +225,15 @@ class _HanoutShellState extends State<HanoutShell> {
     }
   }
 
-  String _orderStatusLabel(String rawStatus) {
+  String _orderStatusLabel(
+    String rawStatus,
+    OrderProcessingMode processingMode,
+  ) {
     final status = OrderStatus.fromString(rawStatus);
-    return context.hanoutOrderStatusLabel(status);
+    return context.hanoutOrderStatusLabel(
+      status,
+      processingMode: processingMode,
+    );
   }
 
   Future<void> _openPrivacyPolicy(BuildContext context) async {

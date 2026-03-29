@@ -4,15 +4,14 @@ import 'package:sevenouti/client/data/api_service.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
 import 'package:sevenouti/core/widgets/app_background.dart';
 import 'package:sevenouti/core/widgets/app_widgets.dart';
-import 'package:sevenouti/core/widgets/distance_pill.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/livreur/cubbit/livreur_available_cubit.dart';
 import 'package:sevenouti/livreur/cubbit/livreur_available_state.dart';
-import 'package:sevenouti/livreur/l10n/livreur_l10n.dart';
 import 'package:sevenouti/livreur/models/delivery_request_model.dart';
 import 'package:sevenouti/livreur/repository/livreur_repositories.dart';
+import 'package:sevenouti/livreur/view/pages/livreur_available_order_details_page.dart';
 import 'package:sevenouti/utils/localized_formatters.dart';
-import 'package:sevenouti/utils/map_launcher.dart';
+import 'package:sevenouti/utils/phone_launcher.dart';
 
 class LivreurAvailablePage extends StatelessWidget {
   const LivreurAvailablePage({
@@ -85,6 +84,10 @@ class LivreurAvailableView extends StatelessWidget {
     BuildContext context,
     List<LivreurDeliveryRequestModel> requests,
   ) {
+    final directOrders = requests.where(_isDirectOrder).toList();
+    final hanoutOrders = requests.where(_isHanoutRequest).toList();
+    final gasRequests = requests.where(_isGasServiceRequest).toList();
+
     return AppBackground(
       child: RefreshIndicator(
         onRefresh: () => context.read<LivreurAvailableCubit>().loadRequests(),
@@ -93,18 +96,27 @@ class LivreurAvailableView extends StatelessWidget {
             SliverToBoxAdapter(
               child: _buildHeader(context, requests.length),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final request = requests[index];
-                    return _buildRequestCard(context, request);
-                  },
-                  childCount: requests.length,
-                ),
+            if (directOrders.isNotEmpty)
+              _buildSection(
+                context,
+                title: context.l10n.livreurAvailableDirectSection,
+                requests: directOrders,
+                sectionColor: AppColors.secondary,
               ),
-            ),
+            if (hanoutOrders.isNotEmpty)
+              _buildSection(
+                context,
+                title: context.l10n.livreurAvailableHanoutSection,
+                requests: hanoutOrders,
+                sectionColor: AppColors.info,
+              ),
+            if (gasRequests.isNotEmpty)
+              _buildSection(
+                context,
+                title: context.l10n.livreurAvailableGasSection,
+                requests: gasRequests,
+                sectionColor: AppColors.warning,
+              ),
             const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xl)),
           ],
         ),
@@ -163,19 +175,72 @@ class LivreurAvailableView extends StatelessWidget {
     );
   }
 
-  Widget _buildRequestCard(
+  Widget _buildSection(
+    BuildContext context, {
+    required String title,
+    required List<LivreurDeliveryRequestModel> requests,
+    required Color sectionColor,
+  }) {
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(
+              AppSpacing.md,
+              AppSpacing.lg,
+              AppSpacing.md,
+              AppSpacing.sm,
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: sectionColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Text(title, style: AppTextStyles.h3),
+              ],
+            ),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final request = requests[index];
+                if (_isGasServiceRequest(request)) {
+                  return _buildGasCard(context, request);
+                }
+                return _buildOrderCard(context, request);
+              },
+              childCount: requests.length,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOrderCard(
     BuildContext context,
     LivreurDeliveryRequestModel request,
   ) {
     final l10n = context.l10n;
     final order = request.order;
     final hanout = request.hanout;
-    final isGasService = _isGasServiceRequest(order, hanout);
-    final statusColor = _requestStatusColor(request.status);
     final preferArabic = Localizations.localeOf(context).languageCode == 'ar';
-    final localizedClientAddress = order?.displayClientAddress(
+    final clientName =
+        order?.client?.displayName(preferArabic: preferArabic) ??
+        l10n.livreurClientFallback;
+    final clientAddress = order?.displayClientAddress(
       preferArabic: preferArabic,
     );
+    final isDirect = order?.isDirectLivreurFlow ?? false;
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
@@ -193,42 +258,29 @@ class LivreurAvailableView extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  isGasService
-                      ? l10n.livreurGasServiceTitle
-                      : (hanout?.name ?? l10n.clientOrderTrackingHanout),
+                  hanout?.name ?? l10n.clientOrderTrackingHanout,
                   style: AppTextStyles.bodyLarge.copyWith(
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-              _statusChip(
-                label: context.livreurRequestStatusLabel(request.status),
-                color: statusColor,
+              _typeChip(
+                label: isDirect
+                    ? l10n.livreurAvailableDirectBadge
+                    : l10n.livreurAvailableHanoutBadge,
+                color: isDirect ? AppColors.secondary : AppColors.info,
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            isGasService
-                ? l10n.livreurGasServiceDirect
-                : formatAddressLocalized(context, hanout?.address),
+            isDirect
+                ? l10n.livreurAvailableDirectHint
+                : l10n.livreurAvailableHanoutHint,
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
-          if (_hasClientLocation(order))
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: TextButton.icon(
-                onPressed: () => launchMaps(
-                  latitude: order?.clientLatitude,
-                  longitude: order?.clientLongitude,
-                  address: localizedClientAddress,
-                ),
-                icon: const Icon(Icons.map),
-                label: Text(l10n.livreurOpenMaps),
-              ),
-            ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             order?.freeTextOrder ?? l10n.livreurOrderFallback,
@@ -242,51 +294,56 @@ class LivreurAvailableView extends StatelessWidget {
             runSpacing: AppSpacing.xs,
             children: [
               _infoPill(
+                icon: Icons.person,
+                text: clientName,
+              ),
+              _infoPill(
                 icon: Icons.access_time,
                 text: formatRelativeDateLocalized(context, request.createdAt),
+              ),
+              _infoPill(
+                icon: Icons.storefront,
+                text: formatAddressLocalized(context, hanout?.address),
               ),
               _infoPill(
                 icon: Icons.place,
                 text: formatAddressLocalized(
                   context,
-                  localizedClientAddress ?? l10n.livreurClientAddressFallback,
+                  clientAddress ?? l10n.livreurClientAddressFallback,
                 ),
               ),
-              if (isGasService)
-                _infoPill(
-                  icon: Icons.payments,
-                  text: l10n.livreurGasServicePriceBadge,
-                ),
+              _infoPill(
+                icon: Icons.near_me,
+                text:
+                    '${l10n.livreurAvailableHanoutDistanceLabel}: ${_formatDistance(request.hanoutDistance)}',
+              ),
+              _infoPill(
+                icon: Icons.home_work_outlined,
+                text:
+                    '${l10n.livreurAvailableClientDistanceLabel}: ${_formatDistance(request.clientDistance)}',
+              ),
               if (order?.notes != null && order!.notes!.isNotEmpty)
                 _infoPill(
-                  icon: Icons.home,
+                  icon: Icons.notes,
                   text: order.notes!,
-                ),
-              if (request.distance != null)
-                _infoPill(
-                  icon: Icons.near_me,
-                  text: '${(request.distance! / 1000).toStringAsFixed(1)} km',
-                ),
-              if (request.distance == null)
-                CurrentDistancePill(
-                  targetLatitude: order?.clientLatitude,
-                  targetLongitude: order?.clientLongitude,
                 ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _openOrderDetails(context, request),
+              icon: const Icon(Icons.visibility_outlined),
+              label: Text(l10n.livreurAvailableViewDetails),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    final cubit = context.read<LivreurAvailableCubit>();
-                    if (isGasService) {
-                      cubit.rejectGasRequest(request.id);
-                      return;
-                    }
-                    cubit.rejectRequest(request.id);
-                  },
+                  onPressed: () => _rejectOrderRequest(context, request.id),
                   icon: const Icon(Icons.close),
                   label: Text(l10n.livreurReject),
                 ),
@@ -294,20 +351,7 @@ class LivreurAvailableView extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () async {
-                    final cubit = context.read<LivreurAvailableCubit>();
-                    if (isGasService) {
-                      final accepted = await cubit.acceptGasRequest(request.id);
-                      if (accepted) {
-                        onAccepted?.call();
-                      }
-                      return;
-                    }
-                    final accepted = await cubit.acceptRequest(request.id);
-                    if (accepted) {
-                      onAccepted?.call();
-                    }
-                  },
+                  onPressed: () => _acceptOrderRequest(context, request.id),
                   icon: const Icon(Icons.check),
                   label: Text(l10n.livreurAccept),
                 ),
@@ -319,7 +363,245 @@ class LivreurAvailableView extends StatelessWidget {
     );
   }
 
-  Widget _statusChip({required String label, required Color color}) {
+  Widget _buildGasCard(
+    BuildContext context,
+    LivreurDeliveryRequestModel request,
+  ) {
+    final l10n = context.l10n;
+    final order = request.order;
+    final preferArabic = Localizations.localeOf(context).languageCode == 'ar';
+    final clientAddress = order?.displayClientAddress(
+      preferArabic: preferArabic,
+    );
+    final clientName =
+        order?.client?.displayName(preferArabic: preferArabic) ??
+        l10n.livreurClientFallback;
+    final clientPhone = order?.client?.phone;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppRadius.large,
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.card,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  l10n.livreurGasServiceTitle,
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              _typeChip(
+                label: l10n.clientGasBottleTitle,
+                color: AppColors.warning,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            l10n.livreurGasServiceDirect,
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.xs,
+            children: [
+              _infoPill(
+                icon: Icons.person,
+                text: clientName,
+              ),
+              _infoPill(
+                icon: Icons.access_time,
+                text: formatRelativeDateLocalized(context, request.createdAt),
+              ),
+              _infoPill(
+                icon: Icons.place,
+                text: formatAddressLocalized(
+                  context,
+                  clientAddress ?? l10n.livreurClientAddressFallback,
+                ),
+              ),
+              _infoPill(
+                icon: Icons.near_me,
+                text:
+                    '${l10n.livreurAvailableClientDistanceLabel}: ${_formatDistance(request.clientDistance ?? request.distance)}',
+              ),
+              if (order?.notes != null && order!.notes!.isNotEmpty)
+                _infoPill(
+                  icon: Icons.notes,
+                  text: order.notes!,
+                ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          if (clientPhone != null && clientPhone.isNotEmpty) ...[
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => launchPhoneCall(clientPhone),
+                icon: const Icon(Icons.phone),
+                label: Text(l10n.livreurCallClient),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _rejectGasRequest(context, request.id),
+                  icon: const Icon(Icons.close),
+                  label: Text(l10n.livreurReject),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => _acceptGasRequest(context, request.id),
+                  icon: const Icon(Icons.check),
+                  label: Text(l10n.livreurAccept),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openOrderDetails(
+    BuildContext context,
+    LivreurDeliveryRequestModel request,
+  ) async {
+    final cubit = context.read<LivreurAvailableCubit>();
+    final result = await Navigator.of(context)
+        .push<LivreurAvailableOrderAction>(
+          MaterialPageRoute(
+            builder: (_) => BlocProvider.value(
+              value: cubit,
+              child: LivreurAvailableOrderDetailsPage(request: request),
+            ),
+          ),
+        );
+
+    if (result == LivreurAvailableOrderAction.accepted) {
+      onAccepted?.call();
+    }
+  }
+
+  Future<void> _acceptOrderRequest(
+    BuildContext context,
+    String requestId,
+  ) async {
+    try {
+      final accepted = await context
+          .read<LivreurAvailableCubit>()
+          .acceptRequest(
+            requestId,
+          );
+      if (accepted) {
+        onAccepted?.call();
+      }
+    } on ApiException catch (error) {
+      if (!context.mounted) return;
+      AppSnackBar.show(
+        context,
+        message: error.message,
+        type: SnackBarType.error,
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+      AppSnackBar.show(
+        context,
+        message: error.toString(),
+        type: SnackBarType.error,
+      );
+    }
+  }
+
+  Future<void> _rejectOrderRequest(
+    BuildContext context,
+    String requestId,
+  ) async {
+    try {
+      await context.read<LivreurAvailableCubit>().rejectRequest(requestId);
+    } on ApiException catch (error) {
+      if (!context.mounted) return;
+      AppSnackBar.show(
+        context,
+        message: error.message,
+        type: SnackBarType.error,
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+      AppSnackBar.show(
+        context,
+        message: error.toString(),
+        type: SnackBarType.error,
+      );
+    }
+  }
+
+  Future<void> _acceptGasRequest(BuildContext context, String requestId) async {
+    try {
+      final accepted = await context
+          .read<LivreurAvailableCubit>()
+          .acceptGasRequest(
+            requestId,
+          );
+      if (accepted) {
+        onAccepted?.call();
+      }
+    } on ApiException catch (error) {
+      if (!context.mounted) return;
+      AppSnackBar.show(
+        context,
+        message: error.message,
+        type: SnackBarType.error,
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+      AppSnackBar.show(
+        context,
+        message: error.toString(),
+        type: SnackBarType.error,
+      );
+    }
+  }
+
+  Future<void> _rejectGasRequest(BuildContext context, String requestId) async {
+    try {
+      await context.read<LivreurAvailableCubit>().rejectGasRequest(requestId);
+    } on ApiException catch (error) {
+      if (!context.mounted) return;
+      AppSnackBar.show(
+        context,
+        message: error.message,
+        type: SnackBarType.error,
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+      AppSnackBar.show(
+        context,
+        message: error.toString(),
+        type: SnackBarType.error,
+      );
+    }
+  }
+
+  Widget _typeChip({required String label, required Color color}) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
@@ -357,7 +639,7 @@ class LivreurAvailableView extends StatelessWidget {
           Icon(icon, size: 14, color: AppColors.textSecondary),
           const SizedBox(width: AppSpacing.xs),
           ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 200),
+            constraints: const BoxConstraints(maxWidth: 220),
             child: Text(
               text,
               style: AppTextStyles.caption,
@@ -369,10 +651,9 @@ class LivreurAvailableView extends StatelessWidget {
     );
   }
 
-  bool _isGasServiceRequest(
-    LivreurDeliveryOrderInfo? order,
-    LivreurHanoutInfo? hanout,
-  ) {
+  bool _isGasServiceRequest(LivreurDeliveryRequestModel request) {
+    final order = request.order;
+    final hanout = request.hanout;
     if (order == null) return false;
     final text = order.freeTextOrder.toLowerCase();
     final hasGasKeyword = text.contains('gaz') || text.contains('bouteille');
@@ -380,26 +661,21 @@ class LivreurAvailableView extends StatelessWidget {
     return hasGasKeyword || noHanout;
   }
 
-  bool _hasClientLocation(LivreurDeliveryOrderInfo? order) {
-    if (order == null) return false;
-    final hasCoords =
-        order.clientLatitude != null && order.clientLongitude != null;
-    final address =
-        order.displayClientAddress(preferArabic: true) ??
-        order.displayClientAddress(preferArabic: false);
-    final hasAddress = address != null && address.trim().isNotEmpty;
-    return hasCoords || hasAddress;
+  bool _isDirectOrder(LivreurDeliveryRequestModel request) {
+    return !_isGasServiceRequest(request) &&
+        (request.order?.isDirectLivreurFlow ?? false);
   }
 
-  Color _requestStatusColor(String status) {
-    switch (status.toUpperCase()) {
-      case 'ACCEPTED':
-        return AppColors.success;
-      case 'REJECTED':
-        return AppColors.error;
-      case 'PENDING':
-      default:
-        return AppColors.info;
+  bool _isHanoutRequest(LivreurDeliveryRequestModel request) {
+    return !_isGasServiceRequest(request) &&
+        !(request.order?.isDirectLivreurFlow ?? false);
+  }
+
+  String _formatDistance(double? distance) {
+    if (distance == null) return '-';
+    if (distance >= 1000) {
+      return '${(distance / 1000).toStringAsFixed(1)} km';
     }
+    return '${distance.toStringAsFixed(0)} m';
   }
 }

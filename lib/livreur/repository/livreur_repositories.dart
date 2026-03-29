@@ -104,7 +104,9 @@ class LivreurRequestsRepository {
             id: json['id'] as String,
             freeTextOrder: 'Service bouteille à gaz',
             status: _mapGasToOrderStatus(status),
+            processingMode: OrderProcessingMode.hanout,
             deliveryType: DeliveryType.delivery,
+            paymentMethod: PaymentMethod.cash,
             clientAddress: json['clientAddress'] as String?,
             clientLatitude: json['clientLatitude'] != null
                 ? (json['clientLatitude'] as num).toDouble()
@@ -113,9 +115,18 @@ class LivreurRequestsRepository {
                 ? (json['clientLongitude'] as num).toDouble()
                 : null,
             notes: json['notes'] as String?,
+            createdAt: DateTime.parse(json['createdAt'] as String),
+            client: json['client'] != null
+                ? LivreurDeliveryClientInfo.fromJson(
+                    json['client'] as Map<String, dynamic>,
+                  )
+                : null,
           ),
           hanout: null,
           distance: json['distance'] != null
+              ? (json['distance'] as num).toDouble()
+              : null,
+          clientDistance: json['distance'] != null
               ? (json['distance'] as num).toDouble()
               : null,
         );
@@ -169,11 +180,16 @@ class LivreurOrdersRepository {
 
   Future<LivreurOrderModel> updateOrderStatus(
     String orderId,
-    OrderStatus status,
-  ) async {
+    OrderStatus status, {
+    double? totalAmount,
+  }) async {
+    final body = <String, dynamic>{'status': status.value};
+    if (totalAmount != null) {
+      body['totalAmount'] = totalAmount;
+    }
     final dynamic response = await _apiService.put(
       '/orders/$orderId/status',
-      body: {'status': status.value},
+      body: body,
     );
     final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
     return LivreurOrderModel.fromJson(
@@ -220,9 +236,16 @@ class LivreurEarningsRepository {
 
   final ApiService _apiService;
 
-  Future<Map<String, dynamic>> getEarnings({int limit = 100}) async {
+  Future<Map<String, dynamic>> getEarnings({
+    int limit = 100,
+    String? month,
+  }) async {
+    final params = <String>['limit=$limit'];
+    if (month != null && month.isNotEmpty) {
+      params.add('month=$month');
+    }
     final dynamic response = await _apiService.get(
-      '/livreur/earnings?limit=$limit',
+      '/livreur/earnings?${params.join('&')}',
     );
     final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
     return responseMap['data'] as Map<String, dynamic>;

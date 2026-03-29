@@ -156,6 +156,11 @@ class GasServiceOrder {
     required this.status,
     required this.price,
     required this.serviceFee,
+    this.clientId,
+    this.clientName,
+    this.clientNameFr,
+    this.clientNameAr,
+    this.clientPhone,
     this.clientAddress,
     this.livreurPhone,
     this.clientLatitude,
@@ -176,6 +181,11 @@ class GasServiceOrder {
   final GasServiceStatus status;
   final double price;
   final double serviceFee;
+  final String? clientId;
+  final String? clientName;
+  final String? clientNameFr;
+  final String? clientNameAr;
+  final String? clientPhone;
   final String? clientAddress;
   final String? livreurPhone;
   final double? clientLatitude;
@@ -192,13 +202,31 @@ class GasServiceOrder {
 
   double get total => price + serviceFee;
 
+  String displayClientName({required bool preferArabic}) {
+    if (preferArabic) {
+      final arabic = clientNameAr?.trim();
+      if (arabic != null && arabic.isNotEmpty) return arabic;
+    }
+    final french = clientNameFr?.trim();
+    if (french != null && french.isNotEmpty) return french;
+    final fallback = clientName?.trim();
+    if (fallback != null && fallback.isNotEmpty) return fallback;
+    return '';
+  }
+
   factory GasServiceOrder.fromJson(Map<String, dynamic> json) {
+    final client = json['client'] as Map<String, dynamic>?;
     return GasServiceOrder(
       id: json['id'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
       status: GasServiceStatusX.fromString(json['status'] as String),
       price: (json['price'] as num).toDouble(),
       serviceFee: (json['serviceFee'] as num).toDouble(),
+      clientId: json['clientId'] as String? ?? client?['id'] as String?,
+      clientName: client?['name'] as String?,
+      clientNameFr: client?['nameFr'] as String?,
+      clientNameAr: client?['nameAr'] as String?,
+      clientPhone: client?['phone'] as String?,
       clientAddress: json['clientAddress'] as String?,
       clientLatitude: json['clientLatitude'] != null
           ? (json['clientLatitude'] as num).toDouble()
@@ -240,6 +268,11 @@ class GasServiceOrder {
       'status': status.value,
       'price': price,
       'serviceFee': serviceFee,
+      'clientId': clientId,
+      'clientName': clientName,
+      'clientNameFr': clientNameFr,
+      'clientNameAr': clientNameAr,
+      'clientPhone': clientPhone,
       'clientAddress': clientAddress,
       'clientLatitude': clientLatitude,
       'clientLongitude': clientLongitude,
@@ -267,6 +300,11 @@ class GasServiceOrder {
     DateTime? cancelledAt,
     String? cancellationReason,
     String? livreurPhone,
+    String? clientId,
+    String? clientName,
+    String? clientNameFr,
+    String? clientNameAr,
+    String? clientPhone,
   }) {
     return GasServiceOrder(
       id: id,
@@ -274,6 +312,11 @@ class GasServiceOrder {
       status: status ?? this.status,
       price: price,
       serviceFee: serviceFee,
+      clientId: clientId ?? this.clientId,
+      clientName: clientName ?? this.clientName,
+      clientNameFr: clientNameFr ?? this.clientNameFr,
+      clientNameAr: clientNameAr ?? this.clientNameAr,
+      clientPhone: clientPhone ?? this.clientPhone,
       clientAddress: clientAddress,
       clientLatitude: clientLatitude,
       clientLongitude: clientLongitude,

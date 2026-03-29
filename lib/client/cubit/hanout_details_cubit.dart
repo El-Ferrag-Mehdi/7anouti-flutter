@@ -36,6 +36,7 @@ class HanoutDetailsCubit extends Cubit<HanoutDetailsState> {
       // Vérifie si le client a un carnet avec ce hanout
       CarnetModel? carnet;
       var canUseCarnet = false;
+      var hasPendingCarnetRequest = false;
 
       if (_hanout.hasCarnet) {
         try {
@@ -44,6 +45,19 @@ class HanoutDetailsCubit extends Cubit<HanoutDetailsState> {
         } catch (e) {
           // Pas de carnet existant, c'est normal
           canUseCarnet = false;
+        }
+
+        if (!canUseCarnet) {
+          try {
+            final requests = await _carnetRepository.getCarnetRequests();
+            hasPendingCarnetRequest = requests.any(
+              (request) =>
+                  request.hanoutId == _hanout.id &&
+                  request.status == RequestStatus.pending,
+            );
+          } catch (_) {
+            hasPendingCarnetRequest = false;
+          }
         }
       }
 
@@ -57,6 +71,7 @@ class HanoutDetailsCubit extends Cubit<HanoutDetailsState> {
           categories: categories,
           carnet: carnet,
           canUseCarnet: canUseCarnet,
+          hasPendingCarnetRequest: hasPendingCarnetRequest,
         ),
       );
     } on ApiException catch (e) {
@@ -187,13 +202,7 @@ class HanoutDetailsCubit extends Cubit<HanoutDetailsState> {
 
     try {
       await _carnetRepository.requestCarnetActivation(_hanout.id);
-
-      emit(
-        HanoutDetailsError(
-          message: 'Demande envoyée! Le hanout va examiner votre demande.',
-          previousState: currentState,
-        ),
-      );
+      emit(currentState.copyWith(hasPendingCarnetRequest: true));
     } on ApiException catch (e) {
       emit(
         HanoutDetailsError(
@@ -310,6 +319,7 @@ class HanoutDetailsCubit extends Cubit<HanoutDetailsState> {
         categories: mockCategories,
         carnet: mockCarnet,
         canUseCarnet: canUseCarnet,
+        hasPendingCarnetRequest: false,
       ),
     );
   }

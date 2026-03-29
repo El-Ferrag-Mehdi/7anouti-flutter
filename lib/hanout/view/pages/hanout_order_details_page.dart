@@ -149,7 +149,10 @@ class HanoutOrderDetailsPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            context.hanoutOrderStatusLabel(order.status),
+            context.hanoutOrderStatusLabel(
+              order.status,
+              processingMode: order.processingMode,
+            ),
             style: AppTextStyles.bodyLarge.copyWith(
               fontWeight: FontWeight.w700,
               color: Colors.white,
@@ -242,6 +245,33 @@ class HanoutOrderDetailsPage extends StatelessWidget {
   Widget _buildActions(BuildContext context) {
     final l10n = context.l10n;
     final cubit = context.read<HanoutOrdersCubit>();
+
+    if (order.isDirectLivreurFlow) {
+      return Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: AppRadius.large,
+          border: Border.all(color: AppColors.border),
+          boxShadow: AppShadows.card,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.info_outline, color: AppColors.warning),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                l10n.hanoutOrderDirectDriverReadonlyMessage,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     if (order.status == OrderStatus.pending) {
       return SizedBox(

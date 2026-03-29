@@ -56,6 +56,7 @@ class HanoutCard extends StatelessWidget {
     this.rating,
     this.isOpen = true,
     this.hasCarnet = false,
+    this.isEnabled = true,
     this.onTap,
     super.key,
   });
@@ -67,6 +68,7 @@ class HanoutCard extends StatelessWidget {
   final double? rating;
   final bool isOpen;
   final bool hasCarnet;
+  final bool isEnabled;
   final VoidCallback? onTap;
 
   @override
@@ -75,166 +77,169 @@ class HanoutCard extends StatelessWidget {
     return AppCard(
       onTap: onTap,
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceVariant,
-              borderRadius: AppRadius.medium,
+      child: Opacity(
+        opacity: isEnabled ? 1 : 0.55,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: AppRadius.medium,
+              ),
+              child: hasImage
+                  ? ClipRRect(
+                      borderRadius: AppRadius.medium,
+                      child: Image.network(
+                        imageUrl!,
+                        fit: BoxFit.cover,
+                        width: 80,
+                        height: 80,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.store,
+                          size: 40,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    )
+                  : const Icon(
+                      Icons.store,
+                      size: 40,
+                      color: AppColors.textSecondary,
+                    ),
             ),
-            child: hasImage
-                ? ClipRRect(
-                    borderRadius: AppRadius.medium,
-                    child: Image.network(
-                      imageUrl!,
-                      fit: BoxFit.cover,
-                      width: 80,
-                      height: 80,
-                      errorBuilder: (_, __, ___) => const Icon(
-                        Icons.store,
-                        size: 40,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  )
-                : const Icon(
-                    Icons.store,
-                    size: 40,
-                    color: AppColors.textSecondary,
-                  ),
-          ),
-          const SizedBox(width: AppSpacing.md),
+            const SizedBox(width: AppSpacing.md),
 
-          // Infos
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Nom + statut
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        name,
-                        style: AppTextStyles.h4,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm,
-                        vertical: AppSpacing.xs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isOpen
-                            ? AppColors.success.withOpacity(0.15)
-                            : AppColors.error.withOpacity(0.15),
-                        borderRadius: AppRadius.round,
-                        border: Border.all(
-                          color: isOpen ? AppColors.success : AppColors.error,
+            // Infos
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Nom + statut
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          name,
+                          style: AppTextStyles.h4,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      child: Text(
-                        isOpen ? 'Ouvert' : 'Fermé',
-                        style: AppTextStyles.caption.copyWith(
-                          color: isOpen ? AppColors.success : AppColors.error,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.xs),
-
-                // Adresse
-                Text(
-                  address,
-                  style: AppTextStyles.bodySmall,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-
-                // Distance + rating + carnet
-                Row(
-                  children: [
-                    if (distance.trim().isNotEmpty) ...[
-                      Icon(
-                        Icons.location_on,
-                        size: 16,
-                        color: AppColors.primary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        distance,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-
-                    if (rating != null) ...[
-                      if (distance.trim().isNotEmpty)
-                        const SizedBox(width: AppSpacing.md),
-                      Icon(
-                        Icons.star,
-                        size: 16,
-                        color: AppColors.warning,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        rating!.toStringAsFixed(1),
-                        style: AppTextStyles.bodySmall,
-                      ),
-                    ],
-
-                    if (hasCarnet) ...[
-                      if (distance.trim().isNotEmpty || rating != null)
-                        const Spacer(),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.sm,
-                          vertical: 2,
+                          vertical: AppSpacing.xs,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.gold.withOpacity(0.25),
+                          color: isOpen
+                              ? AppColors.success.withOpacity(0.15)
+                              : AppColors.error.withOpacity(0.15),
                           borderRadius: AppRadius.round,
                           border: Border.all(
-                            color: AppColors.gold.withOpacity(0.6),
+                            color: isOpen ? AppColors.success : AppColors.error,
                           ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.book,
-                              size: 12,
-                              color: AppColors.brown,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Carnet',
-                              style: AppTextStyles.caption.copyWith(
-                                color: AppColors.brown,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          isOpen ? 'Ouvert' : 'Fermé',
+                          style: AppTextStyles.caption.copyWith(
+                            color: isOpen ? AppColors.success : AppColors.error,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
-                  ],
-                ),
-              ],
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+
+                  // Adresse
+                  Text(
+                    address,
+                    style: AppTextStyles.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+
+                  // Distance + rating + carnet
+                  Row(
+                    children: [
+                      if (distance.trim().isNotEmpty) ...[
+                        Icon(
+                          Icons.location_on,
+                          size: 16,
+                          color: AppColors.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          distance,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+
+                      if (rating != null) ...[
+                        if (distance.trim().isNotEmpty)
+                          const SizedBox(width: AppSpacing.md),
+                        Icon(
+                          Icons.star,
+                          size: 16,
+                          color: AppColors.warning,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          rating!.toStringAsFixed(1),
+                          style: AppTextStyles.bodySmall,
+                        ),
+                      ],
+
+                      if (hasCarnet) ...[
+                        if (distance.trim().isNotEmpty || rating != null)
+                          const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.gold.withOpacity(0.25),
+                            borderRadius: AppRadius.round,
+                            border: Border.all(
+                              color: AppColors.gold.withOpacity(0.6),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.book,
+                                size: 12,
+                                color: AppColors.brown,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Carnet',
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.brown,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

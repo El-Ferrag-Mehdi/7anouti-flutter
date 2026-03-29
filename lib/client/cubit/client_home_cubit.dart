@@ -46,7 +46,6 @@ class ClientHomeCubit extends Cubit<ClientHomeState> {
         final hanouts = await _hanoutRepository.getNearbyHanouts(
           latitude: position.latitude,
           longitude: position.longitude,
-          radius: 100000,
         );
         debugPrint(
           '[ClientHomeCubit] API returned ${hanouts.length} hanouts',
@@ -176,8 +175,7 @@ class ClientHomeCubit extends Cubit<ClientHomeState> {
 
   Future<void> _loadPublicHanouts() async {
     final hanouts = await _hanoutRepository.getNearbyHanouts(
-      radius: 100000,
-      limit: 10,
+      limit: 5,
     );
 
     if (hanouts.isEmpty) {

@@ -31,6 +31,7 @@ class ClientShell extends StatefulWidget {
 
 class _ClientShellState extends State<ClientShell> {
   int _currentIndex = 0;
+  int _homeScrollRequestToken = 0;
   int _ordersRefreshSeed = 0;
   RealtimeEventService? _realtimeService;
   StreamSubscription<RealtimeEvent>? _realtimeSubscription;
@@ -219,7 +220,7 @@ class _ClientShellState extends State<ClientShell> {
   List<Widget> _buildPages(BuildContext context, bool isAuthenticatedClient) {
     final l10n = context.l10n;
     return [
-      const ClientHomePage(),
+      ClientHomePage(scrollRequestToken: _homeScrollRequestToken),
       isAuthenticatedClient
           ? ClientOrdersPage(key: ValueKey(_ordersRefreshSeed))
           : ClientFeatureLockView(
@@ -235,7 +236,7 @@ class _ClientShellState extends State<ClientShell> {
               ],
             ),
       isAuthenticatedClient
-          ? const ClientCarnetPage()
+          ? ClientCarnetPage(onSeeHanouts: _navigateToHomeHanouts)
           : ClientFeatureLockView(
               icon: Icons.menu_book_rounded,
               title: l10n.clientGuestCarnetLockedTitle,
@@ -285,6 +286,13 @@ class _ClientShellState extends State<ClientShell> {
 
   bool _isAuthenticatedClient(AuthState state) {
     return state is Authenticated && state.role == UserRole.client;
+  }
+
+  void _navigateToHomeHanouts() {
+    setState(() {
+      _currentIndex = 0;
+      _homeScrollRequestToken++;
+    });
   }
 
   Future<void> _handleMenuSelection(String value) async {
@@ -405,11 +413,15 @@ class _ClientShellState extends State<ClientShell> {
       case 'ORDER_STATUS_CHANGED':
         final status = event.payload['status']?.toString();
         if (status == null) return null;
+        final processingMode = OrderProcessingMode.fromString(
+          event.payload['processingMode']?.toString(),
+        );
         if (shortId.isEmpty) {
-          return '${context.l10n.clientOrdersTab}: ${_statusLabel(status)}';
+          return '${context.l10n.clientOrdersTab}: '
+              '${_statusLabel(status, processingMode)}';
         }
         return '${context.l10n.clientOrdersOrderNumber(shortId)}: '
-            '${_statusLabel(status)}';
+            '${_statusLabel(status, processingMode)}';
       case 'ORDER_DRIVER_ASSIGNED':
         final label = context.l10n.hanoutOrdersDriverAssigned;
         if (shortId.isEmpty) return label;
@@ -437,22 +449,46 @@ class _ClientShellState extends State<ClientShell> {
     }
   }
 
-  String _statusLabel(String rawStatus) {
+  String _statusLabel(
+    String rawStatus,
+    OrderProcessingMode processingMode,
+  ) {
     switch (rawStatus.toUpperCase()) {
       case 'PENDING':
-        return context.orderStatusLabel(OrderStatus.pending);
+        return context.orderStatusLabel(
+          OrderStatus.pending,
+          processingMode: processingMode,
+        );
       case 'ACCEPTED':
-        return context.orderStatusLabel(OrderStatus.accepted);
+        return context.orderStatusLabel(
+          OrderStatus.accepted,
+          processingMode: processingMode,
+        );
       case 'READY':
-        return context.orderStatusLabel(OrderStatus.ready);
+        return context.orderStatusLabel(
+          OrderStatus.ready,
+          processingMode: processingMode,
+        );
       case 'PICKED_UP':
-        return context.orderStatusLabel(OrderStatus.pickedUp);
+        return context.orderStatusLabel(
+          OrderStatus.pickedUp,
+          processingMode: processingMode,
+        );
       case 'DELIVERING':
-        return context.orderStatusLabel(OrderStatus.delivering);
+        return context.orderStatusLabel(
+          OrderStatus.delivering,
+          processingMode: processingMode,
+        );
       case 'DELIVERED':
-        return context.orderStatusLabel(OrderStatus.delivered);
+        return context.orderStatusLabel(
+          OrderStatus.delivered,
+          processingMode: processingMode,
+        );
       case 'CANCELLED':
-        return context.orderStatusLabel(OrderStatus.cancelled);
+        return context.orderStatusLabel(
+          OrderStatus.cancelled,
+          processingMode: processingMode,
+        );
       default:
         return rawStatus;
     }

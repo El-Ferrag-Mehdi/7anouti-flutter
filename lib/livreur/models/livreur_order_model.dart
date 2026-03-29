@@ -6,12 +6,16 @@ class LivreurHanoutSummary {
     required this.name,
     required this.address,
     required this.phone,
+    this.latitude,
+    this.longitude,
   });
 
   final String id;
   final String name;
   final String address;
   final String phone;
+  final double? latitude;
+  final double? longitude;
 
   factory LivreurHanoutSummary.fromJson(Map<String, dynamic> json) {
     return LivreurHanoutSummary(
@@ -19,6 +23,12 @@ class LivreurHanoutSummary {
       name: json['name'] as String,
       address: json['address'] as String,
       phone: json['phone'] as String,
+      latitude: json['latitude'] != null
+          ? (json['latitude'] as num).toDouble()
+          : null,
+      longitude: json['longitude'] != null
+          ? (json['longitude'] as num).toDouble()
+          : null,
     );
   }
 }
@@ -69,6 +79,7 @@ class LivreurOrderModel {
     required this.hanoutId,
     required this.freeTextOrder,
     required this.status,
+    this.processingMode = OrderProcessingMode.hanout,
     required this.deliveryType,
     required this.paymentMethod,
     required this.createdAt,
@@ -86,6 +97,8 @@ class LivreurOrderModel {
     this.readyAt,
     this.pickedUpAt,
     this.deliveredAt,
+    this.hanoutDistance,
+    this.clientDistance,
   });
 
   final String id;
@@ -93,6 +106,7 @@ class LivreurOrderModel {
   final String hanoutId;
   final String freeTextOrder;
   final OrderStatus status;
+  final OrderProcessingMode processingMode;
   final DeliveryType deliveryType;
   final PaymentMethod paymentMethod;
   final DateTime createdAt;
@@ -110,6 +124,8 @@ class LivreurOrderModel {
   final DateTime? readyAt;
   final DateTime? pickedUpAt;
   final DateTime? deliveredAt;
+  final double? hanoutDistance;
+  final double? clientDistance;
 
   factory LivreurOrderModel.fromJson(Map<String, dynamic> json) {
     return LivreurOrderModel(
@@ -118,6 +134,9 @@ class LivreurOrderModel {
       hanoutId: json['hanoutId'] as String,
       freeTextOrder: json['freeTextOrder'] as String,
       status: OrderStatus.fromString(json['status'] as String),
+      processingMode: OrderProcessingMode.fromString(
+        json['processingMode'] as String?,
+      ),
       deliveryType: DeliveryType.fromString(json['deliveryType'] as String),
       paymentMethod: PaymentMethod.fromString(json['paymentMethod'] as String),
       createdAt: DateTime.parse(json['createdAt'] as String),
@@ -149,6 +168,12 @@ class LivreurOrderModel {
       deliveredAt: json['deliveredAt'] != null
           ? DateTime.parse(json['deliveredAt'] as String)
           : null,
+      hanoutDistance: json['hanoutDistance'] != null
+          ? (json['hanoutDistance'] as num).toDouble()
+          : null,
+      clientDistance: json['clientDistance'] != null
+          ? (json['clientDistance'] as num).toDouble()
+          : null,
       hanout: json['hanout'] != null
           ? LivreurHanoutSummary.fromJson(
               json['hanout'] as Map<String, dynamic>,
@@ -172,5 +197,64 @@ class LivreurOrderModel {
     final fallback = clientAddress?.trim();
     if (fallback != null && fallback.isNotEmpty) return fallback;
     return null;
+  }
+
+  bool get isDirectLivreurFlow =>
+      processingMode == OrderProcessingMode.directLivreur;
+
+  LivreurOrderModel copyWith({
+    String? id,
+    String? clientId,
+    String? hanoutId,
+    String? freeTextOrder,
+    OrderStatus? status,
+    OrderProcessingMode? processingMode,
+    DeliveryType? deliveryType,
+    PaymentMethod? paymentMethod,
+    DateTime? createdAt,
+    LivreurHanoutSummary? hanout,
+    LivreurClientSummary? client,
+    String? clientAddress,
+    String? clientAddressFr,
+    String? clientAddressAr,
+    double? clientLatitude,
+    double? clientLongitude,
+    String? notes,
+    double? totalAmount,
+    double? deliveryFee,
+    DateTime? acceptedAt,
+    DateTime? readyAt,
+    DateTime? pickedUpAt,
+    DateTime? deliveredAt,
+    double? hanoutDistance,
+    double? clientDistance,
+  }) {
+    return LivreurOrderModel(
+      id: id ?? this.id,
+      clientId: clientId ?? this.clientId,
+      hanoutId: hanoutId ?? this.hanoutId,
+      freeTextOrder: freeTextOrder ?? this.freeTextOrder,
+      status: status ?? this.status,
+      processingMode: processingMode ?? this.processingMode,
+      deliveryType: deliveryType ?? this.deliveryType,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      createdAt: createdAt ?? this.createdAt,
+      hanout: hanout ?? this.hanout,
+      client: client ?? this.client,
+      clientAddress: clientAddress ?? this.clientAddress,
+      clientAddressFr: clientAddressFr ?? this.clientAddressFr,
+      clientAddressAr: clientAddressAr ?? this.clientAddressAr,
+      clientLatitude: clientLatitude ?? this.clientLatitude,
+      clientLongitude: clientLongitude ?? this.clientLongitude,
+      notes: notes ?? this.notes,
+      totalAmount: totalAmount ?? this.totalAmount,
+      deliveryFee: deliveryFee ?? this.deliveryFee,
+      acceptedAt: acceptedAt ?? this.acceptedAt,
+      readyAt: readyAt ?? this.readyAt,
+      pickedUpAt: pickedUpAt ?? this.pickedUpAt,
+      deliveredAt: deliveredAt ?? this.deliveredAt,
+      hanoutDistance: hanoutDistance ?? this.hanoutDistance,
+      clientDistance: clientDistance ?? this.clientDistance,
+    );
   }
 }

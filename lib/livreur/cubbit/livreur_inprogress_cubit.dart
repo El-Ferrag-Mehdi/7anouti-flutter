@@ -27,37 +27,25 @@ class LivreurInProgressCubit extends Cubit<LivreurInProgressState> {
     await _fetchOrders(showLoading: true);
   }
 
-  Future<void> updateStatus(String orderId, OrderStatus status) async {
-    try {
-      await _repository.updateOrderStatus(orderId, status);
-      await loadOrders();
-    } on ApiException catch (e) {
-      emit(LivreurInProgressError(message: e.message));
-    } catch (e) {
-      emit(
-        LivreurInProgressError(
-          message: e.toString(),
-        ),
-      );
-    }
+  Future<void> updateStatus(
+    String orderId,
+    OrderStatus status, {
+    double? totalAmount,
+  }) async {
+    await _repository.updateOrderStatus(
+      orderId,
+      status,
+      totalAmount: totalAmount,
+    );
+    await _fetchOrders(showLoading: false);
   }
 
   Future<void> updateGasStatus(
     String requestId,
     GasServiceStatus status,
   ) async {
-    try {
-      await _gasRepository.updateGasStatus(requestId, status);
-      await loadOrders();
-    } on ApiException catch (e) {
-      emit(LivreurInProgressError(message: e.message));
-    } catch (e) {
-      emit(
-        LivreurInProgressError(
-          message: e.toString(),
-        ),
-      );
-    }
+    await _gasRepository.updateGasStatus(requestId, status);
+    await _fetchOrders(showLoading: false);
   }
 
   @override
@@ -90,7 +78,7 @@ class LivreurInProgressCubit extends Cubit<LivreurInProgressState> {
     try {
       final results = await Future.wait<dynamic>([
         _repository.getLivreurOrders(
-          status: 'READY,PICKED_UP,DELIVERING',
+          status: 'ACCEPTED,READY,PICKED_UP,DELIVERING',
           limit: 40,
         ),
         _gasRepository.getLivreurGasRequests(

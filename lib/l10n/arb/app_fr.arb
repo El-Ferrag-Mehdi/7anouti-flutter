@@ -1,7 +1,7 @@
-{
+﻿{
   "@@locale": "fr",
-  "commonPrivacyPolicy": "Politique de confidentialite",
-  "commonLegalSectionTitle": "Informations legales",
+  "commonPrivacyPolicy": "Politique de confidentialité",
+  "commonLegalSectionTitle": "Informations légales",
   "commonLinkOpenError": "Impossible d'ouvrir le lien pour le moment.",
   "counterAppBarTitle": "Compteur",
   "authWelcomeTitle": "Bienvenue à 7anouti",
@@ -19,6 +19,7 @@
   "authAlreadyHaveAccount": "Déjà un compte ? Se connecter",
   "authRegistrationSuccess": "Inscription réussie",
   "authRegistrationError": "Erreur d'inscription",
+  "commonStatusLabel": "Statut",
   "authLanguageLabel": "Langue",
   "authFrench": "Français",
   "authArabic": "Arabe",
@@ -164,6 +165,10 @@
   "clientOrderStatusDelivering": "En livraison",
   "clientOrderStatusDelivered": "Livrée",
   "clientOrderStatusCancelled": "Annulée",
+  "clientOrderDirectStatusPending": "Commande passée",
+  "clientOrderDirectStatusAccepted": "Acceptée par le livreur",
+  "clientOrderDirectStatusDriverOnWay": "Livreur en route",
+  "clientOrderDirectStatusPickedUp": "Commande récupérée",
   "clientGasStatusPending": "En attente",
   "clientGasStatusEnRoute": "En route",
   "clientGasStatusArrive": "Arrivé",
@@ -183,8 +188,10 @@
   "clientGasMessageCancelled": "Demande annulée.",
   "clientGasMessageRejected": "Demande refusée.",
   "clientHomeLoadingNearby": "Recherche des hanouts proches...",
-  "clientHomeNoHanoutNearby": "Aucun hanout proche trouv?.",
-  "clientHomeLocationPermissionDenied": "Autorisez la localisation pour voir les hanouts les plus proches.",
+  "clientHomeNoHanoutNearby": "7anouti sera tres prochainement disponible dans votre zone.",
+  "clientHomeLocationPermissionDenied": "Autorisez la localisation pour verifier si les hanouts affiches sont disponibles dans votre zone.",
+  "clientHomeFallbackHanoutsSubtitle": "Autorisez la localisation pour verifier si ces hanouts livrent dans votre zone.",
+  "clientHomeFallbackHanoutTapMessage": "Activez la localisation pour verifier si 7anouti est disponible dans votre zone.",
   "clientHomeNearbyHanoutsTitle": "Hanouts à proximité",
   "clientHomeHanoutsFound": "{count} hanout(s) trouvés",
   "@clientHomeHanoutsFound": {
@@ -225,6 +232,8 @@
   "clientGasRequestDriver": "Demander un livreur",
   "clientGasEnterAddress": "Veuillez entrer votre adresse.",
   "clientGasRequestSent": "Demande envoyée au livreur.",
+  "clientGasUnavailableInZone": "Ce service n'est pas actuellement disponible dans votre zone.",
+  "clientGasRequiresLocationForAvailability": "Activez la localisation pour decouvrir si ce service est disponible chez vous.",
   "clientGasNoDeliveredToRate": "Aucune demande livrée à évaluer.",
   "clientGasDetailsTitle": "Details du service",
   "clientGasServiceLabel": "Service",
@@ -363,8 +372,10 @@
   },
   "clientHanoutCarnetAvailable": "Carnet disponible",
   "clientHanoutCarnetExplain": "Ce hanout accepte le paiement carnet. Demandez l'activation pour l'utiliser.",
+  "clientHanoutCarnetRequestPendingTitle": "Demande envoyée au hanout",
+  "clientHanoutCarnetRequestPendingMessage": "Votre demande d'activation du carnet est en attente de validation par le hanout.",
   "clientHanoutCarnetCredit": "Credit carnet",
-  "clientHanoutAddedToCarnet": "Le montant sera ajout? ? votre carnet",
+  "clientHanoutAddedToCarnet": "Le montant sera ajouté votre carnet",
   "clientHanoutCarnetUnavailable": "Carnet indisponible pour ce compte",
   "clientHanoutRequestActivation": "Demander l'activation",
   "clientGuestCarnetInlineTitle": "Le carnet fonctionne avec votre compte client",
@@ -442,14 +453,18 @@
   "clientOrderTrackingCancelOrder": "Annuler la commande",
   "clientOrderTrackingEta": "Temps estime: 15-20 min",
   "clientOrderTrackingDetailedTracking": "Suivi detaille",
-  "clientOrderTrackingStepPlaced": "Commande passee",
+  "clientOrderTrackingAmountPending": "En attente de renseignement",
+  "clientOrderTrackingStepPlaced": "Commande passée",
   "clientOrderTrackingStepAccepted": "Acceptée par le hanout",
-  "clientOrderTrackingStepPreparing": "En preparation",
+  "clientOrderTrackingStepPreparing": "En préparation",
   "clientOrderTrackingStepReady": "Prête",
   "clientOrderTrackingStepPickedUp": "Récupérée par le livreur",
   "clientOrderTrackingStepDelivering": "En livraison",
   "clientOrderTrackingStepDelivered": "Livrée",
   "clientOrderTrackingStepCollected": "Récupérée",
+  "clientOrderTrackingDirectStepAccepted": "Acceptée par le livreur",
+  "clientOrderTrackingDirectStepOnWay": "Livreur en route",
+  "clientOrderTrackingDirectStepPickedUp": "Commande récupérée",
   "clientOrderTrackingOrderDetails": "Details de la commande",
   "clientOrderTrackingNumber": "Numero",
   "clientOrderTrackingContent": "Contenu",
@@ -460,7 +475,7 @@
   "clientOrderTrackingHanoutAddressFallback": "Adresse du hanout",
   "clientOrderTrackingDriver": "Livreur",
   "clientOrderTrackingDriverNameFallback": "Nom du livreur",
-  "clientOrderTrackingDriverStats": "4.8 (125 livraisons)",
+  "clientOrderTrackingDriverStats": "4.8",
   "clientOrderTrackingRateOrder": "Noter la commande",
   "clientOrderTrackingEditReview": "Modifier mon avis",
   "clientOrderTrackingReviewSaved": "Avis enregistre",
@@ -473,6 +488,10 @@
   "clientOrderTrackingMessageDelivering": "Votre commande est en cours de livraison.",
   "clientOrderTrackingMessageDelivered": "Votre commande a été livrée avec succès !",
   "clientOrderTrackingMessageCancelled": "Cette commande a été annulée.",
+  "clientOrderTrackingDirectMessagePending": "Votre commande a été transmise aux livreurs disponibles.",
+  "clientOrderTrackingDirectMessageAccepted": "Le livreur a accepté votre commande et se dirige vers le hanout.",
+  "clientOrderTrackingDirectMessageDriverOnWay": "Le livreur se dirige vers le hanout pour récupérer votre commande.",
+  "clientOrderTrackingDirectMessagePickedUp": "Le livreur a récupéré votre commande.",
   "clientOrderTrackingCancelConfirm": "Êtes-vous sûr de vouloir annuler cette commande ?",
   "clientOrderTrackingCancelYes": "Oui, annuler",
   "clientOrderTrackingCancelled": "Commande annulée",
@@ -523,6 +542,7 @@
   "hanoutOrdersActionStartInternal": "Demarrer interne",
   "hanoutOrdersActionMarkDelivered": "Marquer livrée",
   "hanoutOrdersActionDeliveredInternal": "Livrée (interne)",
+  "hanoutOrderDirectDriverReadonlyMessage": "Cette commande est gérée directement par le livreur. Le hanout peut suivre les détails, mais seul le livreur peut modifier son avancement.",
   "hanoutOrdersAcceptDialogTitle": "Accepter la commande",
   "hanoutOrdersTotalOptional": "Prix total (DH) - optionnel",
   "hanoutOrdersEditTotalDialogTitle": "Modifier le prix total",
@@ -700,6 +720,16 @@
       }
     }
   },
+  "livreurAvailableDirectSection": "Commandes directes",
+  "livreurAvailableHanoutSection": "Demandes des hanouts",
+  "livreurAvailableGasSection": "Services bouteille de gaz",
+  "livreurAvailableDirectBadge": "Commande directe",
+  "livreurAvailableHanoutBadge": "Demande hanout",
+  "livreurAvailableDirectHint": "Recuperez chez le hanout puis livrez directement au client.",
+  "livreurAvailableHanoutHint": "Le hanout demande un livreur pour une commande deja prete.",
+  "livreurAvailableHanoutDistanceLabel": "Distance hanout",
+  "livreurAvailableClientDistanceLabel": "Distance client",
+  "livreurAvailableViewDetails": "Voir les details",
   "livreurInProgressLoading": "Chargement des livraisons...",
   "livreurInProgressEmpty": "Aucune livraison en cours.",
   "livreurInProgressTitle": "Livraisons en cours",
@@ -712,9 +742,17 @@
     }
   },
   "livreurHanoutOrdersTitle": "Commandes hanout",
+  "livreurOrderDetailsHanoutSection": "Hanout",
+  "livreurOrderDetailsRouteSection": "Trajet",
+  "livreurOrderDetailsOpenClientMaps": "Ouvrir le client dans Maps",
+  "livreurOrderDetailsOpenHanoutMaps": "Ouvrir le hanout dans Maps",
+  "livreurOrderDetailsFlow": "Mission",
   "livreurActionPickedUp": "Récupérée",
+  "livreurActionOnWay": "En route",
   "livreurActionDelivering": "En livraison",
   "livreurActionDelivered": "Livrée",
+  "livreurDirectPickupAmountTitle": "Saisir le prix total",
+  "livreurDirectPickupAmountMessage": "Avant de marquer la commande comme récupérée, le prix total doit être renseigné.",
   "livreurCallClient": "Appeler le client",
   "livreurGasServiceTitle": "Service bouteille a gaz",
   "livreurGasServiceDirect": "Service direct (sans hanout)",
@@ -728,10 +766,16 @@
   "livreurEarningsLoading": "Chargement des gains...",
   "livreurEarningsTitle": "Gains du livreur",
   "livreurEarningsSubtitle": "Suivez vos revenus en temps reel",
+  "livreurEarningsMonthLabel": "Mois",
   "livreurEarningsDeliveries": "Livraisons",
+  "livreurEarningsHanoutDeliveries": "Livraisons hanout",
   "livreurEarningsServiceFees": "Frais service",
   "livreurEarningsGasServices": "Services gaz",
   "livreurEarningsGasGain": "Gain gaz",
+  "livreurEarningsOrdersCollected": "Montant commandes",
+  "livreurEarningsGasCollected": "Montant gaz",
+  "livreurEarningsTotalCollected": "Total recupere",
+  "livreurEarningsAmountToTransfer": "Montant a verser",
   "livreurEarningsHistory": "Historique",
   "livreurEarningsNoIncome": "Aucun revenu enregistre.",
   "livreurEarningsDeliveryFees": "Frais livraison: {value} DH",
@@ -744,6 +788,30 @@
   },
   "livreurEarningsServiceFeesValue": "Frais service: {value} DH",
   "@livreurEarningsServiceFeesValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "livreurEarningsOrdersCollectedValue": "Commandes: {value} DH",
+  "@livreurEarningsOrdersCollectedValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "livreurEarningsGasCollectedValue": "Gaz: {value} DH",
+  "@livreurEarningsGasCollectedValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "livreurEarningsAmountToTransferValue": "A partir des frais recupere, montant a verser a l'application: {value} DH",
+  "@livreurEarningsAmountToTransferValue": {
     "placeholders": {
       "value": {
         "type": "String"

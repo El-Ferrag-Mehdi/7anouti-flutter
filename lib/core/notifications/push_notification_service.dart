@@ -30,10 +30,6 @@ class PushNotificationService {
   Future<void> init() async {
     if (_initialized) return;
     _initialized = true;
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
-      debugPrint('FCM iOS is temporarily disabled.');
-      return;
-    }
 
     try {
       await Firebase.initializeApp();
@@ -47,13 +43,39 @@ class PushNotificationService {
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
     final messaging = FirebaseMessaging.instance;
-    await messaging.requestPermission();
+    await messaging.setAutoInitEnabled(true);
+    final settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+      provisional: false,
+    );
+    debugPrint(
+      'FCM permission status (${defaultTargetPlatform.name}): '
+      '${settings.authorizationStatus.name}',
+    );
+    if (settings.authorizationStatus == AuthorizationStatus.denied) {
+      debugPrint('FCM disabled: notification permission denied.');
+      return;
+    }
 
     await messaging.setForegroundNotificationPresentationOptions(
       alert: true,
       badge: true,
       sound: true,
     );
+
+    try {
+      final token = await messaging.getToken();
+      if (token == null || token.isEmpty) {
+        debugPrint('FCM token unavailable on ${defaultTargetPlatform.name}.');
+      } else {
+        debugPrint('FCM token acquired on ${defaultTargetPlatform.name}.');
+      }
+    } on Object catch (error, stackTrace) {
+      debugPrint('FCM token fetch failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
 
     _onMessageSub = FirebaseMessaging.onMessage.listen((message) async {
       final notification = message.notification;

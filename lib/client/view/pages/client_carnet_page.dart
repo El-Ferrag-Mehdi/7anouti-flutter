@@ -14,7 +14,12 @@ import 'package:sevenouti/utils/localized_formatters.dart';
 
 /// Page Carnet du client - Gestion du crédit
 class ClientCarnetPage extends StatelessWidget {
-  const ClientCarnetPage({super.key});
+  const ClientCarnetPage({
+    this.onSeeHanouts,
+    super.key,
+  });
+
+  final VoidCallback? onSeeHanouts;
 
   @override
   Widget build(BuildContext context) {
@@ -22,13 +27,18 @@ class ClientCarnetPage extends StatelessWidget {
       create: (context) => ClientCarnetCubit(
         carnetRepository: CarnetRepository(ApiService()),
       )..loadCarnets(), // Mode MOCK
-      child: const ClientCarnetView(),
+      child: ClientCarnetView(onSeeHanouts: onSeeHanouts),
     );
   }
 }
 
 class ClientCarnetView extends StatelessWidget {
-  const ClientCarnetView({super.key});
+  const ClientCarnetView({
+    this.onSeeHanouts,
+    super.key,
+  });
+
+  final VoidCallback? onSeeHanouts;
 
   @override
   Widget build(BuildContext context) {
@@ -50,9 +60,7 @@ class ClientCarnetView extends StatelessWidget {
               child: EmptyView(
                 message: l10n.clientCarnetEmptyMessage,
                 icon: Icons.book_outlined,
-                action: () {
-                  // TODO: Navigate to hanouts list to request carnet
-                },
+                action: onSeeHanouts,
                 actionLabel: l10n.clientCarnetSeeHanouts,
               ),
             );
@@ -89,39 +97,39 @@ class ClientCarnetView extends StatelessWidget {
         onRefresh: () => context.read<ClientCarnetCubit>().refresh(),
         child: CustomScrollView(
           slivers: [
-          // Header avec solde total
-          SliverToBoxAdapter(
-            child: _buildTotalBalanceHeader(context, state, l10n),
-          ),
-
-          // Info explicative
-          SliverToBoxAdapter(
-            child: _buildInfoBanner(l10n),
-          ),
-
-          // Liste des carnets
-          SliverPadding(
-            padding: const EdgeInsetsDirectional.fromSTEB(
-              AppSpacing.md,
-              AppSpacing.sm,
-              AppSpacing.md,
-              AppSpacing.md,
+            // Header avec solde total
+            SliverToBoxAdapter(
+              child: _buildTotalBalanceHeader(context, state, l10n),
             ),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final carnet = state.carnets[index];
-                  return _buildCarnetCard(context, carnet, l10n);
-                },
-                childCount: state.carnets.length,
+
+            // Info explicative
+            SliverToBoxAdapter(
+              child: _buildInfoBanner(l10n),
+            ),
+
+            // Liste des carnets
+            SliverPadding(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                AppSpacing.md,
+                AppSpacing.sm,
+                AppSpacing.md,
+                AppSpacing.md,
+              ),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final carnet = state.carnets[index];
+                    return _buildCarnetCard(context, carnet, l10n);
+                  },
+                  childCount: state.carnets.length,
+                ),
               ),
             ),
-          ),
 
-          // Padding bottom
-          const SliverToBoxAdapter(
-            child: SizedBox(height: AppSpacing.xl),
-          ),
+            // Padding bottom
+            const SliverToBoxAdapter(
+              child: SizedBox(height: AppSpacing.xl),
+            ),
           ],
         ),
       ),
@@ -220,9 +228,7 @@ class ClientCarnetView extends StatelessWidget {
                 borderRadius: AppRadius.round,
               ),
               child: Text(
-                hasDebt
-                    ? l10n.clientCarnetToRepay
-                    : l10n.clientCarnetNoDebt,
+                hasDebt ? l10n.clientCarnetToRepay : l10n.clientCarnetNoDebt,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -350,7 +356,10 @@ class ClientCarnetView extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             l10n.clientCarnetActiveSince(
-                              _formatActivationDate(context, carnet.activatedAt),
+                              _formatActivationDate(
+                                context,
+                                carnet.activatedAt,
+                              ),
                             ),
                             style: AppTextStyles.caption,
                           ),
@@ -456,7 +465,7 @@ class ClientCarnetView extends StatelessWidget {
     final l10n = context.l10n;
     if (date == null) return l10n.clientCommonRecently;
     final diff = DateTime.now().difference(date).inDays;
-    
+
     if (diff < 7) return l10n.clientCommonDays(diff);
     if (diff < 30) return l10n.clientCommonWeeks((diff / 7).floor());
     return l10n.clientCommonMonths((diff / 30).floor());
@@ -470,11 +479,3 @@ class ClientCarnetView extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
-
-
-

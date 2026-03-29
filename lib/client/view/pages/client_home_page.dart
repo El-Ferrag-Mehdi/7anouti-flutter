@@ -33,9 +33,11 @@ class ClientHomePage extends StatelessWidget {
   const ClientHomePage({
     super.key,
     this.variant = ClientHomeVariant.standard,
+    this.scrollRequestToken = 0,
   });
 
   final ClientHomeVariant variant;
+  final int scrollRequestToken;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +45,10 @@ class ClientHomePage extends StatelessWidget {
       create: (context) => ClientHomeCubit(
         hanoutRepository: HanoutRepository(ApiService()),
       )..loadNearbyHanouts(),
-      child: ClientHomeView(variant: variant),
+      child: ClientHomeView(
+        variant: variant,
+        scrollRequestToken: scrollRequestToken,
+      ),
     );
   }
 }
@@ -54,16 +59,37 @@ class ClientHomeAggressivePage extends ClientHomePage {
 }
 
 /// Vue de la page home (séparée pour faciliter les tests)
-class ClientHomeView extends StatelessWidget {
+class ClientHomeView extends StatefulWidget {
   const ClientHomeView({
     super.key,
     this.variant = ClientHomeVariant.standard,
+    this.scrollRequestToken = 0,
   });
 
   final ClientHomeVariant variant;
-  static final GlobalKey _hanoutsSectionKey = const GlobalObjectKey(
+  final int scrollRequestToken;
+
+  @override
+  State<ClientHomeView> createState() => _ClientHomeViewState();
+}
+
+class _ClientHomeViewState extends State<ClientHomeView> {
+  final GlobalKey _hanoutsSectionKey = const GlobalObjectKey(
     'client-home-hanouts-section',
   );
+
+  @override
+  void didUpdateWidget(covariant ClientHomeView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.scrollRequestToken == oldWidget.scrollRequestToken) {
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _scrollToHanouts(context, hasHanouts: true);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,13 +128,9 @@ class ClientHomeView extends StatelessWidget {
                 isAuthenticatedClient: isAuthenticatedClient,
               );
             }
-            return AppBackground(
-              child: EmptyView(
-                message: l10n.clientHomeNoHanoutNearby,
-                icon: Icons.store_outlined,
-                action: () => context.read<ClientHomeCubit>().refresh(),
-                actionLabel: l10n.clientCommonRefresh,
-              ),
+            return _buildNoHanoutAvailableView(
+              context,
+              isAuthenticatedClient: isAuthenticatedClient,
             );
           }
 
@@ -167,6 +189,7 @@ class ClientHomeView extends StatelessWidget {
                 child: _buildQuickActions(
                   context,
                   hasHanouts: state.hanouts.isNotEmpty,
+                  isUsingFallbackLocation: state.isUsingFallbackLocation,
                   isAuthenticatedClient: isAuthenticatedClient,
                 ),
               ),
@@ -199,9 +222,11 @@ class ClientHomeView extends StatelessWidget {
                   children: [
                     _buildSectionHeader(
                       title: context.l10n.clientHomeNearbyHanoutsTitle,
-                      subtitle: context.l10n.clientHomeHanoutsFound(
-                        state.hanouts.length,
-                      ),
+                      subtitle: state.isUsingFallbackLocation
+                          ? context.l10n.clientHomeFallbackHanoutsSubtitle
+                          : context.l10n.clientHomeHanoutsFound(
+                              state.hanouts.length,
+                            ),
                       icon: Icons.location_on,
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -226,7 +251,10 @@ class ClientHomeView extends StatelessWidget {
                       rating: hanout.rating,
                       isOpen: hanout.isOpen,
                       hasCarnet: hanout.hasCarnet,
-                      onTap: () => _navigateToHanoutDetails(context, hanout),
+                      isEnabled: !state.isUsingFallbackLocation,
+                      onTap: () => state.isUsingFallbackLocation
+                          ? _showLocationRequiredSnack(context)
+                          : _navigateToHanoutDetails(context, hanout),
                     );
                   },
                   childCount: state.hanouts.length,
@@ -247,11 +275,13 @@ class ClientHomeView extends StatelessWidget {
   Widget _buildQuickActions(
     BuildContext context, {
     required bool hasHanouts,
+    required bool isUsingFallbackLocation,
     required bool isAuthenticatedClient,
   }) {
     return _buildAggressiveQuickActions(
       context,
       hasHanouts: hasHanouts,
+      isUsingFallbackLocation: isUsingFallbackLocation,
       isAuthenticatedClient: isAuthenticatedClient,
     );
   }
@@ -259,6 +289,7 @@ class ClientHomeView extends StatelessWidget {
   Widget _buildAggressiveQuickActions(
     BuildContext context, {
     required bool hasHanouts,
+    required bool isUsingFallbackLocation,
     required bool isAuthenticatedClient,
   }) {
     final l10n = context.l10n;
@@ -286,6 +317,8 @@ class ClientHomeView extends StatelessWidget {
           onTap: () => unawaited(
             _handleGasAction(
               context,
+              hasHanouts: hasHanouts,
+              isUsingFallbackLocation: isUsingFallbackLocation,
               isAuthenticatedClient: isAuthenticatedClient,
             ),
           ),
@@ -319,6 +352,7 @@ class ClientHomeView extends StatelessWidget {
                 child: _buildQuickActions(
                   context,
                   hasHanouts: true,
+                  isUsingFallbackLocation: true,
                   isAuthenticatedClient: isAuthenticatedClient,
                 ),
               ),
@@ -337,7 +371,7 @@ class ClientHomeView extends StatelessWidget {
                   children: [
                     _buildSectionHeader(
                       title: context.l10n.clientHomeNearbyHanoutsTitle,
-                      subtitle: context.l10n.clientHomeLocationPermissionDenied,
+                      subtitle: context.l10n.clientHomeFallbackHanoutsSubtitle,
                       icon: Icons.location_on,
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -351,6 +385,105 @@ class ClientHomeView extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildNoHanoutAvailableView(
+    BuildContext context, {
+    required bool isAuthenticatedClient,
+  }) {
+    return AppBackground(
+      child: RefreshIndicator(
+        onRefresh: () => context.read<ClientHomeCubit>().refresh(),
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: _buildHeroHeader(context),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                  AppSpacing.md,
+                  AppSpacing.lg,
+                  AppSpacing.md,
+                  AppSpacing.sm,
+                ),
+                child: _buildQuickActions(
+                  context,
+                  hasHanouts: false,
+                  isUsingFallbackLocation: false,
+                  isAuthenticatedClient: isAuthenticatedClient,
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                key: _hanoutsSectionKey,
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                  AppSpacing.md,
+                  AppSpacing.lg,
+                  AppSpacing.md,
+                  AppSpacing.sm,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionHeader(
+                      title: context.l10n.clientHomeNearbyHanoutsTitle,
+                      subtitle: context.l10n.clientHomeNoHanoutNearby,
+                      icon: Icons.location_on,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    _buildNoHanoutCard(context),
+                  ],
+                ),
+              ),
+            ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: AppSpacing.xl),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNoHanoutCard(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: AppRadius.large,
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.card,
+      ),
+      child: Column(
+        children: [
+          Container(
+            height: 56,
+            width: 56,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.12),
+              borderRadius: AppRadius.large,
+            ),
+            child: const Icon(
+              Icons.store_mall_directory_outlined,
+              color: AppColors.primary,
+              size: 28,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            context.l10n.clientHomeNoHanoutNearby,
+            style: AppTextStyles.bodyLarge.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -409,16 +542,28 @@ class ClientHomeView extends StatelessWidget {
   }
 
   Future<void> _requestLocationAccess(BuildContext context) async {
-    final permission = await Geolocator.checkPermission();
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      await Geolocator.openLocationSettings();
+      return;
+    }
+
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
     if (permission == LocationPermission.deniedForever) {
       await Geolocator.openAppSettings();
       return;
     }
 
+    if (permission == LocationPermission.denied) {
+      return;
+    }
+
     if (!context.mounted) return;
-    await context.read<ClientHomeCubit>().loadNearbyHanouts(
-      requestPermission: true,
-    );
+    await context.read<ClientHomeCubit>().loadNearbyHanouts();
   }
 
   void _scrollToHanouts(
@@ -570,7 +715,7 @@ class ClientHomeView extends StatelessWidget {
   // }
 
   Widget _buildHeroHeader(BuildContext context) {
-    if (variant == ClientHomeVariant.aggressive) {
+    if (widget.variant == ClientHomeVariant.aggressive) {
       return _buildAggressiveHeroHeader(context);
     }
 
@@ -929,8 +1074,28 @@ class ClientHomeView extends StatelessWidget {
 
   Future<void> _handleGasAction(
     BuildContext context, {
+    required bool hasHanouts,
+    required bool isUsingFallbackLocation,
     required bool isAuthenticatedClient,
   }) async {
+    if (isUsingFallbackLocation) {
+      AppSnackBar.show(
+        context,
+        message: context.l10n.clientGasRequiresLocationForAvailability,
+        type: SnackBarType.info,
+      );
+      return;
+    }
+
+    if (!hasHanouts) {
+      AppSnackBar.show(
+        context,
+        message: context.l10n.clientGasUnavailableInZone,
+        type: SnackBarType.warning,
+      );
+      return;
+    }
+
     _showGasServiceSheet(
       context,
       isAuthenticatedClient: isAuthenticatedClient,
@@ -1037,6 +1202,14 @@ class ClientHomeView extends StatelessWidget {
       MaterialPageRoute<void>(
         builder: (_) => HanoutDetailsPage(hanout: hanout),
       ),
+    );
+  }
+
+  void _showLocationRequiredSnack(BuildContext context) {
+    AppSnackBar.show(
+      context,
+      message: context.l10n.clientHomeFallbackHanoutTapMessage,
+      type: SnackBarType.info,
     );
   }
 }

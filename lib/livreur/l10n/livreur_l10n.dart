@@ -5,10 +5,14 @@ import 'package:sevenouti/client/models/order_model.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 
 extension LivreurL10nX on BuildContext {
-  String livreurOrderStatusLabel(OrderStatus status) => orderStatusLabel(status);
+  String livreurOrderStatusLabel(
+    OrderStatus status, {
+    OrderProcessingMode processingMode = OrderProcessingMode.hanout,
+  }) => orderStatusLabel(status, processingMode: processingMode);
 
   String livreurDeliveryTypeLabel(DeliveryType type) => deliveryTypeLabel(type);
-  String livreurGasStatusLabel(GasServiceStatus status) => gasStatusLabel(status);
+  String livreurGasStatusLabel(GasServiceStatus status) =>
+      gasStatusLabel(status);
 
   String livreurRequestStatusLabel(String status) {
     switch (status.toUpperCase()) {

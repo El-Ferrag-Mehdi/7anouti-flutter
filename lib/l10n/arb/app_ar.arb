@@ -19,6 +19,7 @@
   "authAlreadyHaveAccount": "هل لديك حساب بالفعل؟ تسجيل الدخول",
   "authRegistrationSuccess": "تم التسجيل بنجاح",
   "authRegistrationError": "خطأ في التسجيل",
+  "commonStatusLabel": "الحالة",
   "authLanguageLabel": "لغة",
   "authFrench": "فرنسي",
   "authArabic": "عربي",
@@ -164,6 +165,10 @@
   "clientOrderStatusDelivering": "فالطريق",
   "clientOrderStatusDelivered": "توصّل",
   "clientOrderStatusCancelled": "تلغى",
+  "clientOrderDirectStatusPending": "تصيفط الطلب",
+  "clientOrderDirectStatusAccepted": "قبله الليفريور",
+  "clientOrderDirectStatusDriverOnWay": "الليفريور فالطريق",
+  "clientOrderDirectStatusPickedUp": "تشدّات الطلبية",
   "clientGasStatusPending": "في الانتظار",
   "clientGasStatusEnRoute": "فالطريق",
   "clientGasStatusArrive": "وصل",
@@ -183,8 +188,10 @@
   "clientGasMessageCancelled": "تلغات الطلبية.",
   "clientGasMessageRejected": "ترفضات الطلبية.",
   "clientHomeLoadingNearby": "كنقلبو على لحوانت لي حديا...",
-  "clientHomeNoHanoutNearby": "ما لقيناش حتى حانوت قريب.",
-  "clientHomeLocationPermissionDenied": "سمح لينا بالموقع باش نبينو ليك أقرب لحوانت ليك.",
+  "clientHomeNoHanoutNearby": "7anouti غادي يكون متوفر فالمنطقة ديالك قريبا بزاف.",
+  "clientHomeLocationPermissionDenied": "سمح لينا بالموقع باش نتحققو واش الحوانت لي باينين متاحين فالمنطقة ديالك.",
+  "clientHomeFallbackHanoutsSubtitle": "سمح لينا بالموقع باش نتحققو واش هاد الحوانت كيوصلو للمنطقة ديالك.",
+  "clientHomeFallbackHanoutTapMessage": "فعّل الموقع باش تعرف واش 7anouti متوفر فالمنطقة ديالك.",
   "clientHomeNearbyHanoutsTitle": "لحوانت لي حديا",
   "clientHomeHanoutsFound": "لقينا {count} حانوت",
   "@clientHomeHanoutsFound": {
@@ -225,6 +232,8 @@
   "clientGasRequestDriver": "طلب ليفريور",
   "clientGasEnterAddress": "دخل العنوان ديالك.",
   "clientGasRequestSent": "تصيفطات الطلبية لليفريور.",
+  "clientGasUnavailableInZone": "هاد الخدمة ماشي متوفرة حاليا فالمنطقة ديالك.",
+  "clientGasRequiresLocationForAvailability": "فعّل الموقع باش تعرف واش هاد الخدمة متوفرة عندك.",
   "clientGasNoDeliveredToRate": "ما كاين حتى طلب غاز متوصل باش تقيمو.",
   "clientGasDetailsTitle": "تفاصيل الخدمة",
   "clientGasServiceLabel": "الخدمة",
@@ -363,6 +372,8 @@
   },
   "clientHanoutCarnetAvailable": "الكارني متوفر",
   "clientHanoutCarnetExplain": "هاد الحانوت كيدعم الكارني. طلب التفعيل باش تستعملو.",
+  "clientHanoutCarnetRequestPendingTitle": "الطلب تبعث للحانوت",
+  "clientHanoutCarnetRequestPendingMessage": "طلب تفعيل الكارني ديالك مازال كيتراجع من طرف الحانوت.",
   "clientHanoutCarnetCredit": "الخلاص بالكارني",
   "clientHanoutAddedToCarnet": "الثمن غادي يتزاد فالكارني ديالك",
   "clientHanoutCarnetUnavailable": "الكارني ما متوفرش لهاد الحساب",
@@ -442,6 +453,7 @@
   "clientOrderTrackingCancelOrder": "إلغاء الطلب",
   "clientOrderTrackingEta": "الوقت المتوقع: 15-20 د",
   "clientOrderTrackingDetailedTracking": "تتبع مفصل",
+  "clientOrderTrackingAmountPending": "الثمن مازال ما تدخلش",
   "clientOrderTrackingStepPlaced": "تصيفط الطلب",
   "clientOrderTrackingStepAccepted": "قبله الحانوت",
   "clientOrderTrackingStepPreparing": "كيتوجد",
@@ -450,6 +462,9 @@
   "clientOrderTrackingStepDelivering": "فالطريق",
   "clientOrderTrackingStepDelivered": "توصّل",
   "clientOrderTrackingStepCollected": "تشد",
+  "clientOrderTrackingDirectStepAccepted": "قبله الليفريور",
+  "clientOrderTrackingDirectStepOnWay": "الليفريور فالطريق",
+  "clientOrderTrackingDirectStepPickedUp": "تشدّات الطلبية",
   "clientOrderTrackingOrderDetails": "تفاصيل الطلب",
   "clientOrderTrackingNumber": "الرقم",
   "clientOrderTrackingContent": "المحتوى",
@@ -460,7 +475,7 @@
   "clientOrderTrackingHanoutAddressFallback": "عنوان الحانوت",
   "clientOrderTrackingDriver": "الليفريور",
   "clientOrderTrackingDriverNameFallback": "سمية الليفريور",
-  "clientOrderTrackingDriverStats": "4.8 (125 توصيل)",
+  "clientOrderTrackingDriverStats": "4.8",
   "clientOrderTrackingRateOrder": "قيّم الطلب",
   "clientOrderTrackingEditReview": "بدل التقييم ديالك",
   "clientOrderTrackingReviewSaved": "تحفظ التقييم",
@@ -473,6 +488,10 @@
   "clientOrderTrackingMessageDelivering": "الطلب ديالك فالطريق.",
   "clientOrderTrackingMessageDelivered": "توصّل الطلب ديالك بنجاح!",
   "clientOrderTrackingMessageCancelled": "هاد الطلب تلغى.",
+  "clientOrderTrackingDirectMessagePending": "الطلب ديالك تصيفط لليفريورات المتاحين.",
+  "clientOrderTrackingDirectMessageAccepted": "الليفريور قبل الطلب ديالك وغادي للحانوت.",
+  "clientOrderTrackingDirectMessageDriverOnWay": "الليفريور غادي للحانوت باش يشد الطلب ديالك.",
+  "clientOrderTrackingDirectMessagePickedUp": "الليفريور شد الطلب ديالك.",
   "clientOrderTrackingCancelConfirm": "واش متأكد بلي بغيتي تلغي هاد الطلب؟",
   "clientOrderTrackingCancelYes": "نعم، لغيه",
   "clientOrderTrackingCancelled": "تلغى الطلب",
@@ -523,6 +542,7 @@
   "hanoutOrdersActionStartInternal": "بدا داخلي",
   "hanoutOrdersActionMarkDelivered": "علّمها توصّلات",
   "hanoutOrdersActionDeliveredInternal": "توصّلات داخلياً",
+  "hanoutOrderDirectDriverReadonlyMessage": "هاد الطلب كيتسير مباشرة من طرف الليفريور. الحانوت يقدر يشوف التفاصيل، ولكن غير الليفريور يقدر يبدل التقدم ديالو.",
   "hanoutOrdersAcceptDialogTitle": "قبل الطلب",
   "hanoutOrdersTotalOptional": "الثمن كامل (د.م) - اختياري",
   "hanoutOrdersEditTotalDialogTitle": "بدل الثمن كامل",
@@ -700,6 +720,16 @@
       }
     }
   },
+  "livreurAvailableDirectSection": "الطلبات المباشرة",
+  "livreurAvailableHanoutSection": "طلبات الحوانت",
+  "livreurAvailableGasSection": "خدمة قراعي الغاز",
+  "livreurAvailableDirectBadge": "طلب مباشر",
+  "livreurAvailableHanoutBadge": "طلب من الحانوت",
+  "livreurAvailableDirectHint": "شد الطلب من الحانوت وديه مباشرة للزبون.",
+  "livreurAvailableHanoutHint": "الحانوت طالب ليفريور لطلبية واجدة.",
+  "livreurAvailableHanoutDistanceLabel": "مسافة الحانوت",
+  "livreurAvailableClientDistanceLabel": "مسافة الزبون",
+  "livreurAvailableViewDetails": "شوف التفاصيل",
   "livreurInProgressLoading": "جارٍ تحميل عمليات التسليم...",
   "livreurInProgressEmpty": "لا يوجد تسليم في التقدم.",
   "livreurInProgressTitle": "التسليم جاري",
@@ -712,9 +742,17 @@
     }
   },
   "livreurHanoutOrdersTitle": "أوامر الحانوت",
+  "livreurOrderDetailsHanoutSection": "الحانوت",
+  "livreurOrderDetailsRouteSection": "المسار",
+  "livreurOrderDetailsOpenClientMaps": "حل الزبون فـ Maps",
+  "livreurOrderDetailsOpenHanoutMaps": "حل الحانوت فـ Maps",
+  "livreurOrderDetailsFlow": "المهمة",
   "livreurActionPickedUp": "التقطت",
+  "livreurActionOnWay": "فالطريق",
   "livreurActionDelivering": "تسليم",
   "livreurActionDelivered": "تم التوصيل",
+  "livreurDirectPickupAmountTitle": "دخل الثمن كامل",
+  "livreurDirectPickupAmountMessage": "قبل ما تعلّم الطلبية تشدّات، خاصك تدخل الثمن الكامل ديالها.",
   "livreurCallClient": "اتصل بالعميل",
   "livreurGasServiceTitle": "خدمة قنينة الغاز",
   "livreurGasServiceDirect": "الخدمة المباشرة (بدون حانوت)",
@@ -728,10 +766,16 @@
   "livreurEarningsLoading": "جارٍ تحميل الأرباح...",
   "livreurEarningsTitle": "أرباح ",
   "livreurEarningsSubtitle": "تتبع إيراداتك في الوقت الحقيقي",
+  "livreurEarningsMonthLabel": "الشهر",
   "livreurEarningsDeliveries": "التسليم",
+  "livreurEarningsHanoutDeliveries": "توصيلات الحانوت",
   "livreurEarningsServiceFees": "رسوم الخدمة",
   "livreurEarningsGasServices": "خدمات الغاز",
   "livreurEarningsGasGain": "كسب الغاز",
+  "livreurEarningsOrdersCollected": "مبلغ الطلبيات",
+  "livreurEarningsGasCollected": "مبلغ الغاز",
+  "livreurEarningsTotalCollected": "المجموع لي تجمع",
+  "livreurEarningsAmountToTransfer": "المبلغ لي خاص يتصب",
   "livreurEarningsHistory": "تاريخ",
   "livreurEarningsNoIncome": "لا يوجد دخل مسجل.",
   "livreurEarningsDeliveryFees": "رسوم التوصيل: {value} درهم",
@@ -744,6 +788,30 @@
   },
   "livreurEarningsServiceFeesValue": "رسوم الخدمة: {value} درهم",
   "@livreurEarningsServiceFeesValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "livreurEarningsOrdersCollectedValue": "الطلبيات: {value} درهم",
+  "@livreurEarningsOrdersCollectedValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "livreurEarningsGasCollectedValue": "الغاز: {value} درهم",
+  "@livreurEarningsGasCollectedValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "livreurEarningsAmountToTransferValue": "انطلاقا من المصاريف لي تجمعات، المبلغ لي خاص يتصب للتطبيق هو: {value} درهم",
+  "@livreurEarningsAmountToTransferValue": {
     "placeholders": {
       "value": {
         "type": "String"

@@ -426,6 +426,42 @@ class HanoutDetailsView extends StatelessWidget {
           ],
         ),
       );
+    } else if (state.hanout.hasCarnet && state.hasPendingCarnetRequest) {
+      return Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withOpacity(0.1),
+          borderRadius: AppRadius.large,
+          border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.hourglass_top_rounded, color: AppColors.primary),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.l10n.clientHanoutCarnetRequestPendingTitle,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    context.l10n.clientHanoutCarnetRequestPendingMessage,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
     } else if (state.hanout.hasCarnet) {
       // Hanout accepte le carnet mais client n'en a pas
       return Container(
