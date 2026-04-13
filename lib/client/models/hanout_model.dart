@@ -1,3 +1,5 @@
+import 'package:sevenouti/client/models/business_category_model.dart';
+
 /// Model representant un Hanout (epicerie de quartier)
 class HanoutModel {
   final String id;
@@ -14,6 +16,8 @@ class HanoutModel {
   final bool showRating;
   final bool hasCarnet;
   final bool sendOrdersDirectToLivreur;
+  final String? businessCategoryId;
+  final BusinessCategoryModel? businessCategory;
   final double? deliveryFee;
   final int? estimatedDeliveryTime;
   final double? rating;
@@ -36,6 +40,8 @@ class HanoutModel {
     this.showRating = true,
     required this.hasCarnet,
     this.sendOrdersDirectToLivreur = false,
+    this.businessCategoryId,
+    this.businessCategory,
     this.deliveryFee,
     this.estimatedDeliveryTime,
     this.rating,
@@ -65,6 +71,12 @@ class HanoutModel {
       hasCarnet: json['hasCarnet'] as bool? ?? false,
       sendOrdersDirectToLivreur:
           json['sendOrdersDirectToLivreur'] as bool? ?? false,
+      businessCategoryId: json['businessCategoryId'] as String?,
+      businessCategory: json['businessCategory'] != null
+          ? BusinessCategoryModel.fromJson(
+              json['businessCategory'] as Map<String, dynamic>,
+            )
+          : null,
       deliveryFee: deliveryFeeValue == null
           ? null
           : (deliveryFeeValue as num).toDouble(),
@@ -92,6 +104,8 @@ class HanoutModel {
       'showRating': showRating,
       'hasCarnet': hasCarnet,
       'sendOrdersDirectToLivreur': sendOrdersDirectToLivreur,
+      'businessCategoryId': businessCategoryId,
+      'businessCategory': businessCategory?.toJson(),
       'deliveryFee': deliveryFee,
       'estimatedDeliveryTime': estimatedDeliveryTime,
       'rating': rating,
@@ -116,6 +130,8 @@ class HanoutModel {
     bool? showRating,
     bool? hasCarnet,
     bool? sendOrdersDirectToLivreur,
+    String? businessCategoryId,
+    BusinessCategoryModel? businessCategory,
     double? deliveryFee,
     int? estimatedDeliveryTime,
     double? rating,
@@ -139,6 +155,8 @@ class HanoutModel {
       hasCarnet: hasCarnet ?? this.hasCarnet,
       sendOrdersDirectToLivreur:
           sendOrdersDirectToLivreur ?? this.sendOrdersDirectToLivreur,
+      businessCategoryId: businessCategoryId ?? this.businessCategoryId,
+      businessCategory: businessCategory ?? this.businessCategory,
       deliveryFee: deliveryFee ?? this.deliveryFee,
       estimatedDeliveryTime:
           estimatedDeliveryTime ?? this.estimatedDeliveryTime,
@@ -169,6 +187,8 @@ class HanoutWithDistance extends HanoutModel {
     super.showRating = true,
     required super.hasCarnet,
     super.sendOrdersDirectToLivreur = false,
+    super.businessCategoryId,
+    super.businessCategory,
     super.deliveryFee,
     super.estimatedDeliveryTime,
     super.rating,
@@ -208,6 +228,8 @@ class HanoutWithDistance extends HanoutModel {
       showRating: hanout.showRating,
       hasCarnet: hanout.hasCarnet,
       sendOrdersDirectToLivreur: hanout.sendOrdersDirectToLivreur,
+      businessCategoryId: hanout.businessCategoryId,
+      businessCategory: hanout.businessCategory,
       deliveryFee: hanout.deliveryFee,
       estimatedDeliveryTime: hanout.estimatedDeliveryTime,
       rating: hanout.rating,

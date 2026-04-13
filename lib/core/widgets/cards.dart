@@ -52,6 +52,8 @@ class HanoutCard extends StatelessWidget {
     required this.name,
     required this.address,
     required this.distance,
+    this.categoryName,
+    this.categoryIcon,
     this.imageUrl,
     this.rating,
     this.isOpen = true,
@@ -64,6 +66,8 @@ class HanoutCard extends StatelessWidget {
   final String name;
   final String address;
   final String distance;
+  final String? categoryName;
+  final String? categoryIcon;
   final String? imageUrl;
   final double? rating;
   final bool isOpen;
@@ -154,6 +158,31 @@ class HanoutCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: AppSpacing.xs),
+
+                  if (categoryName != null && categoryName!.trim().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.08),
+                          borderRadius: AppRadius.round,
+                          border: Border.all(
+                            color: AppColors.primary.withOpacity(0.2),
+                          ),
+                        ),
+                        child: Text(
+                          '${(categoryIcon == null || categoryIcon!.trim().isEmpty) ? '🏪' : categoryIcon!} $categoryName',
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
 
                   // Adresse
                   Text(

@@ -47,6 +47,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
     _orderRepository = OrderRepository(ApiService());
     _loadExistingReview();
     _startAutoPolling();
+    unawaited(_refreshOrderSilently());
   }
 
   @override
@@ -108,7 +109,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
               _buildHanoutInfo(),
 
               // Infos livreur (si assignÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©)
-              if (_order.livreurId != null) _buildLivreurInfo(),
+              if (_shouldShowLivreurInfo()) _buildLivreurInfo(),
 
               const SizedBox(height: AppSpacing.xl),
             ],
@@ -602,6 +603,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
 
   /// Infos du hanout
   Widget _buildHanoutInfo() {
+    return _buildResolvedHanoutInfo();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Column(
@@ -628,9 +630,11 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
                     color: AppColors.primary.withOpacity(0.1),
                     borderRadius: AppRadius.medium,
                   ),
-                  child: const Icon(
-                    Icons.store,
-                    color: AppColors.primary,
+                  child: Center(
+                    child: Text(
+                      _order.businessCategory?.displayIcon ?? '🏪',
+                      style: const TextStyle(fontSize: 24),
+                    ),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -641,9 +645,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        context
-                            .l10n
-                            .clientOrderTrackingHanoutNameFallback, // TODO: RÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©cupÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©rer depuis hanout
+                        context.l10n.clientOrderTrackingHanoutNameFallback,
                         style: AppTextStyles.bodyLarge.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -676,6 +678,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
 
   /// Infos du livreur
   Widget _buildLivreurInfo() {
+    return _buildResolvedLivreurInfo();
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
@@ -713,9 +716,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        context
-                            .l10n
-                            .clientOrderTrackingDriverNameFallback, // TODO: RÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©cupÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©rer depuis livreur
+                        context.l10n.clientOrderTrackingDriverNameFallback,
                         style: AppTextStyles.bodyLarge.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -746,6 +747,179 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
                   style: IconButton.styleFrom(
                     backgroundColor: AppColors.secondary,
                     foregroundColor: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResolvedHanoutInfo() {
+    final hanoutName = _hanoutDisplayName();
+    final hanoutAddress = _hanoutDisplayAddress();
+    final hanoutPhone = _currentHanoutPhone();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(context.l10n.clientOrderTrackingHanout, style: AppTextStyles.h3),
+          const SizedBox(height: AppSpacing.md),
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: AppRadius.large,
+              border: Border.all(color: AppColors.border),
+              boxShadow: AppShadows.card,
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: AppRadius.medium,
+                  ),
+                  child: Center(
+                    child: Text(
+                      _order.businessCategory?.displayIcon ?? '🏪',
+                      style: const TextStyle(fontSize: 24),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        hanoutName,
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        hanoutAddress,
+                        style: AppTextStyles.bodySmall,
+                      ),
+                      if (hanoutPhone != null && hanoutPhone.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          hanoutPhone,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: hanoutPhone == null || hanoutPhone.isEmpty
+                      ? null
+                      : _callHanout,
+                  icon: const Icon(Icons.phone),
+                  style: IconButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: AppColors.border,
+                    disabledForegroundColor: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResolvedLivreurInfo() {
+    final livreurAssigned = _order.livreurId != null;
+    final livreurPhone = _currentLivreurPhone();
+
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(context.l10n.clientOrderTrackingDriver, style: AppTextStyles.h3),
+          const SizedBox(height: AppSpacing.md),
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: AppRadius.large,
+              border: Border.all(
+                color: AppColors.secondary.withOpacity(0.3),
+              ),
+              boxShadow: AppShadows.card,
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: AppColors.secondary,
+                  child: const Icon(
+                    Icons.person,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        livreurAssigned
+                            ? _livreurDisplayName()
+                            : _pendingLivreurLabel(),
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      if (livreurAssigned &&
+                          livreurPhone != null &&
+                          livreurPhone.isNotEmpty)
+                        Text(
+                          livreurPhone,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        )
+                      else
+                        Text(
+                          _pendingLivreurLabel(),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed:
+                      livreurAssigned &&
+                          livreurPhone != null &&
+                          livreurPhone.isNotEmpty
+                      ? _callLivreur
+                      : null,
+                  icon: const Icon(Icons.phone),
+                  style: IconButton.styleFrom(
+                    backgroundColor: AppColors.secondary,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: AppColors.border,
+                    disabledForegroundColor: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -905,6 +1079,71 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
   bool _isDirectDriverFlow() =>
       _order.processingMode == OrderProcessingMode.directLivreur &&
       _order.deliveryType == DeliveryType.delivery;
+
+  bool _shouldShowLivreurInfo() {
+    return _order.deliveryType == DeliveryType.delivery &&
+        (_isDirectDriverFlow() || _order.livreurId != null);
+  }
+
+  String _hanoutDisplayName() {
+    final value = _order.hanoutName?.trim();
+    if (value != null && value.isNotEmpty) {
+      return value;
+    }
+    return context.l10n.clientOrderTrackingHanoutNameFallback;
+  }
+
+  String _hanoutDisplayAddress() {
+    final value = _order.hanoutAddress?.trim();
+    if (value != null && value.isNotEmpty) {
+      return value;
+    }
+    return context.l10n.clientOrderTrackingHanoutAddressFallback;
+  }
+
+  String _livreurDisplayName() {
+    final preferArabic = Localizations.localeOf(context).languageCode == 'ar';
+    if (preferArabic) {
+      final arabic = _order.livreurNameAr?.trim();
+      if (arabic != null && arabic.isNotEmpty) {
+        return arabic;
+      }
+    }
+    final value = _order.livreurName?.trim();
+    if (value != null && value.isNotEmpty) {
+      return value;
+    }
+    return context.l10n.clientOrderTrackingDriverNameFallback;
+  }
+
+  String _pendingLivreurLabel() {
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+    return isArabic ? 'لم يتم القبول بعد' : 'Non encore accepte';
+  }
+
+  String? _currentHanoutPhone() {
+    final orderPhone = _order.hanoutPhone?.trim();
+    if (orderPhone != null && orderPhone.isNotEmpty) {
+      return orderPhone;
+    }
+    final widgetPhone = widget.hanoutPhone?.trim();
+    if (widgetPhone != null && widgetPhone.isNotEmpty) {
+      return widgetPhone;
+    }
+    return null;
+  }
+
+  String? _currentLivreurPhone() {
+    final orderPhone = _order.livreurPhone?.trim();
+    if (orderPhone != null && orderPhone.isNotEmpty) {
+      return orderPhone;
+    }
+    final widgetPhone = widget.livreurPhone?.trim();
+    if (widgetPhone != null && widgetPhone.isNotEmpty) {
+      return widgetPhone;
+    }
+    return null;
+  }
 
   bool _canCancelOrder() {
     // Peut annuler si: pending ou accepted (pas encore en prÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©paration)
@@ -1191,6 +1430,12 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
       if (!mounted) return;
       if (latest.status != _order.status ||
           latest.livreurId != _order.livreurId ||
+          latest.hanoutName != _order.hanoutName ||
+          latest.hanoutAddress != _order.hanoutAddress ||
+          latest.hanoutPhone != _order.hanoutPhone ||
+          latest.livreurName != _order.livreurName ||
+          latest.livreurNameAr != _order.livreurNameAr ||
+          latest.livreurPhone != _order.livreurPhone ||
           latest.totalAmount != _order.totalAmount ||
           latest.acceptedAt != _order.acceptedAt ||
           latest.readyAt != _order.readyAt ||
@@ -1215,14 +1460,14 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
 
   void _callHanout() {
     _callPhone(
-      phone: widget.hanoutPhone,
+      phone: _currentHanoutPhone(),
       fallbackMessage: context.l10n.clientOrderTrackingHanoutPhoneUnavailable,
     );
   }
 
   void _callLivreur() {
     _callPhone(
-      phone: widget.livreurPhone,
+      phone: _currentLivreurPhone(),
       fallbackMessage: context.l10n.clientOrderTrackingDriverPhoneUnavailable,
     );
   }
@@ -1253,7 +1498,15 @@ extension OrderModelExtension on OrderModel {
       id: id,
       clientId: clientId,
       hanoutId: hanoutId,
+      hanoutName: hanoutName,
+      hanoutAddress: hanoutAddress,
+      hanoutPhone: hanoutPhone,
+      businessCategoryId: businessCategoryId,
+      businessCategory: businessCategory,
       livreurId: livreurId,
+      livreurName: livreurName,
+      livreurNameAr: livreurNameAr,
+      livreurPhone: livreurPhone,
       freeTextOrder: freeTextOrder,
       items: items,
       status: status ?? this.status,
@@ -1275,6 +1528,7 @@ extension OrderModelExtension on OrderModel {
       deliveredAt: deliveredAt,
       cancelledAt: cancelledAt ?? this.cancelledAt,
       cancellationReason: cancellationReason,
+      willBeProcessedWhenOpen: willBeProcessedWhenOpen,
     );
   }
 }

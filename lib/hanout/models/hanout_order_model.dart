@@ -54,6 +54,7 @@ class HanoutOrderModel {
     this.livreurId,
     this.items,
     this.deliveryFee,
+    this.freeDeliveryPromoApplied = false,
     this.totalAmount,
     this.clientAddress,
     this.clientAddressFr,
@@ -83,6 +84,7 @@ class HanoutOrderModel {
   final String? livreurId;
   final List<OrderItem>? items;
   final double? deliveryFee;
+  final bool freeDeliveryPromoApplied;
   final double? totalAmount;
   final String? clientAddress;
   final String? clientAddressFr;
@@ -114,6 +116,8 @@ class HanoutOrderModel {
       deliveryFee: json['deliveryFee'] != null
           ? (json['deliveryFee'] as num).toDouble()
           : null,
+      freeDeliveryPromoApplied:
+          json['freeDeliveryPromoApplied'] as bool? ?? false,
       totalAmount: json['totalAmount'] != null
           ? (json['totalAmount'] as num).toDouble()
           : null,

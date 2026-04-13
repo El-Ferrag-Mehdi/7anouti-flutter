@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sevenouti/client/data/api_service.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
@@ -12,6 +12,7 @@ import 'package:sevenouti/hanout/repository/hanout_repositories.dart';
 import 'package:sevenouti/hanout/view/pages/hanout_carnet_details_page.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/utils/localized_formatters.dart';
+import 'package:sevenouti/utils/phone_launcher.dart';
 
 class HanoutCarnetPage extends StatelessWidget {
   const HanoutCarnetPage({super.key});
@@ -67,7 +68,8 @@ class HanoutCarnetView extends StatelessWidget {
                   if (state is HanoutCarnetError) {
                     return ErrorView(
                       message: state.message,
-                      onRetry: () => context.read<HanoutCarnetCubit>().loadAll(),
+                      onRetry: () =>
+                          context.read<HanoutCarnetCubit>().loadAll(),
                     );
                   }
 
@@ -130,8 +132,10 @@ class HanoutCarnetView extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         backgroundColor: AppColors.primary.withOpacity(0.1),
-                        child:
-                            const Icon(Icons.person, color: AppColors.primary),
+                        child: const Icon(
+                          Icons.person,
+                          color: AppColors.primary,
+                        ),
                       ),
                       const SizedBox(width: AppSpacing.md),
                       Expanded(
@@ -143,11 +147,30 @@ class HanoutCarnetView extends StatelessWidget {
                               style: AppTextStyles.bodyLarge,
                             ),
                             const SizedBox(height: AppSpacing.xs),
-                            Text(
-                              client?.phone ?? '-',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    client?.phone ?? '-',
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                                if ((client?.phone ?? '').isNotEmpty)
+                                  IconButton(
+                                    constraints: const BoxConstraints(),
+                                    padding: EdgeInsets.zero,
+                                    visualDensity: VisualDensity.compact,
+                                    onPressed: () =>
+                                        launchPhoneCall(client!.phone),
+                                    icon: const Icon(
+                                      Icons.phone,
+                                      size: 18,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                              ],
                             ),
                           ],
                         ),
@@ -245,11 +268,29 @@ class HanoutCarnetView extends StatelessWidget {
                 style: AppTextStyles.bodyLarge,
               ),
               const SizedBox(height: AppSpacing.xs),
-              Text(
-                client?.phone ?? '-',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      client?.phone ?? '-',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                  if ((client?.phone ?? '').isNotEmpty)
+                    IconButton(
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                      visualDensity: VisualDensity.compact,
+                      onPressed: () => launchPhoneCall(client!.phone),
+                      icon: const Icon(
+                        Icons.phone,
+                        size: 18,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(height: AppSpacing.sm),
               Row(
@@ -258,9 +299,9 @@ class HanoutCarnetView extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: () =>
                           context.read<HanoutCarnetCubit>().rejectRequest(
-                                request.id,
-                                l10n.hanoutCarnetRejectReason,
-                              ),
+                            request.id,
+                            l10n.hanoutCarnetRejectReason,
+                          ),
                       icon: const Icon(Icons.close),
                       label: Text(l10n.hanoutCarnetReject),
                     ),
@@ -270,8 +311,8 @@ class HanoutCarnetView extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () =>
                           context.read<HanoutCarnetCubit>().approveRequest(
-                                request.id,
-                              ),
+                            request.id,
+                          ),
                       icon: const Icon(Icons.check),
                       label: Text(l10n.hanoutCarnetApprove),
                     ),
@@ -395,9 +436,9 @@ class HanoutCarnetView extends StatelessWidget {
 
     if (value != null) {
       await context.read<HanoutCarnetCubit>().updateCreditLimit(
-            carnet.id,
-            value,
-          );
+        carnet.id,
+        value,
+      );
     }
   }
 
@@ -427,7 +468,9 @@ class HanoutCarnetView extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           TextField(
             controller: descController,
-            decoration: InputDecoration(labelText: l10n.hanoutCommonDescription),
+            decoration: InputDecoration(
+              labelText: l10n.hanoutCommonDescription,
+            ),
           ),
           const SizedBox(height: AppSpacing.lg),
           Row(
@@ -442,7 +485,9 @@ class HanoutCarnetView extends StatelessWidget {
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
-                    final amount = double.tryParse(amountController.text.trim());
+                    final amount = double.tryParse(
+                      amountController.text.trim(),
+                    );
                     if (amount == null) {
                       AppSnackBar.show(
                         context,
@@ -467,12 +512,12 @@ class HanoutCarnetView extends StatelessWidget {
 
     if (result != null) {
       await context.read<HanoutCarnetCubit>().recordPayment(
-            carnet.id,
-            result['amount'] as double,
-            description: (result['description'] as String).isEmpty
-                ? null
-                : result['description'] as String,
-          );
+        carnet.id,
+        result['amount'] as double,
+        description: (result['description'] as String).isEmpty
+            ? null
+            : result['description'] as String,
+      );
     }
   }
 

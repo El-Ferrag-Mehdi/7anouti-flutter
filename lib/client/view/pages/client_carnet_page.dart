@@ -348,7 +348,8 @@ class ClientCarnetView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _getHanoutName(carnet.hanoutId),
+                            carnet.hanoutName ??
+                                _getHanoutName(carnet.hanoutId),
                             style: AppTextStyles.bodyLarge.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
@@ -451,15 +452,7 @@ class ClientCarnetView extends StatelessWidget {
 
   // === Helper Methods ===
 
-  String _getHanoutName(String hanoutId) {
-    // TODO: Récupérer le vrai nom depuis une map ou API
-    final names = {
-      'hanout1': 'Hanout Hassan',
-      'hanout2': 'Épicerie Fatima',
-      'hanout3': 'Hanout Al Baraka',
-    };
-    return names[hanoutId] ?? 'Hanout';
-  }
+  String _getHanoutName(String hanoutId) => hanoutId;
 
   String _formatActivationDate(BuildContext context, DateTime? date) {
     final l10n = context.l10n;

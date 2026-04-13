@@ -8,8 +8,8 @@ import 'package:sevenouti/client/repository/repositories.dart';
 class ClientCarnetCubit extends Cubit<ClientCarnetState> {
   ClientCarnetCubit({
     required CarnetRepository carnetRepository,
-  })  : _carnetRepository = carnetRepository,
-        super(const ClientCarnetInitial());
+  }) : _carnetRepository = carnetRepository,
+       super(const ClientCarnetInitial());
 
   final CarnetRepository _carnetRepository;
 
@@ -28,9 +28,11 @@ class ClientCarnetCubit extends Cubit<ClientCarnetState> {
     } on ApiException catch (e) {
       emit(ClientCarnetError(message: e.message));
     } catch (e) {
-      emit(ClientCarnetError(
-        message: e.toString(),
-      ));
+      emit(
+        ClientCarnetError(
+          message: e.toString(),
+        ),
+      );
     }
   }
 
@@ -71,6 +73,8 @@ class ClientCarnetCubit extends Cubit<ClientCarnetState> {
         balance: 120.50, // Dette de 120.50 DH
         isActive: true,
         activatedAt: DateTime.now().subtract(const Duration(days: 60)),
+        hanoutName: 'Hanout Hassan',
+        hanoutPhone: '+212612345678',
         createdAt: DateTime.now().subtract(const Duration(days: 60)),
         updatedAt: DateTime.now().subtract(const Duration(days: 2)),
       ),
@@ -81,6 +85,8 @@ class ClientCarnetCubit extends Cubit<ClientCarnetState> {
         balance: 45.00, // Dette de 45 DH
         isActive: true,
         activatedAt: DateTime.now().subtract(const Duration(days: 30)),
+        hanoutName: 'Epicerie Fatima',
+        hanoutPhone: '+212698765432',
         createdAt: DateTime.now().subtract(const Duration(days: 30)),
         updatedAt: DateTime.now().subtract(const Duration(days: 5)),
       ),
@@ -91,6 +97,8 @@ class ClientCarnetCubit extends Cubit<ClientCarnetState> {
         balance: 0.0, // Pas de dette
         isActive: true,
         activatedAt: DateTime.now().subtract(const Duration(days: 15)),
+        hanoutName: 'Hanout Al Baraka',
+        hanoutPhone: '+212611223344',
         createdAt: DateTime.now().subtract(const Duration(days: 15)),
         updatedAt: DateTime.now().subtract(const Duration(days: 1)),
       ),

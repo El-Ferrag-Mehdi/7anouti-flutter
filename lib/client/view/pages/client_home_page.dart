@@ -9,11 +9,15 @@ import 'package:sevenouti/auth/models/user_role.dart';
 import 'package:sevenouti/client/cubit/client_home_cubit.dart';
 import 'package:sevenouti/client/cubit/client_home_state.dart';
 import 'package:sevenouti/client/data/api_service.dart';
+import 'package:sevenouti/client/models/business_category_model.dart';
+import 'package:sevenouti/client/models/first_delivery_promo_config_model.dart';
+import 'package:sevenouti/client/models/first_delivery_promo_status_model.dart';
 import 'package:sevenouti/client/models/hanout_model.dart';
 import 'package:sevenouti/client/repository/repositories.dart';
 import 'package:sevenouti/client/view/pages/gas_service_tracking_page.dart';
 import 'package:sevenouti/client/view/pages/hanout_details_page.dart';
 import 'package:sevenouti/client/widgets/client_auth_prompt.dart';
+import 'package:sevenouti/client/widgets/first_delivery_promo_banner.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
 import 'package:sevenouti/core/notifications/local_notification_service.dart';
 import 'package:sevenouti/core/widgets/app_background.dart';
@@ -77,6 +81,12 @@ class _ClientHomeViewState extends State<ClientHomeView> {
   final GlobalKey _hanoutsSectionKey = const GlobalObjectKey(
     'client-home-hanouts-section',
   );
+  final PromotionRepository _promotionRepository = PromotionRepository(
+    ApiService(),
+  );
+  String? _selectedBusinessCategoryKey;
+  Future<FirstDeliveryPromoStatusModel?>? _promoStatusFuture;
+  Future<FirstDeliveryPromoConfigModel?>? _publicPromoConfigFuture;
 
   @override
   void didUpdateWidget(covariant ClientHomeView oldWidget) {
@@ -97,6 +107,10 @@ class _ClientHomeViewState extends State<ClientHomeView> {
     final authState = context.watch<AuthCubit>().state;
     final isAuthenticatedClient =
         authState is Authenticated && authState.role == UserRole.client;
+    final promoStatusFuture = _resolvePromoStatusFuture(isAuthenticatedClient);
+    final publicPromoConfigFuture = _resolvePublicPromoConfigFuture(
+      isAuthenticatedClient,
+    );
     return Scaffold(
       body: BlocBuilder<ClientHomeCubit, ClientHomeState>(
         builder: (context, state) {
@@ -117,6 +131,8 @@ class _ClientHomeViewState extends State<ClientHomeView> {
               context,
               state,
               isAuthenticatedClient: isAuthenticatedClient,
+              promoStatusFuture: promoStatusFuture,
+              publicPromoConfigFuture: publicPromoConfigFuture,
             );
           }
 
@@ -126,11 +142,15 @@ class _ClientHomeViewState extends State<ClientHomeView> {
               return _buildLocationPermissionDeniedView(
                 context,
                 isAuthenticatedClient: isAuthenticatedClient,
+                promoStatusFuture: promoStatusFuture,
+                publicPromoConfigFuture: publicPromoConfigFuture,
               );
             }
             return _buildNoHanoutAvailableView(
               context,
               isAuthenticatedClient: isAuthenticatedClient,
+              promoStatusFuture: promoStatusFuture,
+              publicPromoConfigFuture: publicPromoConfigFuture,
             );
           }
 
@@ -139,6 +159,8 @@ class _ClientHomeViewState extends State<ClientHomeView> {
             return _buildLocationPermissionDeniedView(
               context,
               isAuthenticatedClient: isAuthenticatedClient,
+              promoStatusFuture: promoStatusFuture,
+              publicPromoConfigFuture: publicPromoConfigFuture,
             );
           }
 
@@ -166,7 +188,23 @@ class _ClientHomeViewState extends State<ClientHomeView> {
     BuildContext context,
     ClientHomeLoaded state, {
     required bool isAuthenticatedClient,
+    required Future<FirstDeliveryPromoStatusModel?>? promoStatusFuture,
+    required Future<FirstDeliveryPromoConfigModel?>? publicPromoConfigFuture,
   }) {
+    final preferArabic = Localizations.localeOf(context).languageCode == 'ar';
+    final availableCategories = _extractAvailableCategories(state.hanouts);
+    final selectedCategoryKey =
+        availableCategories.any(
+          (category) =>
+              _businessCategoryKey(category) == _selectedBusinessCategoryKey,
+        )
+        ? _selectedBusinessCategoryKey
+        : null;
+    final visibleHanouts = _filterHanoutsByCategory(
+      state.hanouts,
+      selectedCategoryKey,
+    );
+
     return AppBackground(
       child: RefreshIndicator(
         onRefresh: () => context.read<ClientHomeCubit>().refresh(),
@@ -194,6 +232,22 @@ class _ClientHomeViewState extends State<ClientHomeView> {
                 ),
               ),
             ),
+            if (promoStatusFuture != null || publicPromoConfigFuture != null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                    AppSpacing.md,
+                    0,
+                    AppSpacing.md,
+                    AppSpacing.sm,
+                  ),
+                  child: _buildPromoBanner(
+                    promoStatusFuture: promoStatusFuture,
+                    publicPromoConfigFuture: publicPromoConfigFuture,
+                    compact: false,
+                  ),
+                ),
+              ),
             if (state.isUsingFallbackLocation)
               SliverToBoxAdapter(
                 child: Padding(
@@ -225,7 +279,7 @@ class _ClientHomeViewState extends State<ClientHomeView> {
                       subtitle: state.isUsingFallbackLocation
                           ? context.l10n.clientHomeFallbackHanoutsSubtitle
                           : context.l10n.clientHomeHanoutsFound(
-                              state.hanouts.length,
+                              visibleHanouts.length,
                             ),
                       icon: Icons.location_on,
                     ),
@@ -236,17 +290,38 @@ class _ClientHomeViewState extends State<ClientHomeView> {
               ),
             ),
 
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                  AppSpacing.md,
+                  0,
+                  AppSpacing.md,
+                  AppSpacing.sm,
+                ),
+                child: _buildBusinessCategoryFilters(
+                  context,
+                  categories: availableCategories,
+                  hanouts: state.hanouts,
+                  selectedCategoryKey: selectedCategoryKey,
+                ),
+              ),
+            ),
+
             // Liste des hanouts
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    final hanout = state.hanouts[index];
+                    final hanout = visibleHanouts[index];
                     return HanoutCard(
                       name: hanout.name,
                       address: hanout.address,
                       distance: hanout.formattedDistance,
+                      categoryName: hanout.businessCategory?.displayName(
+                        preferArabic: preferArabic,
+                      ),
+                      categoryIcon: hanout.businessCategory?.icon,
                       imageUrl: hanout.image,
                       rating: hanout.rating,
                       isOpen: hanout.isOpen,
@@ -257,7 +332,7 @@ class _ClientHomeViewState extends State<ClientHomeView> {
                           : _navigateToHanoutDetails(context, hanout),
                     );
                   },
-                  childCount: state.hanouts.length,
+                  childCount: visibleHanouts.length,
                 ),
               ),
             ),
@@ -270,6 +345,191 @@ class _ClientHomeViewState extends State<ClientHomeView> {
         ),
       ),
     );
+  }
+
+  Widget _buildBusinessCategoryFilters(
+    BuildContext context, {
+    required List<BusinessCategoryModel> categories,
+    required List<HanoutWithDistance> hanouts,
+    required String? selectedCategoryKey,
+  }) {
+    final preferArabic = Localizations.localeOf(context).languageCode == 'ar';
+    final allCount = hanouts.length;
+
+    return SizedBox(
+      height: 44,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          _buildCategoryChip(
+            label: context.l10n.clientOrdersFilterAll,
+            icon: '🏪',
+            count: allCount,
+            isSelected: selectedCategoryKey == null,
+            onTap: () {
+              setState(() => _selectedBusinessCategoryKey = null);
+            },
+          ),
+          ...categories.map((category) {
+            final count = hanouts
+                .where(
+                  (hanout) =>
+                      _hanoutBusinessCategoryKey(hanout) ==
+                      _businessCategoryKey(category),
+                )
+                .length;
+
+            return _buildCategoryChip(
+              label: category.displayName(preferArabic: preferArabic),
+              icon: category.displayIcon,
+              count: count,
+              isSelected: selectedCategoryKey == _businessCategoryKey(category),
+              onTap: () {
+                setState(
+                  () => _selectedBusinessCategoryKey = _businessCategoryKey(
+                    category,
+                  ),
+                );
+              },
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryChip({
+    required String label,
+    required String icon,
+    required int count,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(end: AppSpacing.sm),
+      child: FilterChip(
+        label: Text('$icon $label ($count)'),
+        selected: isSelected,
+        onSelected: (_) => onTap(),
+        backgroundColor: AppColors.surface,
+        selectedColor: AppColors.primary.withOpacity(0.15),
+        checkmarkColor: AppColors.primary,
+        labelStyle: AppTextStyles.bodySmall.copyWith(
+          color: isSelected ? AppColors.primary : AppColors.textPrimary,
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+        ),
+        side: BorderSide(
+          color: isSelected ? AppColors.primary : AppColors.border,
+          width: isSelected ? 1.5 : 1,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.round),
+      ),
+    );
+  }
+
+  List<BusinessCategoryModel> _extractAvailableCategories(
+    List<HanoutWithDistance> hanouts,
+  ) {
+    final map = <String, BusinessCategoryModel>{
+      for (final category in _defaultBusinessCategories())
+        _businessCategoryKey(category): category,
+    };
+    for (final hanout in hanouts) {
+      final category = hanout.businessCategory;
+      final key = _hanoutBusinessCategoryKey(hanout);
+      if (category == null || key == null) continue;
+      map[key] = category;
+    }
+
+    final categories = map.values.toList();
+    categories.sort((a, b) {
+      final orderComparison = (a.order ?? 0).compareTo(b.order ?? 0);
+      if (orderComparison != 0) return orderComparison;
+      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+    });
+    return categories;
+  }
+
+  List<HanoutWithDistance> _filterHanoutsByCategory(
+    List<HanoutWithDistance> hanouts,
+    String? businessCategoryKey,
+  ) {
+    if (businessCategoryKey == null) return hanouts;
+    return hanouts
+        .where(
+          (hanout) => _hanoutBusinessCategoryKey(hanout) == businessCategoryKey,
+        )
+        .toList();
+  }
+
+  List<BusinessCategoryModel> _defaultBusinessCategories() {
+    return const [
+      BusinessCategoryModel(
+        id: 'default-hanout',
+        name: 'Hanout',
+        nameAr: 'الحانوت',
+        slug: 'hanout',
+        icon: '🛒',
+        order: 1,
+        isDefault: true,
+      ),
+      BusinessCategoryModel(
+        id: 'default-boucherie',
+        name: 'Boucherie',
+        nameAr: 'الجزار',
+        slug: 'boucherie',
+        icon: '🥩',
+        order: 2,
+        isDefault: true,
+      ),
+      BusinessCategoryModel(
+        id: 'default-snack',
+        name: 'Snack',
+        nameAr: 'سناك',
+        slug: 'snack',
+        icon: '🍔',
+        order: 3,
+        isDefault: true,
+      ),
+      BusinessCategoryModel(
+        id: 'default-legumes-et-fruits',
+        name: 'Legumes et fruits',
+        nameAr: 'الخضر والفواكه',
+        slug: 'legumes-et-fruits',
+        icon: '🍎',
+        order: 4,
+        isDefault: true,
+      ),
+      BusinessCategoryModel(
+        id: 'default-patisserie',
+        name: 'Patisserie',
+        nameAr: 'الحلويات',
+        slug: 'patisserie',
+        icon: '🥐',
+        order: 5,
+        isDefault: true,
+      ),
+    ];
+  }
+
+  String _businessCategoryKey(BusinessCategoryModel category) {
+    final slug = category.slug?.trim();
+    if (slug != null && slug.isNotEmpty) {
+      return slug;
+    }
+    return category.id;
+  }
+
+  String? _hanoutBusinessCategoryKey(HanoutWithDistance hanout) {
+    final slug = hanout.businessCategory?.slug?.trim();
+    if (slug != null && slug.isNotEmpty) {
+      return slug;
+    }
+    final businessCategoryId = hanout.businessCategoryId?.trim();
+    if (businessCategoryId != null && businessCategoryId.isNotEmpty) {
+      return businessCategoryId;
+    }
+    return null;
   }
 
   Widget _buildQuickActions(
@@ -331,6 +591,8 @@ class _ClientHomeViewState extends State<ClientHomeView> {
   Widget _buildLocationPermissionDeniedView(
     BuildContext context, {
     required bool isAuthenticatedClient,
+    required Future<FirstDeliveryPromoStatusModel?>? promoStatusFuture,
+    required Future<FirstDeliveryPromoConfigModel?>? publicPromoConfigFuture,
   }) {
     return AppBackground(
       child: RefreshIndicator(
@@ -357,6 +619,22 @@ class _ClientHomeViewState extends State<ClientHomeView> {
                 ),
               ),
             ),
+            if (promoStatusFuture != null || publicPromoConfigFuture != null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                    AppSpacing.md,
+                    0,
+                    AppSpacing.md,
+                    AppSpacing.sm,
+                  ),
+                  child: _buildPromoBanner(
+                    promoStatusFuture: promoStatusFuture,
+                    publicPromoConfigFuture: publicPromoConfigFuture,
+                    compact: true,
+                  ),
+                ),
+              ),
             SliverToBoxAdapter(
               child: Padding(
                 key: _hanoutsSectionKey,
@@ -392,6 +670,8 @@ class _ClientHomeViewState extends State<ClientHomeView> {
   Widget _buildNoHanoutAvailableView(
     BuildContext context, {
     required bool isAuthenticatedClient,
+    required Future<FirstDeliveryPromoStatusModel?>? promoStatusFuture,
+    required Future<FirstDeliveryPromoConfigModel?>? publicPromoConfigFuture,
   }) {
     return AppBackground(
       child: RefreshIndicator(
@@ -418,6 +698,22 @@ class _ClientHomeViewState extends State<ClientHomeView> {
                 ),
               ),
             ),
+            if (promoStatusFuture != null || publicPromoConfigFuture != null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                    AppSpacing.md,
+                    0,
+                    AppSpacing.md,
+                    AppSpacing.sm,
+                  ),
+                  child: _buildPromoBanner(
+                    promoStatusFuture: promoStatusFuture,
+                    publicPromoConfigFuture: publicPromoConfigFuture,
+                    compact: true,
+                  ),
+                ),
+              ),
             SliverToBoxAdapter(
               child: Padding(
                 key: _hanoutsSectionKey,
@@ -436,6 +732,13 @@ class _ClientHomeViewState extends State<ClientHomeView> {
                       icon: Icons.location_on,
                     ),
                     const SizedBox(height: AppSpacing.md),
+                    _buildBusinessCategoryFilters(
+                      context,
+                      categories: _extractAvailableCategories(const []),
+                      hanouts: const [],
+                      selectedCategoryKey: _selectedBusinessCategoryKey,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
                     _buildNoHanoutCard(context),
                   ],
                 ),
@@ -448,6 +751,78 @@ class _ClientHomeViewState extends State<ClientHomeView> {
         ),
       ),
     );
+  }
+
+  Future<FirstDeliveryPromoStatusModel?>? _resolvePromoStatusFuture(
+    bool isAuthenticatedClient,
+  ) {
+    if (!isAuthenticatedClient) {
+      _promoStatusFuture = null;
+      return null;
+    }
+
+    _promoStatusFuture ??= _promotionRepository
+        .getFirstDeliveryPromoStatus()
+        .then<FirstDeliveryPromoStatusModel?>((value) => value)
+        .onError((_, __) => null);
+    return _promoStatusFuture;
+  }
+
+  Future<FirstDeliveryPromoConfigModel?>? _resolvePublicPromoConfigFuture(
+    bool isAuthenticatedClient,
+  ) {
+    if (isAuthenticatedClient) {
+      _publicPromoConfigFuture = null;
+      return null;
+    }
+
+    _publicPromoConfigFuture ??= _promotionRepository
+        .getFirstDeliveryPromoPublicConfig()
+        .then<FirstDeliveryPromoConfigModel?>((value) => value)
+        .onError((_, __) => null);
+    return _publicPromoConfigFuture;
+  }
+
+  Widget _buildPromoBanner({
+    Future<FirstDeliveryPromoStatusModel?>? promoStatusFuture,
+    Future<FirstDeliveryPromoConfigModel?>? publicPromoConfigFuture,
+    required bool compact,
+  }) {
+    if (promoStatusFuture != null) {
+      return FutureBuilder<FirstDeliveryPromoStatusModel?>(
+        future: promoStatusFuture,
+        builder: (context, snapshot) {
+          final status = snapshot.data;
+          if (status == null || !status.canShowMarketingBanner) {
+            return const SizedBox.shrink();
+          }
+
+          return FirstDeliveryPromoBanner(
+            status: status,
+            compact: compact,
+          );
+        },
+      );
+    }
+
+    if (publicPromoConfigFuture != null) {
+      return FutureBuilder<FirstDeliveryPromoConfigModel?>(
+        future: publicPromoConfigFuture,
+        builder: (context, snapshot) {
+          final config = snapshot.data;
+          if (config == null || !config.firstDeliveryFreeEnabled) {
+            return const SizedBox.shrink();
+          }
+
+          return FirstDeliveryPromoBanner(
+            config: config,
+            compact: compact,
+          );
+        },
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 
   Widget _buildNoHanoutCard(BuildContext context) {

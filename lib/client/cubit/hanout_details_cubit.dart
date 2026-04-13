@@ -11,6 +11,7 @@ class HanoutDetailsCubit extends Cubit<HanoutDetailsState> {
     required HanoutRepository hanoutRepository,
     required OrderRepository orderRepository,
     required CarnetRepository carnetRepository,
+    this.initialFreeTextOrder,
   }) : _hanout = hanout,
        _hanoutRepository = hanoutRepository,
        _orderRepository = orderRepository,
@@ -21,6 +22,7 @@ class HanoutDetailsCubit extends Cubit<HanoutDetailsState> {
   final HanoutRepository _hanoutRepository;
   final OrderRepository _orderRepository;
   final CarnetRepository _carnetRepository;
+  final String? initialFreeTextOrder;
 
   /// Initialise la page
   Future<void> initialize() async {
@@ -64,7 +66,7 @@ class HanoutDetailsCubit extends Cubit<HanoutDetailsState> {
       emit(
         HanoutDetailsLoaded(
           hanout: _hanout,
-          freeTextOrder: '',
+          freeTextOrder: initialFreeTextOrder?.trim() ?? '',
           deliveryType: DeliveryType.delivery, // Par défaut: livraison
           paymentMethod: PaymentMethod.cash, // Par défaut: espèces
           products: products,
@@ -97,6 +99,12 @@ class HanoutDetailsCubit extends Cubit<HanoutDetailsState> {
   void changeDeliveryType(DeliveryType type) {
     final currentState = state;
     if (currentState is HanoutDetailsLoaded) {
+      if (currentState.hanout.sendOrdersDirectToLivreur &&
+          type == DeliveryType.pickup) {
+        emit(currentState.copyWith(deliveryType: DeliveryType.delivery));
+        return;
+      }
+
       emit(currentState.copyWith(deliveryType: type));
     }
   }

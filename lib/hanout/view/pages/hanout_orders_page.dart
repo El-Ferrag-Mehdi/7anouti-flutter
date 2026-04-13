@@ -5,6 +5,7 @@ import 'package:sevenouti/client/models/order_model.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
 import 'package:sevenouti/core/widgets/app_background.dart';
 import 'package:sevenouti/core/widgets/app_widgets.dart';
+import 'package:sevenouti/core/widgets/free_delivery_promo_badge.dart';
 import 'package:sevenouti/core/widgets/modern_sheet.dart';
 import 'package:sevenouti/hanout/cubbit/hanout_orders_cubit.dart';
 import 'package:sevenouti/hanout/cubbit/hanout_orders_state.dart';
@@ -14,6 +15,7 @@ import 'package:sevenouti/hanout/repository/hanout_repositories.dart';
 import 'package:sevenouti/hanout/view/pages/hanout_order_details_page.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/utils/localized_formatters.dart';
+import 'package:sevenouti/utils/phone_launcher.dart';
 
 class HanoutOrdersPage extends StatelessWidget {
   const HanoutOrdersPage({super.key});
@@ -321,11 +323,28 @@ class HanoutOrdersView extends StatelessWidget {
                 ),
                 if ((order.client?.phone ?? '').isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    order.client!.phone,
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          order.client!.phone,
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.zero,
+                        visualDensity: VisualDensity.compact,
+                        onPressed: () => launchPhoneCall(order.client!.phone),
+                        icon: const Icon(
+                          Icons.phone,
+                          size: 18,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
                 const SizedBox(height: AppSpacing.xs),
@@ -335,6 +354,10 @@ class HanoutOrdersView extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
+                if (order.freeDeliveryPromoApplied) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  const FreeDeliveryPromoBadge(compact: true),
+                ],
                 const SizedBox(height: AppSpacing.sm),
                 const Divider(),
                 const SizedBox(height: AppSpacing.sm),

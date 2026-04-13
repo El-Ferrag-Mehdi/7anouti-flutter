@@ -1,6 +1,5 @@
 /// Model représentant le carnet (crédit) entre un client et un hanout
 class CarnetModel {
-
   const CarnetModel({
     required this.id,
     required this.clientId,
@@ -10,7 +9,9 @@ class CarnetModel {
     required this.createdAt,
     required this.updatedAt,
     this.activatedAt,
-    
+    this.hanoutName,
+    this.hanoutAddress,
+    this.hanoutPhone,
   });
   final String id;
   final String clientId;
@@ -18,6 +19,9 @@ class CarnetModel {
   final double balance; // Solde actuel (positif = dette, négatif = crédit)
   final bool isActive; // Si le carnet est activé
   final DateTime? activatedAt;
+  final String? hanoutName;
+  final String? hanoutAddress;
+  final String? hanoutPhone;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -31,6 +35,11 @@ class CarnetModel {
       activatedAt: json['activatedAt'] != null
           ? DateTime.parse(json['activatedAt'] as String)
           : null,
+      hanoutName: (json['hanout'] as Map<String, dynamic>?)?['name'] as String?,
+      hanoutAddress:
+          (json['hanout'] as Map<String, dynamic>?)?['address'] as String?,
+      hanoutPhone:
+          (json['hanout'] as Map<String, dynamic>?)?['phone'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
@@ -44,6 +53,11 @@ class CarnetModel {
       'balance': balance,
       'isActive': isActive,
       'activatedAt': activatedAt?.toIso8601String(),
+      'hanout': {
+        'name': hanoutName,
+        'address': hanoutAddress,
+        'phone': hanoutPhone,
+      },
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -186,7 +200,6 @@ class CarnetRequestModel {
           : null,
     );
   }
-  
 
   Map<String, dynamic> toJson() {
     return {

@@ -5,6 +5,7 @@ import 'package:sevenouti/client/models/order_model.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
 import 'package:sevenouti/core/widgets/app_background.dart';
 import 'package:sevenouti/core/widgets/app_widgets.dart';
+import 'package:sevenouti/core/widgets/free_delivery_promo_badge.dart';
 import 'package:sevenouti/hanout/cubbit/hanout_orders_cubit.dart';
 import 'package:sevenouti/hanout/cubbit/hanout_orders_state.dart';
 import 'package:sevenouti/hanout/l10n/hanout_l10n.dart';
@@ -320,6 +321,10 @@ class HanoutHistoryView extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
+            if (order.freeDeliveryPromoApplied) ...[
+              const SizedBox(height: AppSpacing.sm),
+              const FreeDeliveryPromoBadge(compact: true),
+            ],
             const SizedBox(height: AppSpacing.sm),
             const Divider(),
             const SizedBox(height: AppSpacing.sm),

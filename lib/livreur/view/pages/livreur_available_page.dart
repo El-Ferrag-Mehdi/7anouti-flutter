@@ -4,6 +4,7 @@ import 'package:sevenouti/client/data/api_service.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
 import 'package:sevenouti/core/widgets/app_background.dart';
 import 'package:sevenouti/core/widgets/app_widgets.dart';
+import 'package:sevenouti/core/widgets/free_delivery_promo_badge.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/livreur/cubbit/livreur_available_cubit.dart';
 import 'package:sevenouti/livreur/cubbit/livreur_available_state.dart';
@@ -272,6 +273,10 @@ class LivreurAvailableView extends StatelessWidget {
               ),
             ],
           ),
+          if (order?.freeDeliveryPromoApplied ?? false) ...[
+            const SizedBox(height: AppSpacing.sm),
+            const FreeDeliveryPromoBadge(compact: true),
+          ],
           const SizedBox(height: AppSpacing.xs),
           Text(
             isDirect

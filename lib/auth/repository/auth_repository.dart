@@ -35,11 +35,12 @@ class AuthRepository {
       email: email,
       password: password,
     );
+    final user = data['user'] as Map<String, dynamic>?;
 
     final token = data['token'] as String?;
     final refreshToken = data['refreshToken'] as String?;
-    final role = data['user']?['role'] as String?;
-    final userId = data['user']?['id'] as String?;
+    final role = user?['role'] as String?;
+    final userId = user?['id'] as String?;
 
     if (token == null || role == null) {
       throw Exception('Login response is missing token or role');
@@ -62,8 +63,8 @@ class AuthRepository {
     required String email,
     required String password,
     required String nameFr,
-    String? nameAr,
     required String phone,
+    String? nameAr,
   }) async {
     final data = await _api.register(
       email: email,

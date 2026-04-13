@@ -15,6 +15,7 @@ import 'package:sevenouti/hanout/repository/hanout_repositories.dart';
 import 'package:sevenouti/hanout/view/pages/hanout_order_details_page.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/utils/localized_formatters.dart';
+import 'package:sevenouti/utils/phone_launcher.dart';
 
 class HanoutCarnetDetailsPage extends StatelessWidget {
   const HanoutCarnetDetailsPage({
@@ -139,11 +140,22 @@ class HanoutCarnetDetailsView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
-            Text(
-              client?.phone ?? '-',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: Colors.white.withOpacity(0.85),
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    client?.phone ?? '-',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: Colors.white.withOpacity(0.85),
+                    ),
+                  ),
+                ),
+                if ((client?.phone ?? '').isNotEmpty)
+                  IconButton(
+                    onPressed: () => launchPhoneCall(client!.phone),
+                    icon: const Icon(Icons.phone, color: Colors.white),
+                  ),
+              ],
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
@@ -854,4 +866,3 @@ class HanoutCarnetDetailsView extends StatelessWidget {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 }
-

@@ -1,3 +1,5 @@
+import 'package:sevenouti/client/models/business_category_model.dart';
+
 class AdminHanoutModel {
   const AdminHanoutModel({
     required this.id,
@@ -8,6 +10,8 @@ class AdminHanoutModel {
     required this.isOpen,
     required this.showRating,
     this.rating,
+    this.businessCategoryId,
+    this.businessCategory,
     this.ownerId,
     this.ownerName,
     this.ownerPhone,
@@ -22,6 +26,8 @@ class AdminHanoutModel {
   final bool isOpen;
   final bool showRating;
   final double? rating;
+  final String? businessCategoryId;
+  final BusinessCategoryModel? businessCategory;
   final String? ownerId;
   final String? ownerName;
   final String? ownerPhone;
@@ -42,6 +48,12 @@ class AdminHanoutModel {
       rating: json['rating'] == null
           ? null
           : (json['rating'] as num).toDouble(),
+      businessCategoryId: json['businessCategoryId'] as String?,
+      businessCategory: json['businessCategory'] != null
+          ? BusinessCategoryModel.fromJson(
+              json['businessCategory'] as Map<String, dynamic>,
+            )
+          : null,
       ownerId: owner?['id'] as String?,
       ownerName: owner?['name'] as String?,
       ownerPhone: owner?['phone'] as String?,
@@ -53,6 +65,8 @@ class AdminHanoutModel {
     bool? showRating,
     double? rating,
     double? deliveryFee,
+    String? businessCategoryId,
+    BusinessCategoryModel? businessCategory,
   }) {
     return AdminHanoutModel(
       id: id,
@@ -63,6 +77,8 @@ class AdminHanoutModel {
       isOpen: isOpen,
       showRating: showRating ?? this.showRating,
       rating: rating ?? this.rating,
+      businessCategoryId: businessCategoryId ?? this.businessCategoryId,
+      businessCategory: businessCategory ?? this.businessCategory,
       ownerId: ownerId,
       ownerName: ownerName,
       ownerPhone: ownerPhone,

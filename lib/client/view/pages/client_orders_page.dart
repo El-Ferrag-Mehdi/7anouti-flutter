@@ -7,6 +7,7 @@ import 'package:sevenouti/client/l10n/client_l10n.dart';
 import 'package:sevenouti/client/models/models.dart';
 import 'package:sevenouti/client/repository/repositories.dart';
 import 'package:sevenouti/client/view/pages/gas_service_tracking_page.dart';
+import 'package:sevenouti/client/view/pages/hanout_details_page.dart';
 import 'package:sevenouti/client/view/pages/order_tracking_page.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
 import 'package:sevenouti/core/widgets/app_background.dart';
@@ -17,7 +18,12 @@ import 'package:sevenouti/utils/localized_formatters.dart';
 
 /// Page d'historique des commandes du client
 class ClientOrdersPage extends StatelessWidget {
-  const ClientOrdersPage({super.key});
+  const ClientOrdersPage({
+    this.onSeeHanouts,
+    super.key,
+  });
+
+  final VoidCallback? onSeeHanouts;
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +32,18 @@ class ClientOrdersPage extends StatelessWidget {
         orderRepository: OrderRepository(ApiService()),
         gasServiceRepository: GasServiceRepository(ApiService()),
       )..loadOrders(), // Mode MOCK
-      child: const ClientOrdersView(),
+      child: ClientOrdersView(onSeeHanouts: onSeeHanouts),
     );
   }
 }
 
 class ClientOrdersView extends StatelessWidget {
-  const ClientOrdersView({super.key});
+  const ClientOrdersView({
+    this.onSeeHanouts,
+    super.key,
+  });
+
+  final VoidCallback? onSeeHanouts;
 
   @override
   Widget build(BuildContext context) {
@@ -53,9 +64,7 @@ class ClientOrdersView extends StatelessWidget {
               child: EmptyView(
                 message: l10n.clientOrdersEmptyMessage,
                 icon: Icons.shopping_bag_outlined,
-                action: () {
-                  // TODO: Navigate to home
-                },
+                action: onSeeHanouts,
                 actionLabel: l10n.clientOrdersSeeHanouts,
               ),
             );
@@ -246,6 +255,7 @@ class ClientOrdersView extends StatelessWidget {
 
   /// Card d'une commande
   Widget _buildOrderCard(BuildContext context, OrderModel order) {
+    final preferArabic = Localizations.localeOf(context).languageCode == 'ar';
     final statusColor = _getStatusColor(order.status);
 
     return Container(
@@ -308,6 +318,46 @@ class ClientOrdersView extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
+
+                if (order.hanoutName != null ||
+                    order.businessCategory != null) ...[
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.xs,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      if (order.businessCategory != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.08),
+                            borderRadius: AppRadius.round,
+                            border: Border.all(
+                              color: AppColors.primary.withOpacity(0.2),
+                            ),
+                          ),
+                          child: Text(
+                            '${order.businessCategory!.displayIcon} ${order.businessCategory!.displayName(preferArabic: preferArabic)}',
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      if (order.hanoutName != null)
+                        Text(
+                          order.hanoutName!,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                ],
 
                 // Contenu de la commande
                 Text(
@@ -632,7 +682,11 @@ class ClientOrdersView extends StatelessWidget {
   void _navigateToTracking(BuildContext context, OrderModel order) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => OrderTrackingPage(order: order),
+        builder: (_) => OrderTrackingPage(
+          order: order,
+          hanoutPhone: order.hanoutPhone,
+          livreurPhone: order.livreurPhone,
+        ),
       ),
     );
   }
@@ -648,13 +702,29 @@ class ClientOrdersView extends StatelessWidget {
     );
   }
 
-  void _reorder(BuildContext context, OrderModel order) {
-    // TODO: Navigate to hanout details with pre-filled order
-    AppSnackBar.show(
-      context,
-      message: context.l10n.clientOrdersReorderSoon(order.freeTextOrder),
-      type: SnackBarType.info,
-    );
+  Future<void> _reorder(BuildContext context, OrderModel order) async {
+    final repository = HanoutRepository(ApiService());
+
+    try {
+      final hanout = await repository.getHanoutById(order.hanoutId);
+      if (!context.mounted) return;
+
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => HanoutDetailsPage(
+            hanout: HanoutWithDistance.fromHanout(hanout, 0),
+            initialFreeTextOrder: order.freeTextOrder,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      AppSnackBar.show(
+        context,
+        message: context.l10n.clientCommonErrorWithMessage(e.toString()),
+        type: SnackBarType.error,
+      );
+    }
   }
 
   void _rateOrder(BuildContext context, OrderModel order) {

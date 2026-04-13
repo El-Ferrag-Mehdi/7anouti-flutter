@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sevenouti/client/cubit/carnet_transactions_cubit.dart';
 import 'package:sevenouti/client/cubit/carnet_transactions_state.dart';
@@ -12,6 +12,7 @@ import 'package:sevenouti/core/widgets/buttons.dart' hide TextButton;
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/utils/localized_formatters.dart';
 import 'package:sevenouti/utils/date_utils.dart' as app_date;
+import 'package:sevenouti/utils/phone_launcher.dart';
 
 /// Page de dÃ©tails d'un carnet avec historique des transactions
 class CarnetDetailsPage extends StatelessWidget {
@@ -75,37 +76,38 @@ class CarnetDetailsView extends StatelessWidget {
 
           // Liste des transactions
           Expanded(
-            child: BlocBuilder<CarnetTransactionsCubit, CarnetTransactionsState>(
-              builder: (context, state) {
-                if (state is CarnetTransactionsLoading) {
-                  return LoadingView(
-                    message: l10n.clientCarnetTransactionsLoading,
-                  );
-                }
+            child:
+                BlocBuilder<CarnetTransactionsCubit, CarnetTransactionsState>(
+                  builder: (context, state) {
+                    if (state is CarnetTransactionsLoading) {
+                      return LoadingView(
+                        message: l10n.clientCarnetTransactionsLoading,
+                      );
+                    }
 
-                if (state is CarnetTransactionsEmpty) {
-                  return EmptyView(
-                    message: l10n.clientCarnetNoTransactions,
-                    icon: Icons.receipt_long_outlined,
-                  );
-                }
+                    if (state is CarnetTransactionsEmpty) {
+                      return EmptyView(
+                        message: l10n.clientCarnetNoTransactions,
+                        icon: Icons.receipt_long_outlined,
+                      );
+                    }
 
-                if (state is CarnetTransactionsError) {
-                  return ErrorView(
-                    message: state.message,
-                    onRetry: () => context
-                        .read<CarnetTransactionsCubit>()
-                        .loadTransactions(carnet),
-                  );
-                }
+                    if (state is CarnetTransactionsError) {
+                      return ErrorView(
+                        message: state.message,
+                        onRetry: () => context
+                            .read<CarnetTransactionsCubit>()
+                            .loadTransactions(carnet),
+                      );
+                    }
 
-                if (state is CarnetTransactionsLoaded) {
-                  return _buildTransactionsList(context, state);
-                }
+                    if (state is CarnetTransactionsLoaded) {
+                      return _buildTransactionsList(context, state);
+                    }
 
-                return const SizedBox.shrink();
-              },
-            ),
+                    return const SizedBox.shrink();
+                  },
+                ),
           ),
 
           // Bouton de paiement (si dette)
@@ -144,7 +146,7 @@ class CarnetDetailsView extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.sm),
               Text(
-                _getHanoutName(carnet.hanoutId),
+                carnet.hanoutName ?? _getHanoutName(carnet.hanoutId),
                 style: AppTextStyles.h3.copyWith(
                   color: hasDebt ? AppColors.error : AppColors.success,
                 ),
@@ -228,7 +230,8 @@ class CarnetDetailsView extends StatelessWidget {
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 final transaction = state.transactions[index];
-                final showDate = index == 0 ||
+                final showDate =
+                    index == 0 ||
                     !_isSameDay(
                       transaction.createdAt,
                       state.transactions[index - 1].createdAt,
@@ -265,7 +268,7 @@ class CarnetDetailsView extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-          child: _buildStatCard(
+            child: _buildStatCard(
               context: context,
               icon: Icons.shopping_cart,
               label: context.l10n.clientCarnetCreditPurchases,
@@ -275,7 +278,7 @@ class CarnetDetailsView extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
-          child: _buildStatCard(
+            child: _buildStatCard(
               context: context,
               icon: Icons.payments,
               label: context.l10n.clientCarnetPayments,
@@ -443,14 +446,7 @@ class CarnetDetailsView extends StatelessWidget {
 
   // === Helper Methods ===
 
-  String _getHanoutName(String hanoutId) {
-    final names = {
-      'hanout1': 'Hanout Hassan',
-      'hanout2': 'Ã‰picerie Fatima',
-      'hanout3': 'Hanout Al Baraka',
-    };
-    return names[hanoutId] ?? 'Hanout';
-  }
+  String _getHanoutName(String hanoutId) => hanoutId;
 
   bool _isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
@@ -464,12 +460,16 @@ class CarnetDetailsView extends StatelessWidget {
     }
   }
 
-  void _contactHanout(BuildContext context) {
-    // TODO: Lancer l'appel tÃ©lÃ©phonique
+  Future<void> _contactHanout(BuildContext context) async {
+    final ok = await launchPhoneCall(carnet.hanoutPhone);
+    if (!context.mounted) return;
+
     AppSnackBar.show(
       context,
-      message: context.l10n.clientCarnetCallingHanout,
-      type: SnackBarType.info,
+      message: ok
+          ? context.l10n.clientCarnetCallingHanout
+          : context.l10n.clientCommonError,
+      type: ok ? SnackBarType.info : SnackBarType.error,
     );
   }
 
@@ -538,5 +538,3 @@ class CarnetDetailsView extends StatelessWidget {
     );
   }
 }
-
-

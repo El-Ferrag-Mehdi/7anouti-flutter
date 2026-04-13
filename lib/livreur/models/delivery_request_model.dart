@@ -47,6 +47,7 @@ class LivreurDeliveryOrderInfo {
     this.processingMode = OrderProcessingMode.hanout,
     required this.deliveryType,
     this.paymentMethod = PaymentMethod.cash,
+    this.freeDeliveryPromoApplied = false,
     this.clientAddress,
     this.clientAddressFr,
     this.clientAddressAr,
@@ -63,6 +64,7 @@ class LivreurDeliveryOrderInfo {
   final OrderProcessingMode processingMode;
   final DeliveryType deliveryType;
   final PaymentMethod paymentMethod;
+  final bool freeDeliveryPromoApplied;
   final String? clientAddress;
   final String? clientAddressFr;
   final String? clientAddressAr;
@@ -84,6 +86,8 @@ class LivreurDeliveryOrderInfo {
       paymentMethod: PaymentMethod.fromString(
         json['paymentMethod'] as String? ?? 'CASH',
       ),
+      freeDeliveryPromoApplied:
+          json['freeDeliveryPromoApplied'] as bool? ?? false,
       clientAddress: json['clientAddress'] as String?,
       clientAddressFr: json['clientAddressFr'] as String?,
       clientAddressAr: json['clientAddressAr'] as String?,

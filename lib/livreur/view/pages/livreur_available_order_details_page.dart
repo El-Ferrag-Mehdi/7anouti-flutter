@@ -5,6 +5,7 @@ import 'package:sevenouti/client/l10n/client_l10n.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
 import 'package:sevenouti/core/widgets/app_background.dart';
 import 'package:sevenouti/core/widgets/app_widgets.dart';
+import 'package:sevenouti/core/widgets/free_delivery_promo_badge.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/livreur/cubbit/livreur_available_cubit.dart';
 import 'package:sevenouti/livreur/l10n/livreur_l10n.dart';
@@ -59,6 +60,10 @@ class _LivreurAvailableOrderDetailsPageState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeader(context, isDirect),
+              if (order?.freeDeliveryPromoApplied ?? false) ...[
+                const SizedBox(height: AppSpacing.md),
+                const FreeDeliveryPromoBadge(),
+              ],
               const SizedBox(height: AppSpacing.md),
               _buildSection(
                 title: l10n.hanoutOrderDetailsClientSection,

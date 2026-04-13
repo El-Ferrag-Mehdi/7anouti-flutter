@@ -1,6 +1,10 @@
+export 'business_category_model.dart';
 export 'carnet_model.dart';
+export 'first_delivery_promo_config_model.dart';
+export 'first_delivery_promo_status_model.dart';
 export 'gas_service_order.dart';
 export 'hanout_model.dart';
+export 'join_application_model.dart';
 export 'order_model.dart';
 export 'product_model.dart';
 export 'review_model.dart';

@@ -12,6 +12,7 @@ import 'package:sevenouti/client/models/models.dart' hide UserRole;
 import 'package:sevenouti/client/repository/repositories.dart';
 import 'package:sevenouti/client/view/pages/order_tracking_page.dart';
 import 'package:sevenouti/client/widgets/client_auth_prompt.dart';
+import 'package:sevenouti/client/widgets/first_delivery_promo_banner.dart';
 import 'package:sevenouti/client/widgets/order_confirmation_sheet.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
 import 'package:sevenouti/core/notifications/local_notification_service.dart';
@@ -20,6 +21,7 @@ import 'package:sevenouti/core/widgets/app_widgets.dart';
 import 'package:sevenouti/core/widgets/modern_sheet.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/utils/localized_formatters.dart';
+import 'package:sevenouti/utils/phone_launcher.dart';
 import 'package:sevenouti/core/widgets/buttons.dart'
     hide IconButton, TextButton;
 
@@ -27,10 +29,12 @@ import 'package:sevenouti/core/widgets/buttons.dart'
 class HanoutDetailsPage extends StatelessWidget {
   const HanoutDetailsPage({
     required this.hanout,
+    this.initialFreeTextOrder,
     super.key,
   });
 
   final HanoutWithDistance hanout;
+  final String? initialFreeTextOrder;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +44,7 @@ class HanoutDetailsPage extends StatelessWidget {
         hanoutRepository: HanoutRepository(ApiService()),
         orderRepository: OrderRepository(ApiService()),
         carnetRepository: CarnetRepository(ApiService()),
+        initialFreeTextOrder: initialFreeTextOrder,
       )..initialize(), // Mode MOCK pour l'instant
       child: const HanoutDetailsView(),
     );
@@ -47,19 +52,45 @@ class HanoutDetailsPage extends StatelessWidget {
 }
 
 /// Vue de la page (sÃƒÆ’Ã‚Â©parÃƒÆ’Ã‚Â©e pour les tests)
-class HanoutDetailsView extends StatelessWidget {
+class HanoutDetailsView extends StatefulWidget {
   const HanoutDetailsView({super.key});
+
+  @override
+  State<HanoutDetailsView> createState() => _HanoutDetailsViewState();
+}
+
+class _HanoutDetailsViewState extends State<HanoutDetailsView> {
+  final PromotionRepository _promotionRepository = PromotionRepository(
+    ApiService(),
+  );
+  final TextEditingController _orderController = TextEditingController();
+  Future<FirstDeliveryPromoStatusModel?>? _promoStatusFuture;
+
+  @override
+  void dispose() {
+    _orderController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthCubit>().state;
     final isAuthenticatedClient =
         authState is Authenticated && authState.role == UserRole.client;
+    final promoStatusFuture = _resolvePromoStatusFuture(isAuthenticatedClient);
 
     return BlocConsumer<HanoutDetailsCubit, HanoutDetailsState>(
       listener: (context, state) {
+        if (state is HanoutDetailsLoaded) {
+          _syncOrderController(state.freeTextOrder);
+        }
+
         // Gere les erreurs
         if (state is HanoutDetailsError) {
+          final previousLoadedState = state.previousState;
+          if (previousLoadedState is HanoutDetailsLoaded) {
+            _syncOrderController(previousLoadedState.freeTextOrder);
+          }
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
           AppSnackBar.show(
             context,
@@ -130,6 +161,7 @@ class HanoutDetailsView extends StatelessWidget {
             context,
             state,
             isAuthenticatedClient: isAuthenticatedClient,
+            promoStatusFuture: promoStatusFuture,
           );
         }
 
@@ -140,6 +172,7 @@ class HanoutDetailsView extends StatelessWidget {
             context,
             state.previousState! as HanoutDetailsLoaded,
             isAuthenticatedClient: isAuthenticatedClient,
+            promoStatusFuture: promoStatusFuture,
           );
         }
 
@@ -156,6 +189,7 @@ class HanoutDetailsView extends StatelessWidget {
     BuildContext context,
     HanoutDetailsLoaded state, {
     required bool isAuthenticatedClient,
+    required Future<FirstDeliveryPromoStatusModel?>? promoStatusFuture,
   }) {
     return Scaffold(
       appBar: AppBar(
@@ -185,6 +219,13 @@ class HanoutDetailsView extends StatelessWidget {
                       _buildGuestOrderBanner(context),
                       const SizedBox(height: AppSpacing.lg),
                     ],
+                    if (promoStatusFuture != null) ...[
+                      _buildPromoBanner(
+                        promoStatusFuture,
+                        compact: true,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                    ],
 
                     // Info carnet
                     if (state.hanout.hasCarnet)
@@ -201,7 +242,11 @@ class HanoutDetailsView extends StatelessWidget {
                     const SizedBox(height: AppSpacing.lg),
 
                     // Options de livraison
-                    _buildDeliveryOptions(context, state),
+                    _buildDeliveryOptions(
+                      context,
+                      state,
+                      promoStatusFuture: promoStatusFuture,
+                    ),
                     const SizedBox(height: AppSpacing.lg),
 
                     // Options de paiement
@@ -230,6 +275,7 @@ class HanoutDetailsView extends StatelessWidget {
 
   /// Header avec infos du hanout
   Widget _buildHanoutHeader(BuildContext context, HanoutWithDistance hanout) {
+    final preferArabic = Localizations.localeOf(context).languageCode == 'ar';
     final hasImage = hanout.image != null && hanout.image!.trim().isNotEmpty;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -288,6 +334,29 @@ class HanoutDetailsView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(hanout.name, style: AppTextStyles.h4),
+                if (hanout.businessCategory != null) ...[
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.08),
+                      borderRadius: AppRadius.round,
+                      border: Border.all(
+                        color: AppColors.primary.withOpacity(0.2),
+                      ),
+                    ),
+                    child: Text(
+                      '${hanout.businessCategory!.displayIcon} ${hanout.businessCategory!.displayName(preferArabic: preferArabic)}',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 4),
                 if (hanout.formattedDistance.isNotEmpty)
                   Row(
@@ -534,6 +603,7 @@ class HanoutDetailsView extends StatelessWidget {
             boxShadow: AppShadows.card,
           ),
           child: TextField(
+            controller: _orderController,
             maxLines: 6,
             maxLength: AppConstants.maxOrderTextLength,
             decoration: InputDecoration(
@@ -565,8 +635,11 @@ class HanoutDetailsView extends StatelessWidget {
   /// Options de livraison
   Widget _buildDeliveryOptions(
     BuildContext context,
-    HanoutDetailsLoaded state,
-  ) {
+    HanoutDetailsLoaded state, {
+    required Future<FirstDeliveryPromoStatusModel?>? promoStatusFuture,
+  }) {
+    final canUsePickup = !state.hanout.sendOrdersDirectToLivreur;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -576,12 +649,11 @@ class HanoutDetailsView extends StatelessWidget {
         // Livraison
         _buildOptionTile(
           title: context.l10n.clientDeliveryDelivery,
-          subtitle: context.l10n.clientHanoutDeliveryFee(
-            formatDh(
-              context,
-              state.hanout.deliveryFee ?? AppConstants.defaultDeliveryFee,
-              decimals: 0,
-            ),
+          subtitle: _buildDeliveryOptionSubtitle(
+            context,
+            deliveryFee:
+                state.hanout.deliveryFee ?? AppConstants.defaultDeliveryFee,
+            promoStatusFuture: promoStatusFuture,
           ),
           icon: Icons.delivery_dining,
           isSelected: state.deliveryType == DeliveryType.delivery,
@@ -591,20 +663,27 @@ class HanoutDetailsView extends StatelessWidget {
             );
           },
         ),
-        const SizedBox(height: AppSpacing.sm),
+        if (canUsePickup) ...[
+          const SizedBox(height: AppSpacing.sm),
 
-        // Collecte
-        _buildOptionTile(
-          title: context.l10n.clientDeliveryPickup,
-          subtitle: context.l10n.clientHanoutPickupFree,
-          icon: Icons.shopping_bag,
-          isSelected: state.deliveryType == DeliveryType.pickup,
-          onTap: () {
-            context.read<HanoutDetailsCubit>().changeDeliveryType(
-              DeliveryType.pickup,
-            );
-          },
-        ),
+          // Collecte
+          _buildOptionTile(
+            title: context.l10n.clientDeliveryPickup,
+            subtitle: Text(
+              context.l10n.clientHanoutPickupFree,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            icon: Icons.shopping_bag,
+            isSelected: state.deliveryType == DeliveryType.pickup,
+            onTap: () {
+              context.read<HanoutDetailsCubit>().changeDeliveryType(
+                DeliveryType.pickup,
+              );
+            },
+          ),
+        ],
       ],
     );
   }
@@ -624,7 +703,7 @@ class HanoutDetailsView extends StatelessWidget {
         // EspÃƒÆ’Ã‚Â¨ces
         _buildOptionTile(
           title: context.l10n.clientPaymentCash,
-          subtitle: context.l10n.clientHanoutPayOnDelivery,
+          subtitle: Text(context.l10n.clientHanoutPayOnDelivery),
           icon: Icons.payments,
           isSelected: state.paymentMethod == PaymentMethod.cash,
           onTap: () {
@@ -639,11 +718,13 @@ class HanoutDetailsView extends StatelessWidget {
         if (state.hanout.hasCarnet)
           _buildOptionTile(
             title: context.l10n.clientHanoutCarnetCredit,
-            subtitle: !isAuthenticatedClient
-                ? context.l10n.clientGuestCarnetOptionMessage
-                : state.canUseCarnet
-                ? context.l10n.clientHanoutAddedToCarnet
-                : context.l10n.clientHanoutCarnetUnavailable,
+            subtitle: Text(
+              !isAuthenticatedClient
+                  ? context.l10n.clientGuestCarnetOptionMessage
+                  : state.canUseCarnet
+                  ? context.l10n.clientHanoutAddedToCarnet
+                  : context.l10n.clientHanoutCarnetUnavailable,
+            ),
             icon: Icons.book,
             isSelected: state.paymentMethod == PaymentMethod.carnet,
             isEnabled: isAuthenticatedClient && state.canUseCarnet,
@@ -660,7 +741,7 @@ class HanoutDetailsView extends StatelessWidget {
   /// Tile d'option (livraison ou paiement)
   Widget _buildOptionTile({
     required String title,
-    required String subtitle,
+    required Widget subtitle,
     required IconData icon,
     required bool isSelected,
     required VoidCallback onTap,
@@ -716,13 +797,13 @@ class HanoutDetailsView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    subtitle,
+                  DefaultTextStyle(
                     style: AppTextStyles.bodySmall.copyWith(
                       color: isEnabled
                           ? AppColors.textSecondary
                           : AppColors.textDisabled,
                     ),
+                    child: subtitle,
                   ),
                 ],
               ),
@@ -739,6 +820,50 @@ class HanoutDetailsView extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDeliveryOptionSubtitle(
+    BuildContext context, {
+    required double deliveryFee,
+    required Future<FirstDeliveryPromoStatusModel?>? promoStatusFuture,
+  }) {
+    final baseText = context.l10n.clientHanoutDeliveryFee(
+      formatDh(context, deliveryFee, decimals: 0),
+    );
+    if (promoStatusFuture == null || deliveryFee <= 0) {
+      return Text(baseText);
+    }
+
+    return FutureBuilder<FirstDeliveryPromoStatusModel?>(
+      future: promoStatusFuture,
+      builder: (context, snapshot) {
+        final status = snapshot.data;
+        if (status == null || !status.canShowMarketingBanner) {
+          return Text(baseText);
+        }
+
+        return Wrap(
+          spacing: AppSpacing.xs,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(
+              formatDh(context, deliveryFee, decimals: 0),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+                decoration: TextDecoration.lineThrough,
+              ),
+            ),
+            Text(
+              '0 DH',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.success,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -825,17 +950,57 @@ class HanoutDetailsView extends StatelessWidget {
     );
   }
 
+  Future<FirstDeliveryPromoStatusModel?>? _resolvePromoStatusFuture(
+    bool isAuthenticatedClient,
+  ) {
+    if (!isAuthenticatedClient) {
+      _promoStatusFuture = null;
+      return null;
+    }
+
+    _promoStatusFuture ??= _promotionRepository
+        .getFirstDeliveryPromoStatus()
+        .then<FirstDeliveryPromoStatusModel?>((value) => value)
+        .onError((_, __) => null);
+    return _promoStatusFuture;
+  }
+
+  Widget _buildPromoBanner(
+    Future<FirstDeliveryPromoStatusModel?> promoStatusFuture, {
+    required bool compact,
+  }) {
+    return FutureBuilder<FirstDeliveryPromoStatusModel?>(
+      future: promoStatusFuture,
+      builder: (context, snapshot) {
+        final status = snapshot.data;
+        if (status == null || !status.canShowMarketingBanner) {
+          return const SizedBox.shrink();
+        }
+
+        return FirstDeliveryPromoBanner(
+          status: status,
+          compact: compact,
+        );
+      },
+    );
+  }
+
   /// Affiche le bottom sheet de confirmation
-  void _showOrderConfirmation(
+  Future<void> _showOrderConfirmation(
     BuildContext context,
     HanoutDetailsLoaded state,
-  ) {
+  ) async {
+    final promoFuture = _resolvePromoStatusFuture(true);
+    final promoStatus = promoFuture == null ? null : await promoFuture;
+    if (!context.mounted) return;
+
     showOrderConfirmationSheet(
       context: context,
       hanout: state.hanout,
       freeTextOrder: state.freeTextOrder,
       deliveryType: state.deliveryType,
       paymentMethod: state.paymentMethod,
+      promoStatus: promoStatus,
       onConfirm:
           ({
             required String address,
@@ -874,7 +1039,7 @@ class HanoutDetailsView extends StatelessWidget {
       if (!context.mounted || !authenticated) return;
     }
 
-    _showOrderConfirmation(context, state);
+    await _showOrderConfirmation(context, state);
   }
 
   Future<void> _promptCarnetAccess(BuildContext context) async {
@@ -889,6 +1054,7 @@ class HanoutDetailsView extends StatelessWidget {
 
   /// Dialog d'info du hanout
   void _showHanoutInfo(BuildContext context, HanoutWithDistance hanout) {
+    final preferArabic = Localizations.localeOf(context).languageCode == 'ar';
     showAppBottomSheet<void>(
       context: context,
       child: Column(
@@ -901,7 +1067,14 @@ class HanoutDetailsView extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           _infoRow(Icons.location_on, hanout.address),
           const SizedBox(height: AppSpacing.sm),
-          _infoRow(Icons.phone, hanout.phone),
+          if (hanout.businessCategory != null) ...[
+            _infoRow(
+              Icons.category_outlined,
+              '${hanout.businessCategory!.displayIcon} ${hanout.businessCategory!.displayName(preferArabic: preferArabic)}',
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+          _phoneInfoRow(context, hanout.phone),
           const SizedBox(height: AppSpacing.sm),
           if (hanout.formattedDistance.isNotEmpty)
             _infoRow(
@@ -934,6 +1107,41 @@ class HanoutDetailsView extends StatelessWidget {
           child: Text(text, style: AppTextStyles.bodyMedium),
         ),
       ],
+    );
+  }
+
+  Widget _phoneInfoRow(BuildContext context, String phone) {
+    return Row(
+      children: [
+        const Icon(Icons.phone, size: 20, color: AppColors.textSecondary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(phone, style: AppTextStyles.bodyMedium),
+        ),
+        IconButton(
+          onPressed: () => unawaited(_callPhone(context, phone)),
+          icon: const Icon(Icons.phone),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _callPhone(BuildContext context, String phone) async {
+    final ok = await launchPhoneCall(phone);
+    if (!context.mounted || ok) return;
+
+    AppSnackBar.show(
+      context,
+      message: context.l10n.clientCommonError,
+      type: SnackBarType.error,
+    );
+  }
+
+  void _syncOrderController(String value) {
+    if (_orderController.text == value) return;
+    _orderController.value = TextEditingValue(
+      text: value,
+      selection: TextSelection.collapsed(offset: value.length),
     );
   }
 }

@@ -3,6 +3,9 @@ import 'package:sevenouti/admin/cubbit/admin_accounts_state.dart';
 import 'package:sevenouti/admin/data/admin_repository.dart';
 import 'package:sevenouti/admin/models/admin_hanout_model.dart';
 import 'package:sevenouti/admin/models/admin_stats.dart';
+import 'package:sevenouti/client/models/business_category_model.dart';
+import 'package:sevenouti/client/models/first_delivery_promo_config_model.dart';
+import 'package:sevenouti/client/models/join_application_model.dart';
 import 'package:sevenouti/client/models/user_model.dart';
 
 class AdminAccountsCubit extends Cubit<AdminAccountsState> {
@@ -17,22 +20,32 @@ class AdminAccountsCubit extends Cubit<AdminAccountsState> {
         _repository.listUsers(role: UserRole.client),
         _repository.listUsers(role: UserRole.hanout),
         _repository.listHanouts(),
+        _repository.listBusinessCategories(),
+        _repository.listJoinApplications(),
         _repository.listUsers(role: UserRole.livreur),
         _repository.getStats(),
+        _repository.getFirstDeliveryPromoConfig(),
       ]);
       final clients = results[0] as List<UserModel>;
       final hanouts = results[1] as List<UserModel>;
       final hanoutProfiles = results[2] as List<AdminHanoutModel>;
-      final livreurs = results[3] as List<UserModel>;
-      final stats = results[4] as AdminStats;
+      final businessCategories = results[3] as List<BusinessCategoryModel>;
+      final joinApplications = results[4] as List<JoinApplicationModel>;
+      final livreurs = results[5] as List<UserModel>;
+      final stats = results[6] as AdminStats;
+      final firstDeliveryPromoConfig =
+          results[7] as FirstDeliveryPromoConfigModel;
       emit(
         state.copyWith(
           loading: false,
           clients: clients,
           hanouts: hanouts,
           hanoutProfiles: hanoutProfiles,
+          businessCategories: businessCategories,
+          joinApplications: joinApplications,
           livreurs: livreurs,
           stats: stats,
+          firstDeliveryPromoConfig: firstDeliveryPromoConfig,
           clearError: true,
         ),
       );
@@ -52,6 +65,7 @@ class AdminAccountsCubit extends Cubit<AdminAccountsState> {
     required String password,
     required String hanoutName,
     required String address,
+    required String businessCategoryId,
     double deliveryFee = 7.0,
     double? latitude,
     double? longitude,
@@ -65,6 +79,7 @@ class AdminAccountsCubit extends Cubit<AdminAccountsState> {
       hanout: {
         'name': hanoutName,
         'address': address,
+        'businessCategoryId': businessCategoryId,
         'deliveryFee': deliveryFee,
         if (latitude != null) 'latitude': latitude,
         if (longitude != null) 'longitude': longitude,
@@ -89,6 +104,31 @@ class AdminAccountsCubit extends Cubit<AdminAccountsState> {
       role: UserRole.livreur,
     );
     emit(state.copyWith(livreurs: [user, ...state.livreurs]));
+  }
+
+  Future<void> createBusinessCategory({
+    required String name,
+    required String nameAr,
+    String? icon,
+  }) async {
+    final category = await _repository.createBusinessCategory(
+      name: name,
+      nameAr: nameAr,
+      icon: icon,
+    );
+    emit(
+      state.copyWith(
+        businessCategories:
+            [
+              ...state.businessCategories,
+              category,
+            ]..sort((a, b) {
+              final orderComparison = (a.order ?? 0).compareTo(b.order ?? 0);
+              if (orderComparison != 0) return orderComparison;
+              return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+            }),
+      ),
+    );
   }
 
   Future<void> updateUser({
@@ -160,6 +200,13 @@ class AdminAccountsCubit extends Cubit<AdminAccountsState> {
             .toList(),
       ),
     );
+  }
+
+  Future<void> setFirstDeliveryPromoEnabled(bool enabled) async {
+    final config = await _repository.updateFirstDeliveryPromoConfig(
+      firstDeliveryFreeEnabled: enabled,
+    );
+    emit(state.copyWith(firstDeliveryPromoConfig: config));
   }
 
   List<UserModel> _replace(List<UserModel> list, UserModel updated) {

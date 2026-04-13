@@ -27,6 +27,11 @@ class PushNotificationService {
   StreamSubscription<String>? _tokenRefreshSub;
   StreamSubscription<RemoteMessage>? _onMessageSub;
 
+  bool get _isApplePushPlatform =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.iOS ||
+          defaultTargetPlatform == TargetPlatform.macOS);
+
   Future<void> init() async {
     if (_initialized) return;
     _initialized = true;
@@ -66,7 +71,7 @@ class PushNotificationService {
     );
 
     try {
-      final token = await messaging.getToken();
+      final token = await _getTokenForCurrentPlatform(messaging);
       if (token == null || token.isEmpty) {
         debugPrint('FCM token unavailable on ${defaultTargetPlatform.name}.');
       } else {
@@ -105,7 +110,9 @@ class PushNotificationService {
   Future<void> syncTokenWithBackend() async {
     if (!_firebaseAvailable) return;
     try {
-      final token = await FirebaseMessaging.instance.getToken();
+      final token = await _getTokenForCurrentPlatform(
+        FirebaseMessaging.instance,
+      );
       if (token == null || token.isEmpty) return;
       await _sendTokenToBackend(token);
     } on Object catch (error, stackTrace) {
@@ -159,6 +166,41 @@ class PushNotificationService {
     }
   }
 
+  Future<String?> _getTokenForCurrentPlatform(
+    FirebaseMessaging messaging,
+  ) async {
+    if (_isApplePushPlatform) {
+      final apnsToken = await _waitForApnsToken(messaging);
+      if (apnsToken == null || apnsToken.isEmpty) {
+        debugPrint(
+          'APNs token unavailable on ${defaultTargetPlatform.name}; '
+          'FCM token sync postponed.',
+        );
+        return null;
+      }
+    }
+
+    return messaging.getToken();
+  }
+
+  Future<String?> _waitForApnsToken(FirebaseMessaging messaging) async {
+    for (var attempt = 1; attempt <= 10; attempt++) {
+      final apnsToken = await messaging.getAPNSToken();
+      if (apnsToken != null && apnsToken.isNotEmpty) {
+        if (attempt > 1) {
+          debugPrint(
+            'APNs token acquired on attempt $attempt '
+            '(${defaultTargetPlatform.name}).',
+          );
+        }
+        return apnsToken;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+    }
+
+    return null;
+  }
+
   Future<bool> _shouldDisplayNotification(RemoteMessage message) async {
     final currentUserId = await TokenStorage.getUserId();
     if (currentUserId == null || currentUserId.isEmpty) {
@@ -181,7 +223,7 @@ class PushNotificationService {
       if (decoded is! List) return true;
       final recipients = decoded
           .map(
-            (value) => value == null ? null : value.toString().trim(),
+            (value) => value?.toString().trim(),
           )
           .whereType<String>()
           .where((value) => value.isNotEmpty)

@@ -11,6 +11,7 @@ import 'package:sevenouti/hanout/repository/hanout_repositories.dart';
 import 'package:sevenouti/hanout/view/pages/hanout_carnet_details_page.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/utils/localized_formatters.dart';
+import 'package:sevenouti/utils/phone_launcher.dart';
 
 class HanoutClientsPage extends StatelessWidget {
   const HanoutClientsPage({super.key});
@@ -116,6 +117,21 @@ class HanoutClientsView extends StatelessWidget {
                               color: AppColors.textSecondary,
                             ),
                           ),
+                          if ((client?.phone ?? '').isNotEmpty)
+                            Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: IconButton(
+                                constraints: const BoxConstraints(),
+                                padding: EdgeInsets.zero,
+                                visualDensity: VisualDensity.compact,
+                                onPressed: () => launchPhoneCall(client!.phone),
+                                icon: const Icon(
+                                  Icons.phone,
+                                  size: 18,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ),
                           const SizedBox(height: AppSpacing.xs),
                           Text(
                             l10n.hanoutClientsDebt(

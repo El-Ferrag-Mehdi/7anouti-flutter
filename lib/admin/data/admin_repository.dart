@@ -1,4 +1,7 @@
 import 'package:sevenouti/client/data/api_service.dart';
+import 'package:sevenouti/client/models/business_category_model.dart';
+import 'package:sevenouti/client/models/first_delivery_promo_config_model.dart';
+import 'package:sevenouti/client/models/join_application_model.dart';
 import 'package:sevenouti/client/models/user_model.dart';
 import 'package:sevenouti/admin/models/admin_stats.dart';
 import 'package:sevenouti/admin/models/admin_hanout_model.dart';
@@ -93,6 +96,74 @@ class AdminRepository {
     return AdminStats.fromJson(responseMap['data'] as Map<String, dynamic>);
   }
 
+  Future<FirstDeliveryPromoConfigModel> getFirstDeliveryPromoConfig() async {
+    final dynamic response = await _apiService.get('/admin/promo-config');
+    final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
+    return FirstDeliveryPromoConfigModel.fromJson(
+      responseMap['data'] as Map<String, dynamic>,
+    );
+  }
+
+  Future<FirstDeliveryPromoConfigModel> updateFirstDeliveryPromoConfig({
+    required bool firstDeliveryFreeEnabled,
+  }) async {
+    final dynamic response = await _apiService.patch(
+      '/admin/promo-config',
+      body: {
+        'firstDeliveryFreeEnabled': firstDeliveryFreeEnabled,
+      },
+    );
+    final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
+    return FirstDeliveryPromoConfigModel.fromJson(
+      responseMap['data'] as Map<String, dynamic>,
+    );
+  }
+
+  Future<List<BusinessCategoryModel>> listBusinessCategories() async {
+    final dynamic response = await _apiService.get(
+      '/admin/business-categories',
+    );
+    final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
+    final List<dynamic> data = responseMap['data'] as List<dynamic>;
+    return data
+        .map(
+          (dynamic json) =>
+              BusinessCategoryModel.fromJson(json as Map<String, dynamic>),
+        )
+        .toList();
+  }
+
+  Future<List<JoinApplicationModel>> listJoinApplications() async {
+    final dynamic response = await _apiService.get('/admin/join-applications');
+    final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
+    final List<dynamic> data = responseMap['data'] as List<dynamic>;
+    return data
+        .map(
+          (dynamic json) =>
+              JoinApplicationModel.fromJson(json as Map<String, dynamic>),
+        )
+        .toList();
+  }
+
+  Future<BusinessCategoryModel> createBusinessCategory({
+    required String name,
+    required String nameAr,
+    String? icon,
+  }) async {
+    final dynamic response = await _apiService.post(
+      '/admin/business-categories',
+      body: {
+        'name': name,
+        'nameAr': nameAr,
+        if (icon != null) 'icon': icon,
+      },
+    );
+    final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
+    return BusinessCategoryModel.fromJson(
+      responseMap['data'] as Map<String, dynamic>,
+    );
+  }
+
   Future<List<AdminHanoutModel>> listHanouts({String? query}) async {
     var endpoint = '/admin/hanouts';
     if (query != null && query.trim().isNotEmpty) {
@@ -108,6 +179,22 @@ class AdminRepository {
               AdminHanoutModel.fromJson(json as Map<String, dynamic>),
         )
         .toList();
+  }
+
+  Future<Map<String, dynamic>> getHanoutInsights(String hanoutId) async {
+    final dynamic response = await _apiService.get(
+      '/admin/hanouts/$hanoutId/insights',
+    );
+    final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
+    return responseMap['data'] as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> getLivreurInsights(String livreurId) async {
+    final dynamic response = await _apiService.get(
+      '/admin/livreurs/$livreurId/insights',
+    );
+    final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
+    return responseMap['data'] as Map<String, dynamic>;
   }
 
   Future<AdminHanoutModel> setHanoutShowRating({

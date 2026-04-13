@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:sevenouti/config/env.dart';
 import 'package:sevenouti/core/auth/token_refresh_service.dart';
+import 'package:sevenouti/core/device/installation_service.dart';
 import 'package:sevenouti/core/storage/token_storage.dart';
 
 class ApiConfig {
@@ -27,17 +28,13 @@ class ApiService {
 
   set token(String token) => _token = token;
 
-  void setToken(String token) {
-    this.token = token;
-  }
-
   Future<dynamic> get(String endpoint) async {
     try {
       final url = '$baseUrl$endpoint';
       _log('[ApiService][GET] $url');
       final response = await _sendWithAutoRefresh(
-        () => _client
-            .get(Uri.parse(url), headers: _headers())
+        () async => _client
+            .get(Uri.parse(url), headers: await _headers())
             .timeout(ApiConfig.timeout),
       );
       _log('[ApiService][GET] status=${response.statusCode}');
@@ -58,10 +55,10 @@ class ApiService {
       final url = '$baseUrl$endpoint';
       _log('[ApiService][POST] $url');
       final response = await _sendWithAutoRefresh(
-        () => _client
+        () async => _client
             .post(
               Uri.parse(url),
-              headers: _headers(),
+              headers: await _headers(),
               body: body != null ? json.encode(body) : null,
             )
             .timeout(ApiConfig.timeout),
@@ -84,10 +81,10 @@ class ApiService {
       final url = '$baseUrl$endpoint';
       _log('[ApiService][PUT] $url');
       final response = await _sendWithAutoRefresh(
-        () => _client
+        () async => _client
             .put(
               Uri.parse(url),
-              headers: _headers(),
+              headers: await _headers(),
               body: body != null ? json.encode(body) : null,
             )
             .timeout(ApiConfig.timeout),
@@ -110,10 +107,10 @@ class ApiService {
       final url = '$baseUrl$endpoint';
       _log('[ApiService][PATCH] $url');
       final response = await _sendWithAutoRefresh(
-        () => _client
+        () async => _client
             .patch(
               Uri.parse(url),
-              headers: _headers(),
+              headers: await _headers(),
               body: body != null ? json.encode(body) : null,
             )
             .timeout(ApiConfig.timeout),
@@ -136,8 +133,8 @@ class ApiService {
       final url = '$baseUrl$endpoint';
       _log('[ApiService][DELETE] $url');
       final response = await _sendWithAutoRefresh(
-        () => _client
-            .delete(Uri.parse(url), headers: _headers())
+        () async => _client
+            .delete(Uri.parse(url), headers: await _headers())
             .timeout(ApiConfig.timeout),
       );
       _log('[ApiService][DELETE] status=${response.statusCode}');
@@ -168,7 +165,7 @@ class ApiService {
 
       Future<http.Response> sender() async {
         final request = http.MultipartRequest('POST', Uri.parse(url));
-        request.headers.addAll(_authHeaders());
+        request.headers.addAll(await _authHeaders());
         if (fields != null) {
           request.fields.addAll(fields);
         }
@@ -227,7 +224,7 @@ class ApiService {
     Future<http.Response> Function() sender,
   ) async {
     _token = await TokenStorage.getToken();
-    var response = await sender();
+    final response = await sender();
     if (response.statusCode != 401) {
       return response;
     }
@@ -238,22 +235,25 @@ class ApiService {
     }
 
     _token = await TokenStorage.getToken();
-    response = await sender();
-    return response;
+    return sender();
   }
 
-  Map<String, String> _headers() {
+  Future<Map<String, String>> _headers() async {
     final headers = <String, String>{
       'Content-Type': 'application/json',
     };
+    final installationId = await InstallationService.getInstallationId();
+    headers['X-Installation-Id'] = installationId;
     if (_token != null && _token!.isNotEmpty) {
       headers['Authorization'] = 'Bearer $_token';
     }
     return headers;
   }
 
-  Map<String, String> _authHeaders() {
-    final headers = <String, String>{};
+  Future<Map<String, String>> _authHeaders() async {
+    final headers = <String, String>{
+      'X-Installation-Id': await InstallationService.getInstallationId(),
+    };
     if (_token != null && _token!.isNotEmpty) {
       headers['Authorization'] = 'Bearer $_token';
     }

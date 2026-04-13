@@ -15,6 +15,7 @@ import 'package:sevenouti/client/view/pages/client_carnet_page.dart';
 import 'package:sevenouti/client/view/pages/client_home_page.dart';
 import 'package:sevenouti/client/view/pages/client_orders_page.dart';
 import 'package:sevenouti/client/view/pages/client_settings_page.dart';
+import 'package:sevenouti/client/view/pages/join_us_application_page.dart';
 import 'package:sevenouti/client/widgets/client_feature_lock_view.dart';
 import 'package:sevenouti/core/notifications/local_notification_service.dart';
 import 'package:sevenouti/core/realtime/realtime_event_service.dart';
@@ -94,7 +95,7 @@ class _ClientShellState extends State<ClientShell> {
               ),
             ),
           PopupMenuButton<String>(
-            onSelected: (value) => _handleMenuSelection(value),
+            onSelected: _handleMenuSelection,
             itemBuilder: (context) {
               if (isAuthenticatedClient) {
                 return [
@@ -105,6 +106,16 @@ class _ClientShellState extends State<ClientShell> {
                         const Icon(Icons.settings),
                         const SizedBox(width: 8),
                         Text(l10n.clientMenuSettings),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'join_us',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.handshake_outlined),
+                        const SizedBox(width: 8),
+                        Text(_joinUsLabel(context)),
                       ],
                     ),
                   ),
@@ -139,6 +150,16 @@ class _ClientShellState extends State<ClientShell> {
                       const Icon(Icons.language),
                       const SizedBox(width: 8),
                       Text(_guestLanguageLabel(context)),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'join_us',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.handshake_outlined),
+                      const SizedBox(width: 8),
+                      Text(_joinUsLabel(context)),
                     ],
                   ),
                 ),
@@ -222,7 +243,10 @@ class _ClientShellState extends State<ClientShell> {
     return [
       ClientHomePage(scrollRequestToken: _homeScrollRequestToken),
       isAuthenticatedClient
-          ? ClientOrdersPage(key: ValueKey(_ordersRefreshSeed))
+          ? ClientOrdersPage(
+              key: ValueKey(_ordersRefreshSeed),
+              onSeeHanouts: _navigateToHomeHanouts,
+            )
           : ClientFeatureLockView(
               icon: Icons.shopping_bag_rounded,
               title: l10n.clientGuestOrdersLockedTitle,
@@ -315,6 +339,15 @@ class _ClientShellState extends State<ClientShell> {
       if (!mounted || opened) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.l10n.commonLinkOpenError)),
+      );
+      return;
+    }
+
+    if (value == 'join_us') {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => const JoinUsApplicationPage(),
+        ),
       );
       return;
     }
@@ -517,6 +550,12 @@ class _ClientShellState extends State<ClientShell> {
         builder: (_) => const LoginPage(closeOnAuthenticated: true),
       ),
     );
+  }
+
+  String _joinUsLabel(BuildContext context) {
+    return Localizations.localeOf(context).languageCode == 'ar'
+        ? 'انضم إلينا'
+        : 'Nous rejoindre ?';
   }
 
   String _guestLanguageLabel(BuildContext context) {

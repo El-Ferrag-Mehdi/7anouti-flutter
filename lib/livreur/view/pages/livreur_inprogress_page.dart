@@ -8,6 +8,7 @@ import 'package:sevenouti/core/constants/app_constrants.dart';
 import 'package:sevenouti/core/widgets/app_background.dart';
 import 'package:sevenouti/core/widgets/app_widgets.dart';
 import 'package:sevenouti/core/widgets/distance_pill.dart';
+import 'package:sevenouti/core/widgets/free_delivery_promo_badge.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/livreur/cubbit/livreur_inprogress_cubit.dart';
 import 'package:sevenouti/livreur/cubbit/livreur_inprogress_state.dart';
@@ -409,6 +410,10 @@ class LivreurInProgressView extends StatelessWidget {
               color: AppColors.textSecondary,
             ),
           ),
+          if (order.freeDeliveryPromoApplied) ...[
+            const SizedBox(height: AppSpacing.sm),
+            const FreeDeliveryPromoBadge(compact: true),
+          ],
           const SizedBox(height: AppSpacing.sm),
           Text(
             order.freeTextOrder,

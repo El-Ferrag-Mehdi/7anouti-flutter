@@ -150,6 +150,12 @@ class _LivreurEarningsViewState extends State<LivreurEarningsView> {
         (data['amountToTransfer'] as num?)?.toDouble() ?? totalCollected;
     final hanoutDeliveryCount =
         (data['hanoutDeliveryCount'] as num?)?.toInt() ?? 0;
+    final freeDeliveryPromoCompletedCount =
+        (data['freeDeliveryPromoCompletedCount'] as num?)?.toInt() ?? 0;
+    final freeDeliveryPromoPotentialReimbursementTotal =
+        (data['freeDeliveryPromoPotentialReimbursementTotal'] as num?)
+            ?.toDouble() ??
+        0;
     final gasDeliveryCount =
         (data['gasDeliveryCount'] as num?)?.toInt() ??
         (data['gasCount'] as num?)?.toInt() ??
@@ -224,6 +230,31 @@ class _LivreurEarningsViewState extends State<LivreurEarningsView> {
                 ),
               ],
             ),
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    title: _promoDeliveriesTitle(context),
+                    value: '$freeDeliveryPromoCompletedCount',
+                    icon: Icons.card_giftcard,
+                    color: Colors.orange,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: _buildStatCard(
+                    title: _promoReimbursementTitle(context),
+                    value: formatDh(
+                      context,
+                      freeDeliveryPromoPotentialReimbursementTotal,
+                    ),
+                    icon: Icons.account_balance_wallet,
+                    color: AppColors.success,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: AppSpacing.lg),
             Text(l10n.livreurEarningsHistory, style: AppTextStyles.h3),
             const SizedBox(height: AppSpacing.sm),
@@ -255,6 +286,12 @@ class _LivreurEarningsViewState extends State<LivreurEarningsView> {
                 final badgeColor = type == 'GAS'
                     ? AppColors.warning
                     : AppColors.info;
+                final freeDeliveryPromoApplied =
+                    item['freeDeliveryPromoApplied'] as bool? ?? false;
+                final freeDeliveryPromoReimbursementAmount =
+                    (item['freeDeliveryPromoReimbursementAmount'] as num?)
+                        ?.toDouble() ??
+                    0;
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -299,6 +336,27 @@ class _LivreurEarningsViewState extends State<LivreurEarningsView> {
                                   deliveredAt,
                                 ),
                                 style: AppTextStyles.caption,
+                              ),
+                            if (freeDeliveryPromoApplied)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.sm,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.withOpacity(0.14),
+                                    borderRadius: AppRadius.round,
+                                  ),
+                                  child: Text(
+                                    '${_promoChipLabel(context)} ${formatDh(context, freeDeliveryPromoReimbursementAmount)}',
+                                    style: AppTextStyles.caption.copyWith(
+                                      color: Colors.orange.shade800,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
                               ),
                           ],
                         ),
@@ -490,6 +548,21 @@ class _LivreurEarningsViewState extends State<LivreurEarningsView> {
         ],
       ),
     );
+  }
+
+  String _promoDeliveriesTitle(BuildContext context) {
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+    return isArabic ? 'توصيلات مجانية' : 'Livraisons gratuites';
+  }
+
+  String _promoReimbursementTitle(BuildContext context) {
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+    return isArabic ? 'تعويض متوقع' : 'Remboursement potentiel';
+  }
+
+  String _promoChipLabel(BuildContext context) {
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+    return isArabic ? 'توصيل مجاني' : 'Livraison gratuite';
   }
 
   List<_MonthOption> _monthOptions(BuildContext context) {

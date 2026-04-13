@@ -53,6 +53,12 @@ class HanoutRepository {
         hasCarnet: json['hasCarnet'] as bool,
         sendOrdersDirectToLivreur:
             json['sendOrdersDirectToLivreur'] as bool? ?? false,
+        businessCategoryId: json['businessCategoryId'] as String?,
+        businessCategory: json['businessCategory'] != null
+            ? BusinessCategoryModel.fromJson(
+                json['businessCategory'] as Map<String, dynamic>,
+              )
+            : null,
         deliveryFee: json['deliveryFee'] != null
             ? (json['deliveryFee'] as num).toDouble()
             : null,
@@ -95,6 +101,12 @@ class HanoutRepository {
       hasCarnet: json['hasCarnet'] as bool,
       sendOrdersDirectToLivreur:
           json['sendOrdersDirectToLivreur'] as bool? ?? false,
+      businessCategoryId: json['businessCategoryId'] as String?,
+      businessCategory: json['businessCategory'] != null
+          ? BusinessCategoryModel.fromJson(
+              json['businessCategory'] as Map<String, dynamic>,
+            )
+          : null,
       deliveryFee: json['deliveryFee'] != null
           ? (json['deliveryFee'] as num).toDouble()
           : null,
@@ -151,6 +163,64 @@ class HanoutRepository {
         icon: json['icon'] as String?,
       );
     }).toList();
+  }
+}
+
+class PromotionRepository {
+  PromotionRepository(this._apiService);
+
+  final ApiService _apiService;
+
+  Future<FirstDeliveryPromoConfigModel>
+  getFirstDeliveryPromoPublicConfig() async {
+    final dynamic response = await _apiService.get(
+      '/config/first-delivery-promo/public',
+    );
+    final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
+    return FirstDeliveryPromoConfigModel.fromJson(
+      responseMap['data'] as Map<String, dynamic>,
+    );
+  }
+
+  Future<FirstDeliveryPromoStatusModel> getFirstDeliveryPromoStatus() async {
+    final dynamic response = await _apiService.get(
+      '/config/first-delivery-promo/status',
+    );
+    final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
+    return FirstDeliveryPromoStatusModel.fromJson(
+      responseMap['data'] as Map<String, dynamic>,
+    );
+  }
+}
+
+class JoinApplicationRepository {
+  JoinApplicationRepository(this._apiService);
+
+  final ApiService _apiService;
+
+  Future<JoinApplicationModel> submitApplication({
+    required JoinApplicationType type,
+    required String name,
+    required String phone,
+    String? businessCategory,
+    String? deliveryZone,
+    String? address,
+  }) async {
+    final dynamic response = await _apiService.post(
+      '/join-applications',
+      body: {
+        'type': type.value,
+        'name': name,
+        'phone': phone,
+        if (businessCategory != null) 'businessCategory': businessCategory,
+        if (deliveryZone != null) 'deliveryZone': deliveryZone,
+        if (address != null) 'address': address,
+      },
+    );
+    final Map<String, dynamic> responseMap = response as Map<String, dynamic>;
+    return JoinApplicationModel.fromJson(
+      responseMap['data'] as Map<String, dynamic>,
+    );
   }
 }
 
@@ -287,11 +357,25 @@ class OrderRepository {
 
   /// Parse JSON vers OrderModel
   OrderModel _parseOrder(Map<String, dynamic> json) {
+    final hanout = json['hanout'] as Map<String, dynamic>?;
+    final livreur = json['livreur'] as Map<String, dynamic>?;
     return OrderModel(
       id: json['id'] as String,
       clientId: json['clientId'] as String,
       hanoutId: json['hanoutId'] as String,
+      hanoutName: hanout?['name'] as String?,
+      hanoutAddress: hanout?['address'] as String?,
+      hanoutPhone: hanout?['phone'] as String?,
+      businessCategoryId: hanout?['businessCategoryId'] as String?,
+      businessCategory: hanout?['businessCategory'] != null
+          ? BusinessCategoryModel.fromJson(
+              hanout!['businessCategory'] as Map<String, dynamic>,
+            )
+          : null,
       livreurId: json['livreurId'] as String?,
+      livreurName: livreur?['nameFr'] as String? ?? livreur?['name'] as String?,
+      livreurNameAr: livreur?['nameAr'] as String?,
+      livreurPhone: livreur?['phone'] as String?,
       freeTextOrder: json['freeTextOrder'] as String,
       status: OrderStatus.values.firstWhere(
         (e) => e.value == json['status'],
@@ -311,6 +395,15 @@ class OrderRepository {
       deliveryFee: json['deliveryFee'] != null
           ? (json['deliveryFee'] as num).toDouble()
           : null,
+      originalDeliveryFee: json['originalDeliveryFee'] != null
+          ? (json['originalDeliveryFee'] as num).toDouble()
+          : null,
+      freeDeliveryPromoApplied:
+          json['freeDeliveryPromoApplied'] as bool? ?? false,
+      freeDeliveryPromoAmount: json['freeDeliveryPromoAmount'] != null
+          ? (json['freeDeliveryPromoAmount'] as num).toDouble()
+          : null,
+      freeDeliveryPromoState: json['freeDeliveryPromoState'] as String?,
       totalAmount: json['totalAmount'] != null
           ? (json['totalAmount'] as num).toDouble()
           : null,
@@ -485,6 +578,11 @@ class CarnetRepository {
       activatedAt: json['activatedAt'] != null
           ? DateTime.parse(json['activatedAt'] as String)
           : null,
+      hanoutName: (json['hanout'] as Map<String, dynamic>?)?['name'] as String?,
+      hanoutAddress:
+          (json['hanout'] as Map<String, dynamic>?)?['address'] as String?,
+      hanoutPhone:
+          (json['hanout'] as Map<String, dynamic>?)?['phone'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );

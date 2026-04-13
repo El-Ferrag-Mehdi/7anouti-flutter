@@ -93,6 +93,7 @@ class LivreurOrderModel {
     this.notes,
     this.totalAmount,
     this.deliveryFee,
+    this.freeDeliveryPromoApplied = false,
     this.acceptedAt,
     this.readyAt,
     this.pickedUpAt,
@@ -120,6 +121,7 @@ class LivreurOrderModel {
   final String? notes;
   final double? totalAmount;
   final double? deliveryFee;
+  final bool freeDeliveryPromoApplied;
   final DateTime? acceptedAt;
   final DateTime? readyAt;
   final DateTime? pickedUpAt;
@@ -156,6 +158,8 @@ class LivreurOrderModel {
       deliveryFee: json['deliveryFee'] != null
           ? (json['deliveryFee'] as num).toDouble()
           : null,
+      freeDeliveryPromoApplied:
+          json['freeDeliveryPromoApplied'] as bool? ?? false,
       acceptedAt: json['acceptedAt'] != null
           ? DateTime.parse(json['acceptedAt'] as String)
           : null,
@@ -222,6 +226,7 @@ class LivreurOrderModel {
     String? notes,
     double? totalAmount,
     double? deliveryFee,
+    bool? freeDeliveryPromoApplied,
     DateTime? acceptedAt,
     DateTime? readyAt,
     DateTime? pickedUpAt,
@@ -249,6 +254,8 @@ class LivreurOrderModel {
       notes: notes ?? this.notes,
       totalAmount: totalAmount ?? this.totalAmount,
       deliveryFee: deliveryFee ?? this.deliveryFee,
+      freeDeliveryPromoApplied:
+          freeDeliveryPromoApplied ?? this.freeDeliveryPromoApplied,
       acceptedAt: acceptedAt ?? this.acceptedAt,
       readyAt: readyAt ?? this.readyAt,
       pickedUpAt: pickedUpAt ?? this.pickedUpAt,

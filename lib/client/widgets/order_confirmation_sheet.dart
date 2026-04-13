@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sevenouti/client/models/hanout_model.dart';
 import 'package:sevenouti/client/l10n/client_l10n.dart';
+import 'package:sevenouti/client/models/first_delivery_promo_status_model.dart';
 import 'package:sevenouti/client/models/models.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
 import 'package:sevenouti/core/widgets/buttons.dart';
@@ -17,6 +18,7 @@ class OrderConfirmationSheet extends StatefulWidget {
     required this.deliveryType,
     required this.paymentMethod,
     required this.onConfirm,
+    this.promoStatus,
     super.key,
   });
 
@@ -24,6 +26,7 @@ class OrderConfirmationSheet extends StatefulWidget {
   final String freeTextOrder;
   final DeliveryType deliveryType;
   final PaymentMethod paymentMethod;
+  final FirstDeliveryPromoStatusModel? promoStatus;
   final Future<void> Function({
     required String address,
     required String? addressFr,
@@ -48,6 +51,11 @@ class _OrderConfirmationSheetState extends State<OrderConfirmationSheet> {
   bool _usingCurrentLocation = false;
   bool _isLocating = false;
   static const String _defaultAddress = 'Mon adresse';
+
+  bool get _hasFreeDeliveryPromo =>
+      widget.deliveryType == DeliveryType.delivery &&
+      (widget.promoStatus?.canShowMarketingBanner ?? false) &&
+      (widget.hanout.deliveryFee ?? AppConstants.defaultDeliveryFee) > 0;
 
   @override
   void initState() {
@@ -258,6 +266,11 @@ class _OrderConfirmationSheetState extends State<OrderConfirmationSheet> {
 
               const SizedBox(height: AppSpacing.lg),
 
+              if (_hasFreeDeliveryPromo) ...[
+                _buildPromoCallout(),
+                const SizedBox(height: AppSpacing.lg),
+              ],
+
               // Mode de livraison
               _buildInfoRow(
                 icon: widget.deliveryType == DeliveryType.delivery
@@ -360,6 +373,7 @@ class _OrderConfirmationSheetState extends State<OrderConfirmationSheet> {
     final deliveryFee = widget.deliveryType == DeliveryType.delivery
         ? (widget.hanout.deliveryFee ?? AppConstants.defaultDeliveryFee)
         : 0.0;
+    final appliedDeliveryFee = _hasFreeDeliveryPromo ? 0.0 : deliveryFee;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -379,17 +393,50 @@ class _OrderConfirmationSheetState extends State<OrderConfirmationSheet> {
                 context.l10n.clientConfirmDeliveryFee,
                 style: AppTextStyles.bodyMedium,
               ),
-              Text(
-                deliveryFee > 0
-                    ? formatDh(context, deliveryFee)
-                    : context.l10n.clientConfirmFree,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              _hasFreeDeliveryPromo
+                  ? Wrap(
+                      spacing: AppSpacing.xs,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          formatDh(context, deliveryFee),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                        Text(
+                          '0 DH',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.success,
+                          ),
+                        ),
+                      ],
+                    )
+                  : Text(
+                      appliedDeliveryFee > 0
+                          ? formatDh(context, appliedDeliveryFee)
+                          : context.l10n.clientConfirmFree,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
             ],
           ),
           // Note: Le montant total sera calculé par le hanout
+          const SizedBox(height: AppSpacing.sm),
+          if (_hasFreeDeliveryPromo)
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                _promoAppliedMessage(context),
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.success,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
           const SizedBox(height: AppSpacing.sm),
           const Divider(),
           const SizedBox(height: AppSpacing.sm),
@@ -424,6 +471,74 @@ class _OrderConfirmationSheetState extends State<OrderConfirmationSheet> {
         ],
       ),
     );
+  }
+
+  Widget _buildPromoCallout() {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFFFF2D8),
+            Color(0xFFFFE3B3),
+          ],
+        ),
+        borderRadius: AppRadius.large,
+        border: Border.all(color: const Color(0xFFFFB74D)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 40,
+            width: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF8A00).withOpacity(0.14),
+              borderRadius: AppRadius.medium,
+            ),
+            child: const Icon(
+              Icons.local_offer_rounded,
+              color: Color(0xFFE56A00),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _promoBadgeTitle(context),
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF9A4D00),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _promoAppliedMessage(context),
+                  style: AppTextStyles.caption.copyWith(
+                    color: const Color(0xFF9A4D00),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _promoBadgeTitle(BuildContext context) {
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+    return isArabic ? 'التوصيل الاول مجانا' : 'Premiere livraison gratuite';
+  }
+
+  String _promoAppliedMessage(BuildContext context) {
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+    return isArabic
+        ? 'سيتم تطبيق 0 درهم على رسوم التوصيل لهذه الطلبية.'
+        : 'Les frais de livraison passent a 0 DH pour cette commande.';
   }
 
   void _useCurrentLocation() {
@@ -560,6 +675,7 @@ void showOrderConfirmationSheet({
   required String freeTextOrder,
   required DeliveryType deliveryType,
   required PaymentMethod paymentMethod,
+  FirstDeliveryPromoStatusModel? promoStatus,
   required Future<void> Function({
     required String address,
     required String? addressFr,
@@ -583,6 +699,7 @@ void showOrderConfirmationSheet({
         freeTextOrder: freeTextOrder,
         deliveryType: deliveryType,
         paymentMethod: paymentMethod,
+        promoStatus: promoStatus,
         onConfirm: onConfirm,
       ),
     ),
