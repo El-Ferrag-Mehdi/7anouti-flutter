@@ -1,6 +1,6 @@
 name: sevenouti
 description: A Very Good Project created by Very Good CLI.
-version: 1.0.0+7
+version: 1.0.1+11
 publish_to: none
 
 environment:

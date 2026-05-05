@@ -21,11 +21,16 @@ class PushNotificationService {
   PushNotificationService._();
 
   static final PushNotificationService instance = PushNotificationService._();
+  static const Duration _appleTokenRetryInterval = Duration(seconds: 5);
+  static const int _maxAppleTokenRetryAttempts = 24;
 
   bool _initialized = false;
   bool _firebaseAvailable = false;
+  bool _tokenSyncInProgress = false;
   StreamSubscription<String>? _tokenRefreshSub;
   StreamSubscription<RemoteMessage>? _onMessageSub;
+  Timer? _appleTokenRetryTimer;
+  int _appleTokenRetryAttempts = 0;
 
   bool get _isApplePushPlatform =>
       !kIsWeb &&
@@ -71,11 +76,9 @@ class PushNotificationService {
     );
 
     try {
-      final token = await _getTokenForCurrentPlatform(messaging);
-      if (token == null || token.isEmpty) {
-        debugPrint('FCM token unavailable on ${defaultTargetPlatform.name}.');
-      } else {
-        debugPrint('FCM token acquired on ${defaultTargetPlatform.name}.');
+      final synced = await _syncCurrentTokenWithBackend(messaging);
+      if (!synced && _isApplePushPlatform) {
+        _startAppleTokenRetryLoop();
       }
     } on Object catch (error, stackTrace) {
       debugPrint('FCM token fetch failed: $error');
@@ -103,18 +106,19 @@ class PushNotificationService {
     });
 
     _tokenRefreshSub = messaging.onTokenRefresh.listen((token) {
-      unawaited(_sendTokenToBackend(token));
+      unawaited(_handleTokenRefresh(token));
     });
   }
 
   Future<void> syncTokenWithBackend() async {
     if (!_firebaseAvailable) return;
     try {
-      final token = await _getTokenForCurrentPlatform(
+      final synced = await _syncCurrentTokenWithBackend(
         FirebaseMessaging.instance,
       );
-      if (token == null || token.isEmpty) return;
-      await _sendTokenToBackend(token);
+      if (!synced && _isApplePushPlatform) {
+        _startAppleTokenRetryLoop();
+      }
     } on Object catch (error, stackTrace) {
       debugPrint('FCM token sync failed: $error');
       debugPrintStack(stackTrace: stackTrace);
@@ -160,9 +164,38 @@ class PushNotificationService {
         '/auth/fcm-token',
         body: {'token': token},
       );
+      _stopAppleTokenRetryLoop();
+      debugPrint(
+        'FCM token uploaded on ${defaultTargetPlatform.name}: '
+        '${_redactToken(token)}',
+      );
     } on Object catch (error, stackTrace) {
       debugPrint('FCM token upload failed: $error');
       debugPrintStack(stackTrace: stackTrace);
+    }
+  }
+
+  Future<void> _handleTokenRefresh(String token) async {
+    await _sendTokenToBackend(token);
+  }
+
+  Future<bool> _syncCurrentTokenWithBackend(
+    FirebaseMessaging messaging,
+  ) async {
+    if (_tokenSyncInProgress) return false;
+    _tokenSyncInProgress = true;
+    try {
+      final token = await _getTokenForCurrentPlatform(messaging);
+      if (token == null || token.isEmpty) {
+        debugPrint('FCM token unavailable on ${defaultTargetPlatform.name}.');
+        return false;
+      }
+
+      debugPrint('FCM token acquired on ${defaultTargetPlatform.name}.');
+      await _sendTokenToBackend(token);
+      return true;
+    } finally {
+      _tokenSyncInProgress = false;
     }
   }
 
@@ -181,6 +214,51 @@ class PushNotificationService {
     }
 
     return messaging.getToken();
+  }
+
+  void _startAppleTokenRetryLoop() {
+    if (!_isApplePushPlatform || _appleTokenRetryTimer != null) {
+      return;
+    }
+
+    _appleTokenRetryAttempts = 0;
+    _appleTokenRetryTimer = Timer.periodic(_appleTokenRetryInterval, (timer) {
+      unawaited(_retryAppleTokenSyncTick());
+    });
+    debugPrint(
+      'Starting APNs token retry loop on ${defaultTargetPlatform.name}.',
+    );
+  }
+
+  Future<void> _retryAppleTokenSyncTick() async {
+    if (_tokenSyncInProgress) return;
+
+    _appleTokenRetryAttempts += 1;
+    final synced = await _syncCurrentTokenWithBackend(
+      FirebaseMessaging.instance,
+    );
+    if (synced) {
+      return;
+    }
+
+    if (_appleTokenRetryAttempts >= _maxAppleTokenRetryAttempts) {
+      debugPrint(
+        'Stopping APNs token retry loop after '
+        '$_appleTokenRetryAttempts attempts.',
+      );
+      _stopAppleTokenRetryLoop();
+    }
+  }
+
+  void _stopAppleTokenRetryLoop() {
+    _appleTokenRetryTimer?.cancel();
+    _appleTokenRetryTimer = null;
+    _appleTokenRetryAttempts = 0;
+  }
+
+  String _redactToken(String token) {
+    if (token.length <= 8) return token;
+    return '${token.substring(0, 4)}...${token.substring(token.length - 4)}';
   }
 
   Future<String?> _waitForApnsToken(FirebaseMessaging messaging) async {
@@ -238,6 +316,7 @@ class PushNotificationService {
   Future<void> dispose() async {
     await _tokenRefreshSub?.cancel();
     await _onMessageSub?.cancel();
+    _stopAppleTokenRetryLoop();
     _tokenRefreshSub = null;
     _onMessageSub = null;
   }
