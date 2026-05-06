@@ -512,7 +512,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = ZWQP56VDHJ;
 				ENABLE_BITCODE = NO;
-				FLAVOR_APP_NAME = "[DEV] Sevenouti";
+				FLAVOR_APP_NAME = "[DEV] 7anouti";
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 7anouti;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
@@ -617,7 +617,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = ZWQP56VDHJ;
 				ENABLE_BITCODE = NO;
-				FLAVOR_APP_NAME = "[DEV] Sevenouti";
+				FLAVOR_APP_NAME = "[DEV] 7anouti";
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 7anouti;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
@@ -722,7 +722,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = ZWQP56VDHJ;
 				ENABLE_BITCODE = NO;
-				FLAVOR_APP_NAME = Sevenouti;
+				FLAVOR_APP_NAME = 7anouti;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 7anouti;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
@@ -827,7 +827,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = ZWQP56VDHJ;
 				ENABLE_BITCODE = NO;
-				FLAVOR_APP_NAME = Sevenouti;
+				FLAVOR_APP_NAME = 7anouti;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 7anouti;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
@@ -927,7 +927,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = ZWQP56VDHJ;
 				ENABLE_BITCODE = NO;
-				FLAVOR_APP_NAME = Sevenouti;
+				FLAVOR_APP_NAME = 7anouti;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 7anouti;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
@@ -1032,7 +1032,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = ZWQP56VDHJ;
 				ENABLE_BITCODE = NO;
-				FLAVOR_APP_NAME = "[DEV] Sevenouti";
+				FLAVOR_APP_NAME = "[DEV] 7anouti";
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 7anouti;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
@@ -1135,7 +1135,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = ZWQP56VDHJ;
 				ENABLE_BITCODE = NO;
-				FLAVOR_APP_NAME = "[DEV] Sevenouti";
+				FLAVOR_APP_NAME = "[DEV] 7anouti";
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 7anouti;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
@@ -1237,7 +1237,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = ZWQP56VDHJ;
 				ENABLE_BITCODE = NO;
-				FLAVOR_APP_NAME = "[DEV] Sevenouti";
+				FLAVOR_APP_NAME = "[DEV] 7anouti";
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 7anouti;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
@@ -1342,7 +1342,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = ZWQP56VDHJ;
 				ENABLE_BITCODE = NO;
-				FLAVOR_APP_NAME = "[STG] Sevenouti";
+				FLAVOR_APP_NAME = "[STG] 7anouti";
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 7anouti;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
@@ -1447,7 +1447,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = ZWQP56VDHJ;
 				ENABLE_BITCODE = NO;
-				FLAVOR_APP_NAME = "[STG] Sevenouti";
+				FLAVOR_APP_NAME = "[STG] 7anouti";
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 7anouti;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
@@ -1547,7 +1547,7 @@
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = ZWQP56VDHJ;
 				ENABLE_BITCODE = NO;
-				FLAVOR_APP_NAME = "[STG] Sevenouti";
+				FLAVOR_APP_NAME = "[STG] 7anouti";
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = 7anouti;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";

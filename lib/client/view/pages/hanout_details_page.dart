@@ -18,12 +18,13 @@ import 'package:sevenouti/core/constants/app_constrants.dart';
 import 'package:sevenouti/core/notifications/local_notification_service.dart';
 import 'package:sevenouti/core/widgets/app_background.dart';
 import 'package:sevenouti/core/widgets/app_widgets.dart';
+import 'package:sevenouti/core/widgets/buttons.dart'
+    hide IconButton, TextButton;
 import 'package:sevenouti/core/widgets/modern_sheet.dart';
+import 'package:sevenouti/core/widgets/network_image_viewer.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/utils/localized_formatters.dart';
 import 'package:sevenouti/utils/phone_launcher.dart';
-import 'package:sevenouti/core/widgets/buttons.dart'
-    hide IconButton, TextButton;
 
 /// Page de dÃƒÆ’Ã‚Â©tails d'un hanout avec commande
 class HanoutDetailsPage extends StatelessWidget {
@@ -277,6 +278,7 @@ class _HanoutDetailsViewState extends State<HanoutDetailsView> {
   Widget _buildHanoutHeader(BuildContext context, HanoutWithDistance hanout) {
     final preferArabic = Localizations.localeOf(context).languageCode == 'ar';
     final hasImage = hanout.image != null && hanout.image!.trim().isNotEmpty;
+    final imageHeroTag = 'client-detail-hanout-image-${hanout.id}';
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -288,43 +290,61 @@ class _HanoutDetailsViewState extends State<HanoutDetailsView> {
       child: Row(
         children: [
           // Image ou icone
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceVariant,
-              gradient: hasImage
-                  ? null
-                  : LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        AppColors.primary.withOpacity(0.15),
-                        AppColors.accent.withOpacity(0.2),
-                      ],
-                    ),
+          Material(
+            color: Colors.transparent,
+            borderRadius: AppRadius.medium,
+            child: InkWell(
+              onTap: hasImage
+                  ? () => showNetworkImageViewer(
+                      context,
+                      imageUrl: hanout.image!,
+                      heroTag: imageHeroTag,
+                    )
+                  : null,
               borderRadius: AppRadius.medium,
-            ),
-            child: hasImage
-                ? ClipRRect(
-                    borderRadius: AppRadius.medium,
-                    child: Image.network(
-                      hanout.image!,
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant,
+                  gradient: hasImage
+                      ? null
+                      : LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppColors.primary.withOpacity(0.15),
+                            AppColors.accent.withOpacity(0.2),
+                          ],
+                        ),
+                  borderRadius: AppRadius.medium,
+                ),
+                child: hasImage
+                    ? ClipRRect(
+                        borderRadius: AppRadius.medium,
+                        child: Hero(
+                          tag: imageHeroTag,
+                          child: Image.network(
+                            hanout.image!,
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(
+                                  Icons.store,
+                                  size: 30,
+                                  color: AppColors.primary,
+                                ),
+                          ),
+                        ),
+                      )
+                    : const Icon(
                         Icons.store,
                         size: 30,
                         color: AppColors.primary,
                       ),
-                    ),
-                  )
-                : const Icon(
-                    Icons.store,
-                    size: 30,
-                    color: AppColors.primary,
-                  ),
+              ),
+            ),
           ),
           const SizedBox(width: AppSpacing.md),
 

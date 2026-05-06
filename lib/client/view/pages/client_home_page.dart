@@ -12,6 +12,7 @@ import 'package:sevenouti/client/data/api_service.dart';
 import 'package:sevenouti/client/models/business_category_model.dart';
 import 'package:sevenouti/client/models/first_delivery_promo_config_model.dart';
 import 'package:sevenouti/client/models/first_delivery_promo_status_model.dart';
+import 'package:sevenouti/client/models/gas_service_order.dart';
 import 'package:sevenouti/client/models/hanout_model.dart';
 import 'package:sevenouti/client/repository/repositories.dart';
 import 'package:sevenouti/client/view/pages/gas_service_tracking_page.dart';
@@ -28,7 +29,6 @@ import 'package:sevenouti/core/widgets/cards.dart';
 import 'package:sevenouti/core/widgets/modern_sheet.dart';
 import 'package:sevenouti/l10n/l10n.dart';
 import 'package:sevenouti/utils/location_service.dart';
-import 'package:sevenouti/client/models/gas_service_order.dart';
 
 /// Page d'accueil du client - Liste des hanouts à proximité
 enum ClientHomeVariant { standard, aggressive }
@@ -327,6 +327,7 @@ class _ClientHomeViewState extends State<ClientHomeView> {
                       isOpen: hanout.isOpen,
                       hasCarnet: hanout.hasCarnet,
                       isEnabled: !state.isUsingFallbackLocation,
+                      imageHeroTag: 'client-home-hanout-image-${hanout.id}',
                       onTap: () => state.isUsingFallbackLocation
                           ? _showLocationRequiredSnack(context)
                           : _navigateToHanoutDetails(context, hanout),

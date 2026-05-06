@@ -20,16 +20,24 @@ class LivreurProfileRepository {
     double? longitude,
     bool? isLivreurZoneActive,
   }) async {
+    final body = <String, dynamic>{
+      'name': name,
+      'phone': phone,
+      'address': address,
+    };
+    if (latitude != null) {
+      body['latitude'] = latitude;
+    }
+    if (longitude != null) {
+      body['longitude'] = longitude;
+    }
+    if (isLivreurZoneActive != null) {
+      body['isLivreurZoneActive'] = isLivreurZoneActive;
+    }
+
     final dynamic response = await _apiService.put(
       '/auth/me',
-      body: {
-        'name': name,
-        'phone': phone,
-        'address': address,
-        'latitude': latitude,
-        'longitude': longitude,
-        'isLivreurZoneActive': isLivreurZoneActive,
-      },
+      body: body,
     );
     final responseMap = response as Map<String, dynamic>;
     return UserModel.fromJson(responseMap['data'] as Map<String, dynamic>);

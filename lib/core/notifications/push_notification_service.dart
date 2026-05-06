@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:sevenouti/client/data/api_service.dart';
 import 'package:sevenouti/core/notifications/local_notification_service.dart';
 import 'package:sevenouti/core/storage/token_storage.dart';
@@ -27,6 +28,7 @@ class PushNotificationService {
   bool _initialized = false;
   bool _firebaseAvailable = false;
   bool _tokenSyncInProgress = false;
+  AppLifecycleListener? _appLifecycleListener;
   StreamSubscription<String>? _tokenRefreshSub;
   StreamSubscription<RemoteMessage>? _onMessageSub;
   Timer? _appleTokenRetryTimer;
@@ -44,6 +46,11 @@ class PushNotificationService {
     try {
       await Firebase.initializeApp();
       _firebaseAvailable = true;
+      _appLifecycleListener ??= AppLifecycleListener(
+        onResume: () {
+          unawaited(syncTokenWithBackend());
+        },
+      );
     } on Object catch (error, stackTrace) {
       debugPrint('FCM disabled (Firebase init failed): $error');
       debugPrintStack(stackTrace: stackTrace);
@@ -162,7 +169,10 @@ class PushNotificationService {
       }
       await ApiService().post(
         '/auth/fcm-token',
-        body: {'token': token},
+        body: {
+          'token': token,
+          'platform': defaultTargetPlatform.name,
+        },
       );
       _stopAppleTokenRetryLoop();
       debugPrint(
@@ -316,7 +326,9 @@ class PushNotificationService {
   Future<void> dispose() async {
     await _tokenRefreshSub?.cancel();
     await _onMessageSub?.cancel();
+    _appLifecycleListener?.dispose();
     _stopAppleTokenRetryLoop();
+    _appLifecycleListener = null;
     _tokenRefreshSub = null;
     _onMessageSub = null;
   }

@@ -13,7 +13,12 @@ import 'package:sevenouti/livreur/repository/livreur_profile_repository.dart';
 import 'package:sevenouti/utils/location_service.dart';
 
 class LivreurSettingsPage extends StatefulWidget {
-  const LivreurSettingsPage({super.key});
+  const LivreurSettingsPage({
+    super.key,
+    this.onProfileUpdated,
+  });
+
+  final VoidCallback? onProfileUpdated;
 
   @override
   State<LivreurSettingsPage> createState() => _LivreurSettingsPageState();
@@ -37,6 +42,10 @@ class _LivreurSettingsPageState extends State<LivreurSettingsPage> {
   double? _zoneLatitude;
   double? _zoneLongitude;
   String? _error;
+
+  void _notifyProfileUpdated() {
+    widget.onProfileUpdated?.call();
+  }
 
   @override
   void initState() {
@@ -103,10 +112,16 @@ class _LivreurSettingsPageState extends State<LivreurSettingsPage> {
         address: address.isEmpty ? null : address,
       );
       if (!mounted) return;
-      _nameController.text = updated.name;
-      _phoneController.text = updated.phone;
-      _emailController.text = updated.email ?? '';
-      _addressController.text = updated.address ?? '';
+      setState(() {
+        _nameController.text = updated.name;
+        _phoneController.text = updated.phone;
+        _emailController.text = updated.email ?? '';
+        _addressController.text = updated.address ?? '';
+        _zoneActive = updated.isLivreurZoneActive;
+        _zoneLatitude = updated.latitude;
+        _zoneLongitude = updated.longitude;
+      });
+      _notifyProfileUpdated();
       AppSnackBar.show(
         context,
         message: l10n.livreurSettingsSaved,
@@ -358,6 +373,7 @@ class _LivreurSettingsPageState extends State<LivreurSettingsPage> {
         _zoneLatitude = updated.latitude;
         _zoneLongitude = updated.longitude;
       });
+      _notifyProfileUpdated();
       AppSnackBar.show(
         context,
         message:
@@ -400,6 +416,7 @@ class _LivreurSettingsPageState extends State<LivreurSettingsPage> {
         _zoneLatitude = updated.latitude;
         _zoneLongitude = updated.longitude;
       });
+      _notifyProfileUpdated();
       AppSnackBar.show(
         context,
         message: 'Zone desactivee.',

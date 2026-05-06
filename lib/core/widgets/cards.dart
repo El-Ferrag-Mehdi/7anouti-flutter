@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sevenouti/core/constants/app_constrants.dart';
+import 'package:sevenouti/core/widgets/network_image_viewer.dart';
 
 /// Card de base de l'application
 class AppCard extends StatelessWidget {
@@ -60,6 +61,8 @@ class HanoutCard extends StatelessWidget {
     this.hasCarnet = false,
     this.isEnabled = true,
     this.onTap,
+    this.onImageTap,
+    this.imageHeroTag,
     super.key,
   });
 
@@ -74,6 +77,8 @@ class HanoutCard extends StatelessWidget {
   final bool hasCarnet;
   final bool isEnabled;
   final VoidCallback? onTap;
+  final VoidCallback? onImageTap;
+  final String? imageHeroTag;
 
   @override
   Widget build(BuildContext context) {
@@ -87,34 +92,7 @@ class HanoutCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Image
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: AppRadius.medium,
-              ),
-              child: hasImage
-                  ? ClipRRect(
-                      borderRadius: AppRadius.medium,
-                      child: Image.network(
-                        imageUrl!,
-                        fit: BoxFit.cover,
-                        width: 80,
-                        height: 80,
-                        errorBuilder: (_, __, ___) => const Icon(
-                          Icons.store,
-                          size: 40,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    )
-                  : const Icon(
-                      Icons.store,
-                      size: 40,
-                      color: AppColors.textSecondary,
-                    ),
-            ),
+            _buildImage(context, hasImage),
             const SizedBox(width: AppSpacing.md),
 
             // Infos
@@ -269,6 +247,73 @@ class HanoutCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildImage(BuildContext context, bool hasImage) {
+    final imageChild = Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: AppRadius.medium,
+      ),
+      child: hasImage
+          ? ClipRRect(
+              borderRadius: AppRadius.medium,
+              child: imageHeroTag == null
+                  ? Image.network(
+                      imageUrl!,
+                      fit: BoxFit.cover,
+                      width: 80,
+                      height: 80,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.store,
+                        size: 40,
+                        color: AppColors.textSecondary,
+                      ),
+                    )
+                  : Hero(
+                      tag: imageHeroTag!,
+                      child: Image.network(
+                        imageUrl!,
+                        fit: BoxFit.cover,
+                        width: 80,
+                        height: 80,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              Icons.store,
+                              size: 40,
+                              color: AppColors.textSecondary,
+                            ),
+                      ),
+                    ),
+            )
+          : const Icon(
+              Icons.store,
+              size: 40,
+              color: AppColors.textSecondary,
+            ),
+    );
+
+    if (!hasImage) {
+      return imageChild;
+    }
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: AppRadius.medium,
+      child: InkWell(
+        onTap:
+            onImageTap ??
+            () => showNetworkImageViewer(
+              context,
+              imageUrl: imageUrl!,
+              heroTag: imageHeroTag,
+            ),
+        borderRadius: AppRadius.medium,
+        child: imageChild,
       ),
     );
   }

@@ -69,7 +69,9 @@ class _LivreurShellState extends State<LivreurShell> {
                 unawaited(
                   Navigator.of(context).push<void>(
                     MaterialPageRoute<void>(
-                      builder: (_) => const LivreurSettingsPage(),
+                      builder: (_) => LivreurSettingsPage(
+                        onProfileUpdated: _handleLivreurProfileUpdated,
+                      ),
                     ),
                   ),
                 );
@@ -149,6 +151,14 @@ class _LivreurShellState extends State<LivreurShell> {
     if (!mounted) return;
     setState(() {
       _currentIndex = 1;
+      _availableRefreshSeed++;
+      _inProgressRefreshSeed++;
+    });
+  }
+
+  void _handleLivreurProfileUpdated() {
+    if (!mounted) return;
+    setState(() {
       _availableRefreshSeed++;
       _inProgressRefreshSeed++;
     });
